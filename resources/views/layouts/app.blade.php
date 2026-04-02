@@ -19,11 +19,18 @@
         // Optional overrides (set in child views if desired)
         $ogTitle = trim((string) View::yieldContent('og_title', $metaTitle));
         $ogDescription = trim((string) View::yieldContent('og_description', $metaDescription));
-        $ogImage = trim((string) View::yieldContent('og_image', '')); // absolute URL recommended
+        $ogImage = trim((string) View::yieldContent('og_image', $appUrl . '/images/logo.png'));
         $ogType = trim((string) View::yieldContent('og_type', 'website'));
 
         $twitterCard = trim((string) View::yieldContent('twitter_card', $ogImage !== '' ? 'summary_large_image' : 'summary'));
     @endphp
+
+    @if (trim((string) View::yieldContent('article_published_time')) !== '')
+        <meta property="article:published_time" content="@yield('article_published_time')">
+    @endif
+    @if (trim((string) View::yieldContent('article_modified_time')) !== '')
+        <meta property="article:modified_time" content="@yield('article_modified_time')">
+    @endif
 
     <title>{{ $metaTitle }}</title>
     <meta name="description" content="{{ $metaDescription }}">
@@ -32,7 +39,7 @@
     {{-- Canonical --}}
     <link rel="canonical" href="{{ $currentUrl }}">
 
-        {{-- hreflang alternates (all locales) --}}
+    {{-- hreflang alternates (all locales) --}}
     @php
         $supportedLocales = config('locales.supported', ['en']);
         $defaultLocale = config('locales.default', 'en');
@@ -67,6 +74,39 @@
         <meta property="og:image" content="{{ $ogImage }}">
     @endif
 
+    @if ($ogImage !== '')
+        <meta property="og:image" content="{{ $ogImage }}">
+        <meta property="og:image:width" content="@yield('og_image_width', '1200')">
+        <meta property="og:image:height" content="@yield('og_image_height', '630')">
+        <meta property="og:image:alt" content="@yield('og_image_alt', $ogTitle)">
+    @endif
+    
+    {{-- OpenGraph locale / alternates --}}
+    @php
+        $supportedLocales = config('locales.supported', ['en']);
+        $defaultLocale = config('locales.default', 'en');
+
+        // Minimal mapping. Adjust if you target specific regions.
+        $ogLocaleMap = [
+            'en' => 'en_US',
+            'tr' => 'tr_TR',
+            'ar' => 'ar_AR',
+            'fr' => 'fr_FR',
+        ];
+
+        $currentLocale = app()->getLocale();
+        $ogLocale = $ogLocaleMap[$currentLocale] ?? ($ogLocaleMap[$defaultLocale] ?? 'en_US');
+    @endphp
+
+    <meta property="og:locale" content="{{ $ogLocale }}">
+    @foreach ($supportedLocales as $loc)
+        @continue($loc === $currentLocale)
+        @php $alt = $ogLocaleMap[$loc] ?? null; @endphp
+        @if ($alt)
+            <meta property="og:locale:alternate" content="{{ $alt }}">
+        @endif
+    @endforeach
+
     {{-- Twitter --}}
     <meta name="twitter:card" content="{{ $twitterCard }}">
     <meta name="twitter:title" content="{{ $ogTitle }}">
@@ -74,6 +114,15 @@
     @if ($ogImage !== '')
         <meta name="twitter:image" content="{{ $ogImage }}">
     @endif
+    @if ($ogImage !== '')
+        <meta name="twitter:image" content="{{ $ogImage }}">
+        <meta name="twitter:image:alt" content="@yield('og_image_alt', $ogTitle)">
+    @endif
+    <meta name="twitter:site" content="@Globaltrding">
+    <meta name="twitter:creator" content="@Globaltrding">
+
+    <link rel="icon" href="{{ rtrim(config('app.url', 'https://globaltrding.com'), '/') }}/images/favicon.ico">
+    <link rel="apple-touch-icon" href="{{ rtrim(config('app.url', 'https://globaltrding.com'), '/') }}/images/logo.png">
 
     {{-- JSON-LD: Organization (site-wide) --}}
     <script type="application/ld+json">
@@ -82,7 +131,7 @@
         '@type' => 'Organization',
         'name' => 'Globaltrding',
         'url' => rtrim(config('app.url', 'https://globaltrding.com'), '/'),
-        'logo' => rtrim(config('app.url', 'https://globaltrding.com'), '/') . '/favicon.ico',
+        'logo' => rtrim(config('app.url', 'https://globaltrding.com'), '/') . '/images/logo.png',
     ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
     </script>
 

@@ -22,7 +22,12 @@
 @section('og_type', 'article')
 @section('og_title', $metaTitle)
 @section('og_description', $metaDescription)
-@section('og_image', $absoluteUrl)
+@section('og_image', rtrim(config('app.url', 'https://globaltrding.com'), '/') . '/images/logo.png')
+
+@if ($post->published_at)
+    @section('article_published_time', $post->published_at->toAtomString())
+@endif
+@section('article_modified_time', optional($post->updated_at)->toAtomString())
 
 @push('structured_data')
     <script type="application/ld+json">

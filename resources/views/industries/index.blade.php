@@ -1,6 +1,34 @@
 @extends('layouts.app')
 
 @section('meta_title', 'Industries - Globaltrding')
+@section('meta_description', 'Explore the industries Globaltrding serves with industrial equipment sourcing and tailored solutions.')
+@section('og_type', 'website')
+@section('og_title', 'Industries - Globaltrding')
+@section('og_description', 'Explore the industries Globaltrding serves with industrial equipment sourcing and tailored solutions.')
+
+@php $locale = app()->getLocale(); @endphp
+@push('structured_data')
+    <script type="application/ld+json">
+    {!! json_encode([
+        '@context' => 'https://schema.org',
+        '@type' => 'BreadcrumbList',
+        'itemListElement' => [
+            [
+                '@type' => 'ListItem',
+                'position' => 1,
+                'name' => 'Home',
+                'item' => rtrim(config('app.url', 'https://globaltrding.com'), '/') . "/{$locale}",
+            ],
+            [
+                '@type' => 'ListItem',
+                'position' => 2,
+                'name' => 'Industries',
+                'item' => rtrim(config('app.url', 'https://globaltrding.com'), '/') . "/{$locale}/industries",
+            ],
+        ],
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    </script>
+@endpush
 
 @section('content')
     @php
@@ -28,7 +56,7 @@
                     $title = data_get($ind->title, $locale) ?: data_get($ind->title, $fallback) ?: $ind->slug;
                     $img = $ind->cover_image_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($ind->cover_image_path) : null;
                 @endphp
-                <a href="#"
+                <a href="/{{ $locale }}/industries/{{ $ind->slug }}"
                    class="group rounded-xl border border-slate-200 bg-white overflow-hidden hover:border-slate-300 hover:shadow-sm transition">
                     <div class="aspect-[16/9] bg-slate-100 overflow-hidden">
                         @if ($img)

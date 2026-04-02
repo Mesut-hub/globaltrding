@@ -1,6 +1,34 @@
 @extends('layouts.app')
 
 @section('meta_title', 'Products - Globaltrding')
+@section('meta_description', 'Browse Globaltrding products and use Product Finder to discover the right industrial equipment for your needs.')
+@section('og_type', 'website')
+@section('og_title', 'Products - Globaltrding')
+@section('og_description', 'Browse Globaltrding products and use Product Finder to discover the right industrial equipment for your needs.')
+
+@php $locale = app()->getLocale(); @endphp
+@push('structured_data')
+    <script type="application/ld+json">
+    {!! json_encode([
+        '@context' => 'https://schema.org',
+        '@type' => 'BreadcrumbList',
+        'itemListElement' => [
+            [
+                '@type' => 'ListItem',
+                'position' => 1,
+                'name' => 'Home',
+                'item' => rtrim(config('app.url', 'https://globaltrding.com'), '/') . "/{$locale}",
+            ],
+            [
+                '@type' => 'ListItem',
+                'position' => 2,
+                'name' => 'Products',
+                'item' => rtrim(config('app.url', 'https://globaltrding.com'), '/') . "/{$locale}/products",
+            ],
+        ],
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    </script>
+@endpush
 
 @section('content')
     @php
