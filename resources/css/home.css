@@ -1,0 +1,17 @@
+/* resources/css/home.css */
+
+.hero-shell { min-height: var(--hero-min-h, 90vh); }
+
+.ind-btn{
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,0.2);
+  background: #fff;
+  color: rgb(15,23,42);
+  font-size: 18px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+}
+.ind-btn:hover{ border-color: rgba(15,23,42,0.35); }
