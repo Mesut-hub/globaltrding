@@ -45,7 +45,7 @@
         $textOffset = (int) ($data['text_offset_px'] ?? 290); // pushes only text down
     @endphp
 
-    <section class="relative text-white hero-shell" style="--hero-min-h: {{ $minH }};">
+    <section class="relative text-white hero-shell" style="--hero-min-h: {{ $minH }};" data-hero>
         <div class="absolute inset-0 overflow-hidden bg-slate-950">
             @if ($mediaType === 'image')
                 @if ($mediaUrl)
@@ -69,25 +69,6 @@
                         style="{{ $mediaUrl ? 'display:none;' : '' }}"
                         data-hero-poster>
                 @endif
-
-                <script>
-                    document.addEventListener('DOMContentLoaded', () => {
-                        const section = document.currentScript?.closest('section');
-                        if (!section) return;
-
-                        const video = section.querySelector('video');
-                        const poster = section.querySelector('[data-hero-poster]');
-                        if (!video || !poster) return;
-
-                        const p = video.play?.();
-                        if (p && typeof p.then === 'function') {
-                            p.catch(() => {
-                                video.style.display = 'none';
-                                poster.style.display = 'block';
-                            });
-                        }
-                    });
-                </script>
             @endif
 
             <div class="absolute inset-0"
@@ -141,7 +122,7 @@
 ========================================================= --}}
 @elseif ($type === 'market_belt')
     @php
-        $beltSlugs = 'usd-try,eur-try,gbp-try,gold-gram-try,brent-usd';
+        $beltSlugs = 'usd-try,eur-try,gbp-try';
         $dataUrl = "/{$locale}/market/data?instruments=" . urlencode($beltSlugs);
     @endphp
 

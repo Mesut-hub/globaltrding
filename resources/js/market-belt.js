@@ -6,7 +6,7 @@ function fmt(slug, v) {
     return Number(v).toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 4 });
   }
 
-  // Gold/Brent fallback formatting
+  // fallback formatting for gold/brent later
   return Number(v).toLocaleString(undefined, { maximumFractionDigits: 2 });
 }
 
@@ -26,7 +26,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       const slug = el.getAttribute('data-instrument');
       const row = data?.[slug];
 
-      // If no data or null value => hide chip (professional)
       if (!row || row.value === null || row.value === undefined) {
         el.classList.add('hidden');
         return;
@@ -35,10 +34,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       const priceEl = el.querySelector('[data-price]');
       if (priceEl) priceEl.textContent = fmt(slug, row.value) ?? '—';
 
-      // Tooltip with last update date
       el.title = row.date ? `Last update: ${row.date}` : '';
     });
   } catch (e) {
-    // silent fail
+    // silent
   }
 });

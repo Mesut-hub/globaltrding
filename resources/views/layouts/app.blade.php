@@ -8,15 +8,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>@yield('meta_title')</title>
-    <title>Globaltrding</title>
+    <title>@yield('meta_title', 'Globaltrding')</title>
+    <meta name="description" content="@yield('meta_description', 'Industrial equipment & raw materials supplier.')">
 
-    <meta name="description" content="@yield('meta_description')">
-
-    {{-- Basic SEO defaults (we will improve later with dynamic SEO fields) --}}
     <meta name="robots" content="index,follow">
 
-    {{-- Vite assets (CSS/JS) --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-white text-slate-900 antialiased">
@@ -109,9 +105,14 @@
                 ->get();
 
             $companyLinks = $footerPages->map(function ($p) use ($locale, $fallback) {
-                $label = is_array($p->title)
-                    ? (data_get($p->title, $locale) ?: data_get($p->title, $fallback) ?: $p->slug)
-                    : ((string) ($p->title ?: $p->slug));
+                // Adjust field name depending on your Page model:
+                // If your pages use "title" (typical) keep as-is.
+                // If they use "name", replace $p->title with $p->name.
+                $title = $p->title ?? $p->name ?? null;
+
+                $label = is_array($title)
+                    ? (data_get($title, $locale) ?: data_get($title, $fallback) ?: $p->slug)
+                    : ((string) ($title ?: $p->slug));
 
                 return [
                     'label' => $label,

@@ -13,3 +13,20 @@ document.addEventListener('DOMContentLoaded', () => {
     next.addEventListener('click', () => track.scrollBy({ left: step(), behavior: 'smooth' }));
   });
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+  // HERO: if autoplay fails, hide video and show poster fallback
+  document.querySelectorAll('[data-hero]').forEach((section) => {
+    const video = section.querySelector('video');
+    const poster = section.querySelector('[data-hero-poster]');
+    if (!video || !poster) return;
+
+    const p = video.play?.();
+    if (p && typeof p.then === 'function') {
+      p.catch(() => {
+        video.style.display = 'none';
+        poster.style.display = 'block';
+      });
+    }
+  });
+});
