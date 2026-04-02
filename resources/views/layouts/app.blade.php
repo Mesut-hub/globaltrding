@@ -8,10 +8,85 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>@yield('meta_title', 'Globaltrding')</title>
-    <meta name="description" content="@yield('meta_description', 'Industrial equipment & raw materials supplier.')">
+    @php
+        // Base URL for canonical/OG. In production, set APP_URL=https://globaltrding.com
+        $appUrl = rtrim(config('app.url', 'https://globaltrding.com'), '/');
+        $currentUrl = $appUrl . request()->getRequestUri();
 
+        $metaTitle = trim((string) View::yieldContent('meta_title', 'Globaltrding'));
+        $metaDescription = trim((string) View::yieldContent('meta_description', 'Industrial equipment & raw materials supplier.'));
+
+        // Optional overrides (set in child views if desired)
+        $ogTitle = trim((string) View::yieldContent('og_title', $metaTitle));
+        $ogDescription = trim((string) View::yieldContent('og_description', $metaDescription));
+        $ogImage = trim((string) View::yieldContent('og_image', '')); // absolute URL recommended
+        $ogType = trim((string) View::yieldContent('og_type', 'website'));
+
+        $twitterCard = trim((string) View::yieldContent('twitter_card', $ogImage !== '' ? 'summary_large_image' : 'summary'));
+    @endphp
+
+    <title>{{ $metaTitle }}</title>
+    <meta name="description" content="{{ $metaDescription }}">
     <meta name="robots" content="index,follow">
+
+    {{-- Canonical --}}
+    <link rel="canonical" href="{{ $currentUrl }}">
+
+        {{-- hreflang alternates (all locales) --}}
+    @php
+        $supportedLocales = config('locales.supported', ['en']);
+        $defaultLocale = config('locales.default', 'en');
+
+        // current path without query string, e.g. /en/products/rotok-valve
+        $path = '/' . ltrim(request()->path(), '/');
+
+        // Replace first path segment locale with "{loc}"
+        // If path is just "/en" then remainder becomes empty.
+        $parts = explode('/', trim($path, '/'));
+        $currentLocale = $parts[0] ?? $defaultLocale;
+        $rest = implode('/', array_slice($parts, 1));
+    @endphp
+
+    @foreach ($supportedLocales as $loc)
+        @php
+            $altPath = $rest !== '' ? "/{$loc}/{$rest}" : "/{$loc}";
+            $altUrl = $appUrl . $altPath;
+        @endphp
+        <link rel="alternate" hreflang="{{ $loc }}" href="{{ $altUrl }}">
+    @endforeach
+
+    <link rel="alternate" hreflang="x-default" href="{{ $appUrl }}/{{ $defaultLocale }}{{ $rest !== '' ? '/' . $rest : '' }}">
+
+    {{-- OpenGraph --}}
+    <meta property="og:site_name" content="Globaltrding">
+    <meta property="og:type" content="{{ $ogType }}">
+    <meta property="og:title" content="{{ $ogTitle }}">
+    <meta property="og:description" content="{{ $ogDescription }}">
+    <meta property="og:url" content="{{ $currentUrl }}">
+    @if ($ogImage !== '')
+        <meta property="og:image" content="{{ $ogImage }}">
+    @endif
+
+    {{-- Twitter --}}
+    <meta name="twitter:card" content="{{ $twitterCard }}">
+    <meta name="twitter:title" content="{{ $ogTitle }}">
+    <meta name="twitter:description" content="{{ $ogDescription }}">
+    @if ($ogImage !== '')
+        <meta name="twitter:image" content="{{ $ogImage }}">
+    @endif
+
+    {{-- JSON-LD: Organization (site-wide) --}}
+    <script type="application/ld+json">
+    {!! json_encode([
+        '@context' => 'https://schema.org',
+        '@type' => 'Organization',
+        'name' => 'Globaltrding',
+        'url' => rtrim(config('app.url', 'https://globaltrding.com'), '/'),
+        'logo' => rtrim(config('app.url', 'https://globaltrding.com'), '/') . '/favicon.ico',
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    </script>
+
+    @stack('structured_data')
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>

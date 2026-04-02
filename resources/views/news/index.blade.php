@@ -1,6 +1,35 @@
 @extends('layouts.app')
 
 @section('meta_title', 'News - Globaltrding')
+@section('meta_description', 'Latest updates and announcements from Globaltrding.')
+@section('og_type', 'website')
+@section('og_title', 'News - Globaltrding')
+@section('og_description', 'Latest updates and announcements from Globaltrding.')
+
+@php $locale = app()->getLocale(); @endphp
+
+@push('structured_data')
+    <script type="application/ld+json">
+    {!! json_encode([
+        '@context' => 'https://schema.org',
+        '@type' => 'BreadcrumbList',
+        'itemListElement' => [
+            [
+                '@type' => 'ListItem',
+                'position' => 1,
+                'name' => 'Home',
+                'item' => rtrim(config('app.url', 'https://globaltrding.com'), '/') . "/{$locale}",
+            ],
+            [
+                '@type' => 'ListItem',
+                'position' => 2,
+                'name' => 'News',
+                'item' => rtrim(config('app.url', 'https://globaltrding.com'), '/') . "/{$locale}/news",
+            ],
+        ],
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    </script>
+@endpush
 
 @section('content')
     <section class="mx-auto max-w-7xl px-4 py-12">
