@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Industry;
 use App\Models\NewsPost;
 use App\Models\Page;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Models\Industry;
 use Illuminate\Support\Facades\Storage;
 
 class SearchController extends Controller
@@ -21,118 +20,89 @@ class SearchController extends Controller
         }
 
         $fallback = config('locales.default', 'en');
-        $needle = mb_strtolower($q);
+
+        // Priority order + per-type limits
+        $plan = [
+            [
+                'type' => 'Product',
+                'model' => Product::class,
+                'limit' => 8,
+                'title_field' => 'name',
+                'url' => fn ($m) => "/{$locale}/products/{$m->slug}",
+                'image' => fn ($m) => null,
+            ],
+            [
+                'type' => 'Industry',
+                'model' => Industry::class,
+                'limit' => 6,
+                'title_field' => 'title',
+                'url' => fn ($m) => "/{$locale}/industries/{$m->slug}",
+                'image' => fn ($m) => $m->cover_image_path ? Storage::disk('public')->url($m->cover_image_path) : null,
+            ],
+            [
+                'type' => 'News',
+                'model' => NewsPost::class,
+                'limit' => 6,
+                'title_field' => 'title',
+                'url' => fn ($m) => "/{$locale}/news/{$m->slug}",
+                'image' => fn ($m) => null,
+            ],
+            [
+                'type' => 'Page',
+                'model' => Page::class,
+                'limit' => 6,
+                'title_field' => 'title',
+                'url' => fn ($m) => "/{$locale}/pages/{$m->slug}",
+                'image' => fn ($m) => null,
+            ],
+        ];
 
         $results = [];
+        $seen = []; // de-dup by URL
+        $maxTotal = 15;
 
-        // Pages (title JSON)
-        $pages = Page::query()
-            ->where('is_published', true)
-            ->where(function ($sub) use ($needle, $locale, $fallback) {
-                $sub->whereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(title, ?))) LIKE ?', ['$.'.$locale, "%{$needle}%"])
-                    ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(title, ?))) LIKE ?', ['$.'.$fallback, "%{$needle}%"]);
-            })
-            ->limit(6)
-            ->get();
+        foreach ($plan as $cfg) {
+            if (count($results) >= $maxTotal) break;
 
-        foreach ($pages as $p) {
-            $title = data_get($p->title, $locale) ?: data_get($p->title, $fallback) ?: $p->slug;
+            $modelClass = $cfg['model'];
+            $take = min($cfg['limit'], $maxTotal - count($results));
 
-            $results[] = [
-                'type' => 'Page',
-                'title' => $title,
-                'url' => "/{$locale}/pages/{$p->slug}",
-                'image' => null,
-            ];
-        }
+            try {
+                $items = $modelClass::search($q)->take($take)->get();
 
-        // News (title JSON)
-        $news = NewsPost::query()
-            ->where('is_published', true)
-            ->where(function ($sub) use ($needle, $locale, $fallback) {
-                $sub->whereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(title, ?))) LIKE ?', ['$.'.$locale, "%{$needle}%"])
-                    ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(title, ?))) LIKE ?', ['$.'.$fallback, "%{$needle}%"]);
-            })
-            ->orderByDesc('published_at')
-            ->limit(6)
-            ->get();
+                foreach ($items as $m) {
+                    if (count($results) >= $maxTotal) break;
 
-        foreach ($news as $n) {
-            $title = data_get($n->title, $locale) ?: data_get($n->title, $fallback) ?: $n->slug;
+                    $field = $cfg['title_field'];
+                    $raw = $m->{$field} ?? null;
 
-            $results[] = [
-                'type' => 'News',
-                'title' => $title,
-                'url' => "/{$locale}/news/{$n->slug}",
-                'image' => null,
-            ];
-        }
+                    $title = is_array($raw)
+                        ? (data_get($raw, $locale) ?: data_get($raw, $fallback) ?: $m->slug)
+                        : ((string) ($raw ?: $m->slug));
 
-        // Products (name JSON)
-        $products = Product::query()
-            ->where('is_published', true)
-            ->where(function ($sub) use ($needle, $locale, $fallback) {
-                $sub->whereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, ?))) LIKE ?', ['$.'.$locale, "%{$needle}%"])
-                    ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, ?))) LIKE ?', ['$.'.$fallback, "%{$needle}%"]);
-            })
-            ->limit(8)
-            ->get();
+                    $url = ($cfg['url'])($m);
 
-        foreach ($products as $p) {
-            $title = data_get($p->name, $locale) ?: data_get($p->name, $fallback) ?: $p->slug;
+                    if (isset($seen[$url])) {
+                        continue;
+                    }
+                    $seen[$url] = true;
 
-            $results[] = [
-                'type' => 'Product',
-                'title' => $title,
-                'url' => "/{$locale}/products/{$p->slug}",
-                'image' => null,
-            ];
+                    $results[] = [
+                        'type' => $cfg['type'],
+                        'title' => $title,
+                        'url' => $url,
+                        'image' => ($cfg['image'])($m),
+                    ];
+                }
+            } catch (\Throwable $e) {
+                // Missing index / Meilisearch down / etc. => skip this type
+                continue;
+            }
         }
 
         return response()->json([
             'q' => $q,
             'results' => $results,
         ]);
-
-        $industries = Industry::query()
-            ->where('is_published', true)
-            ->where(function ($sub) use ($needle, $locale, $fallback) {
-                $sub->whereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(title, ?))) LIKE ?', ['$.'.$locale, "%{$needle}%"])
-                    ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(title, ?))) LIKE ?', ['$.'.$fallback, "%{$needle}%"]);
-            })
-            ->limit(6)
-            ->get();
-
-        foreach ($industries as $i) {
-            $title = data_get($i->title, $locale) ?: data_get($i->title, $fallback) ?: $i->slug;
-
-            $results[] = [
-                'type' => 'Industry',
-                'title' => $title,
-                'url' => "/{$locale}/industries/{$i->slug}",
-                'image' => $i->cover_image_path ? Storage::disk('public')->url($i->cover_image_path) : null,
-            ];
-        }
-
-        // Industries
-        $industries = Industry::query()
-            ->where('is_published', true)
-            ->where(function ($sub) use ($needle, $locale, $fallback) {
-                $sub->whereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(title, ?))) LIKE ?', ['$.'.$locale, "%{$needle}%"])
-                    ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(title, ?))) LIKE ?', ['$.'.$fallback, "%{$needle}%"]);
-            })
-            ->limit(6)
-            ->get();
-
-        foreach ($industries as $i) {
-            $title = data_get($i->title, $locale) ?: data_get($i->title, $fallback) ?: $i->slug;
-
-            $results[] = [
-                'type' => 'Industry',
-                'title' => $title,
-                'url' => "/{$locale}/industries", // later: /industries/{slug}
-                'image' => $i->image_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($i->image_path) : null,
-            ];
-        }
     }
 }

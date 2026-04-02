@@ -372,6 +372,12 @@
   color: rgba(255,255,255,0.75);
 }
 
+.search-result.is-active {
+  outline: 2px solid rgba(15, 23, 42, 0.25); /* slate-ish */
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
 .floating-mail{
   position: absolute;
   right: 0;

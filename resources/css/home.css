@@ -15,3 +15,42 @@
   place-items: center;
 }
 .ind-btn:hover{ border-color: rgba(15,23,42,0.35); }
+
+/* Industries slider polish */
+[data-industry-slider] {
+  position: relative;
+}
+
+/* gradient fades (hidden when at edges) */
+[data-industry-slider]::before,
+[data-industry-slider]::after {
+  content: "";
+  position: absolute;
+  top: 64px;              /* starts below the section header row */
+  bottom: 0;
+  width: 64px;
+  pointer-events: none;
+  z-index: 5;
+  opacity: 1;
+  transition: opacity 160ms ease;
+}
+
+[data-industry-slider]::before {
+  left: 0;
+  background: linear-gradient(to right, rgba(255,255,255,1), rgba(255,255,255,0));
+}
+
+[data-industry-slider]::after {
+  right: 0;
+  background: linear-gradient(to left, rgba(255,255,255,1), rgba(255,255,255,0));
+}
+
+[data-industry-slider].at-start::before { opacity: 0; }
+[data-industry-slider].at-end::after { opacity: 0; }
+
+/* Disable nav buttons visually */
+.ind-btn.is-disabled,
+.ind-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
