@@ -157,28 +157,27 @@
             <div class="header-right">
                 <div class="header-icons" aria-label="Header actions">
                     <button id="searchOpen" type="button" aria-label="Search">⌕</button>
-                    <button id="langBtn" type="button" aria-label="Language" title="Language">🌐</button>
                     @php
                         $supported = config('locales.supported', ['en']);
                         $default = config('locales.default', 'en');
 
-                        // Example current path: /en/products/rotok-valve
                         $path = '/' . ltrim(request()->path(), '/');
                         $parts = explode('/', trim($path, '/'));
 
-                        // If first segment is a supported locale, drop it; else keep full path as rest
                         $first = $parts[0] ?? $default;
                         $restParts = in_array($first, $supported, true) ? array_slice($parts, 1) : $parts;
-                        $rest = implode('/', $restParts); // e.g. products/rotok-valve (or empty)
+                        $rest = implode('/', $restParts);
                     @endphp
+
+                    <button id="langBtn" type="button" aria-label="Language" title="Language">🌐</button>
 
                     <div class="lang-dropdown">
                         <div id="langMenu" class="lang-menu-vertical" aria-label="Language menu">
                             @foreach ($supported as $loc)
-                                @php
-                                    $href = $rest !== '' ? "/{$loc}/{$rest}" : "/{$loc}";
-                                @endphp
-                                <a href="{{ $href }}" class="{{ $locale === $loc ? 'active' : '' }}">
+                                <a
+                                    href="{{ $rest !== '' ? "/{$loc}/{$rest}" : "/{$loc}" }}"
+                                    class="{{ $locale === $loc ? 'active' : '' }}"
+                                >
                                     {{ strtoupper($loc) }}
                                 </a>
                             @endforeach
