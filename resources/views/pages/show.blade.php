@@ -25,6 +25,29 @@
 @section('og_title', $metaTitle)
 @section('og_description', $metaDescription)
 
+@push('structured_data')
+    <script type="application/ld+json">
+    {!! json_encode([
+        '@context' => 'https://schema.org',
+        '@type' => 'BreadcrumbList',
+        'itemListElement' => [
+            [
+                '@type' => 'ListItem',
+                'position' => 1,
+                'name' => 'Home',
+                'item' => rtrim(config('app.url', 'https://globaltrding.com'), '/') . "/{$locale}",
+            ],
+            [
+                '@type' => 'ListItem',
+                'position' => 2,
+                'name' => $title,
+                'item' => rtrim(config('app.url', 'https://globaltrding.com'), '/') . "/{$locale}/pages/{$page->slug}",
+            ],
+        ],
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    </script>
+@endpush
+
 @section('content')
     <section class="mx-auto max-w-7xl px-4 py-12">
         <a href="/{{ $locale }}/" class="text-sm text-slate-600 hover:underline">
