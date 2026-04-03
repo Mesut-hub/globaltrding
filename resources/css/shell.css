@@ -76,6 +76,7 @@
   min-height: var(--header-height);
   font-size: 28px;
   transition: all 0.35s ease;
+  overflow: visible;
 }
 .site-header .header-icons a,
 .site-header .header-icons button{
@@ -115,17 +116,18 @@
 /* Language menu (dropdown) */
 .lang-dropdown{
   position: relative;
+  display: inline-flex;     /* ensures the wrapper has size */
+  align-items: center;
+  overflow: visible;
 }
 
-.lang-dropdown { 
-  pointer-events: auto; 
-}
-
+/* menu aligned under the globe */
 .lang-menu-vertical{
   position: absolute;
-  top: 47px;
+  top: calc(100% + 27px);   /* always directly below the icon */
+  left: 50%;
+  transform: translateX(-50%); /* centered under the icon */
   font-size: 10px;
-  right: 20px;
   display: none;
   flex-direction: column;
   gap: 6px;
@@ -134,10 +136,11 @@
   background: rgba(87, 87, 87, 0.72);
   border: 1px solid rgba(255,255,255,0.14);
   min-width: 46px;
-  z-index: 2000;
+  z-index: 99999;
 }
 
-.lang-menu-vertical.open{
+/* open/close controlled by attribute on wrapper */
+.lang-dropdown[data-open="1"] .lang-menu-vertical{
   display: flex;
 }
 

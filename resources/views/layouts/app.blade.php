@@ -161,18 +161,20 @@
                         $supported = config('locales.supported', ['en']);
                         $default = config('locales.default', 'en');
 
+                        // Example current path: /en/products/rotok-valve
                         $path = '/' . ltrim(request()->path(), '/');
                         $parts = explode('/', trim($path, '/'));
 
+                        // If first segment is a supported locale, drop it; else keep full path as rest
                         $first = $parts[0] ?? $default;
                         $restParts = in_array($first, $supported, true) ? array_slice($parts, 1) : $parts;
-                        $rest = implode('/', $restParts);
+                        $rest = implode('/', $restParts); // e.g. products/rotok-valve (or empty)
                     @endphp
 
-                    <button id="langBtn" type="button" aria-label="Language" title="Language">🌐</button>
+                    <div class="lang-dropdown" data-lang-dropdown>
+                        <button type="button" class="lang-btn" data-lang-toggle aria-label="Language" title="Language">🌐</button>
 
-                    <div class="lang-dropdown">
-                        <div id="langMenu" class="lang-menu-vertical" aria-label="Language menu">
+                        <div class="lang-menu-vertical" data-lang-menu aria-label="Language menu">
                             @foreach ($supported as $loc)
                                 <a
                                     href="{{ $rest !== '' ? "/{$loc}/{$rest}" : "/{$loc}" }}"
@@ -196,45 +198,38 @@
     </header>
 
     <script>
-        (() => {
-            const header = document.getElementById('siteHeader');
+    (() => {
+        // Language dropdown: delegated + DOM-replacement safe
+        const closeAll = () => {
+            document.querySelectorAll('[data-lang-dropdown][data-open="1"]').forEach(dd => {
+                dd.removeAttribute('data-open');
+            });
+        };
 
-            const onScroll = () => {
-                if (window.scrollY > 80) header.classList.add('scrolled');
-                else header.classList.remove('scrolled');
-            };
-
-            window.addEventListener('scroll', onScroll, { passive: true });
-            onScroll();
-
-            const btn = document.getElementById('langBtn');
-            const menu = document.getElementById('langMenu');
-
-            if (btn && menu) {
-                btn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    // Debug: confirm click handler runs
-                    console.log('[lang] toggle');
-
-                    menu.classList.toggle('open');
-                });
-
-                menu.addEventListener('click', (e) => {
-                    // Clicking inside menu shouldn't close it
-                    e.stopPropagation();
-                });
-
-                document.addEventListener('click', () => {
-                    menu.classList.remove('open');
-                });
-
-                document.addEventListener('keydown', (e) => {
-                    if (e.key === 'Escape') menu.classList.remove('open');
-                });
+        document.addEventListener('click', (e) => {
+            const toggle = e.target.closest('[data-lang-toggle]');
+            if (!toggle) {
+                // click outside: close all
+                closeAll();
+                return;
             }
-        })();
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            const dropdown = toggle.closest('[data-lang-dropdown]');
+            if (!dropdown) return;
+
+            const isOpen = dropdown.getAttribute('data-open') === '1';
+
+            closeAll(); // only one open at a time
+            if (!isOpen) dropdown.setAttribute('data-open', '1');
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeAll();
+        });
+    })();
     </script>
 
     @php
