@@ -117,6 +117,10 @@
   position: relative;
 }
 
+.lang-dropdown { 
+  pointer-events: auto; 
+}
+
 .lang-menu-vertical{
   position: absolute;
   top: 47px;

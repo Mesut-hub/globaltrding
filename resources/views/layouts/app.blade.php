@@ -158,10 +158,27 @@
                 <div class="header-icons" aria-label="Header actions">
                     <button id="searchOpen" type="button" aria-label="Search">⌕</button>
                     <button id="langBtn" type="button" aria-label="Language" title="Language">🌐</button>
+                    @php
+                        $supported = config('locales.supported', ['en']);
+                        $default = config('locales.default', 'en');
+
+                        // Example current path: /en/products/rotok-valve
+                        $path = '/' . ltrim(request()->path(), '/');
+                        $parts = explode('/', trim($path, '/'));
+
+                        // If first segment is a supported locale, drop it; else keep full path as rest
+                        $first = $parts[0] ?? $default;
+                        $restParts = in_array($first, $supported, true) ? array_slice($parts, 1) : $parts;
+                        $rest = implode('/', $restParts); // e.g. products/rotok-valve (or empty)
+                    @endphp
+
                     <div class="lang-dropdown">
                         <div id="langMenu" class="lang-menu-vertical" aria-label="Language menu">
-                            @foreach (config('locales.supported') as $loc)
-                                <a href="/{{ $loc }}" class="{{ $locale === $loc ? 'active' : '' }}">
+                            @foreach ($supported as $loc)
+                                @php
+                                    $href = $rest !== '' ? "/{$loc}/{$rest}" : "/{$loc}";
+                                @endphp
+                                <a href="{{ $href }}" class="{{ $locale === $loc ? 'active' : '' }}">
                                     {{ strtoupper($loc) }}
                                 </a>
                             @endforeach
@@ -194,21 +211,30 @@
             const btn = document.getElementById('langBtn');
             const menu = document.getElementById('langMenu');
 
-            btn?.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                menu?.classList.toggle('open');
-            });
+            if (btn && menu) {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
 
-            document.addEventListener('click', (e) => {
-                if (!menu || !btn) return;
-                if (menu.contains(e.target) || btn.contains(e.target)) return;
-                menu.classList.remove('open');
-            });
+                    // Debug: confirm click handler runs
+                    console.log('[lang] toggle');
 
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') menu?.classList.remove('open');
-            });
+                    menu.classList.toggle('open');
+                });
+
+                menu.addEventListener('click', (e) => {
+                    // Clicking inside menu shouldn't close it
+                    e.stopPropagation();
+                });
+
+                document.addEventListener('click', () => {
+                    menu.classList.remove('open');
+                });
+
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') menu.classList.remove('open');
+                });
+            }
         })();
     </script>
 
