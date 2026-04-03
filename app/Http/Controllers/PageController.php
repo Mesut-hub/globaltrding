@@ -14,7 +14,7 @@ class PageController extends Controller
             ->where('is_published', true)
             ->firstOrFail();
 
-        return view('page', [
+        return view('pages.show', [
             'page' => $page,
         ]);
     }

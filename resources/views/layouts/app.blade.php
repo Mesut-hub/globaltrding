@@ -19,7 +19,7 @@
         // Optional overrides (set in child views if desired)
         $ogTitle = trim((string) View::yieldContent('og_title', $metaTitle));
         $ogDescription = trim((string) View::yieldContent('og_description', $metaDescription));
-        $ogImage = trim((string) View::yieldContent('og_image', $appUrl . '/images/logo.png'));
+        $ogImage = trim((string) View::yieldContent('og_image', $appUrl . '/images/og-default.png'));
         $ogType = trim((string) View::yieldContent('og_type', 'website'));
 
         $twitterCard = trim((string) View::yieldContent('twitter_card', $ogImage !== '' ? 'summary_large_image' : 'summary'));
@@ -70,9 +70,6 @@
     <meta property="og:title" content="{{ $ogTitle }}">
     <meta property="og:description" content="{{ $ogDescription }}">
     <meta property="og:url" content="{{ $currentUrl }}">
-    @if ($ogImage !== '')
-        <meta property="og:image" content="{{ $ogImage }}">
-    @endif
 
     @if ($ogImage !== '')
         <meta property="og:image" content="{{ $ogImage }}">
@@ -197,7 +194,9 @@
             const btn = document.getElementById('langBtn');
             const menu = document.getElementById('langMenu');
 
-            btn?.addEventListener('click', () => {
+            btn?.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 menu?.classList.toggle('open');
             });
 
@@ -205,6 +204,10 @@
                 if (!menu || !btn) return;
                 if (menu.contains(e.target) || btn.contains(e.target)) return;
                 menu.classList.remove('open');
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') menu?.classList.remove('open');
             });
         })();
     </script>

@@ -24,9 +24,7 @@
 @section('og_description', $metaDescription)
 @section('og_image', rtrim(config('app.url', 'https://globaltrding.com'), '/') . '/images/logo.png')
 
-@if ($post->published_at)
-    @section('article_published_time', $post->published_at->toAtomString())
-@endif
+@section('article_published_time', optional($post->published_at ?: $post->created_at)->toAtomString())
 @section('article_modified_time', optional($post->updated_at)->toAtomString())
 
 @push('structured_data')
