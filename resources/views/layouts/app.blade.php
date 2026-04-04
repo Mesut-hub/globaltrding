@@ -236,7 +236,7 @@
         $hasHero = $hasHero ?? false;
     @endphp
 
-    <main class="{{ $hasHero ? '' : 'pt-28' }}">
+    <main class="{{ $hasHero ? '' : 'main-offset' }}">
         @yield('content')
     </main>
 

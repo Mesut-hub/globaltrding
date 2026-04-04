@@ -2,6 +2,12 @@
 
 :root{
   --header-height: 90px;
+  --header-top-offset: 42px;
+  --page-top-padding: calc(var(--header-height) + var(--header-top-offset) + 24px);
+}
+
+.main-offset{
+  padding-top: var(--page-top-padding);
 }
 
 /* Header container */
