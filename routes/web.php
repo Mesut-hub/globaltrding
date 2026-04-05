@@ -16,7 +16,10 @@ use App\Models\NewsPost;
 use App\Models\Page;
 
 Route::get('/sitemap.xml', function () {
-    $base = rtrim(config('app.url', 'https://globaltrding.com'), '/');
+    $base = rtrim(config('app.url'), '/');
+    if ($base === '' || str_contains($base, '127.0.0.1') || str_contains($base, 'localhost')) {
+        $base = rtrim(request()->getSchemeAndHttpHost(), '/');
+    }
     $locales = config('locales.supported', ['en']);
 
     // Static routes (no lastmod)

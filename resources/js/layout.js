@@ -11,17 +11,34 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Language menu
-  const btn = document.getElementById('langBtn');
-  const menu = document.getElementById('langMenu');
-
-  btn?.addEventListener('click', () => {
-    menu?.classList.toggle('open');
-  });
+  // Language dropdown (delegated, Livewire/DOM-safe)
+  const closeAllLang = () => {
+    document.querySelectorAll('[data-lang-dropdown][data-open="1"]').forEach(dd => {
+      dd.removeAttribute('data-open');
+    });
+  };
 
   document.addEventListener('click', (e) => {
-    if (!menu || !btn) return;
-    if (menu.contains(e.target) || btn.contains(e.target)) return;
-    menu.classList.remove('open');
+    const toggle = e.target.closest('[data-lang-toggle]');
+    if (!toggle) {
+      // outside click closes
+      closeAllLang();
+      return;
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const dropdown = toggle.closest('[data-lang-dropdown]');
+    if (!dropdown) return;
+
+    const isOpen = dropdown.getAttribute('data-open') === '1';
+    closeAllLang();
+    if (!isOpen) dropdown.setAttribute('data-open', '1');
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeAllLang();
   });
 
   // Search overlay

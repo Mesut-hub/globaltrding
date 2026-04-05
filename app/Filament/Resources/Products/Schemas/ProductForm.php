@@ -30,7 +30,7 @@ class ProductForm
                         ->orderBy('id')
                         ->get()
                         ->mapWithKeys(fn (Brand $b) => [
-                            $b->id => (data_get($b->name, 'en') ?: "Brand #{$b->id}"),
+                            $b->id => (data_get($b->name, $default) ?: "Brand #{$b->id}"),
                         ])
                         ->all()
                     )
@@ -45,6 +45,8 @@ class ProductForm
 
             TextInput::make('slug')
                 ->required()
+                ->maxLength(255)
+                ->regex('/^[a-z0-9]+(?:-[a-z0-9]+)*$/')
                 ->unique(ignoreRecord: true)
                 ->helperText('Example: butterfly-valve-3-inch')
                 ->afterStateUpdated(function (?string $state, callable $set) {

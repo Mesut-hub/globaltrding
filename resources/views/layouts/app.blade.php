@@ -10,7 +10,13 @@
 
     @php
         // Base URL for canonical/OG. In production, set APP_URL=https://globaltrding.com
-        $appUrl = rtrim(config('app.url', 'https://globaltrding.com'), '/');
+        $appUrl = rtrim((string) config('app.url'), '/');
+
+        // Safety net: if APP_URL is missing or still localhost in production, fallback to request host.
+        if ($appUrl === '' || str_contains($appUrl, '127.0.0.1') || str_contains($appUrl, 'localhost')) {
+            $appUrl = rtrim(request()->getSchemeAndHttpHost(), '/');
+        }
+
         $currentUrl = $appUrl . request()->getRequestUri();
 
         $metaTitle = trim((string) View::yieldContent('meta_title', 'Globaltrding'));
@@ -34,7 +40,11 @@
 
     <title>{{ $metaTitle }}</title>
     <meta name="description" content="{{ $metaDescription }}">
-    <meta name="robots" content="index,follow">
+    @php
+        $isProd = app()->environment('production');
+    @endphp
+
+    <meta name="robots" content="{{ $isProd ? 'index,follow' : 'noindex,nofollow' }}">
 
     {{-- Canonical --}}
     <link rel="canonical" href="{{ $currentUrl }}">
@@ -196,42 +206,7 @@
             </div>
         </div>
     </header>
-
-    <script>
-    (() => {
-        // Language dropdown: delegated + DOM-replacement safe
-        const closeAll = () => {
-            document.querySelectorAll('[data-lang-dropdown][data-open="1"]').forEach(dd => {
-                dd.removeAttribute('data-open');
-            });
-        };
-
-        document.addEventListener('click', (e) => {
-            const toggle = e.target.closest('[data-lang-toggle]');
-            if (!toggle) {
-                // click outside: close all
-                closeAll();
-                return;
-            }
-
-            e.preventDefault();
-            e.stopPropagation();
-
-            const dropdown = toggle.closest('[data-lang-dropdown]');
-            if (!dropdown) return;
-
-            const isOpen = dropdown.getAttribute('data-open') === '1';
-
-            closeAll(); // only one open at a time
-            if (!isOpen) dropdown.setAttribute('data-open', '1');
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeAll();
-        });
-    })();
-    </script>
-
+    
     @php
         $hasHero = $hasHero ?? false;
     @endphp

@@ -18,6 +18,8 @@ class IndustryForm
         return $schema->components([
             TextInput::make('slug')
                 ->required()
+                ->maxLength(255)
+                ->regex('/^[a-z0-9]+(?:-[a-z0-9]+)*$/')
                 ->unique(ignoreRecord: true),
 
             KeyValue::make('title')
@@ -25,7 +27,16 @@ class IndustryForm
                 ->keyLabel('Locale')
                 ->valueLabel('Title')
                 ->helperText('Use keys: en, tr, ar, fr')
-                ->required(),
+                ->required()
+                ->rule(function () {
+                    $default = config('locales.default', 'en');
+
+                    return function (string $attribute, $value, \Closure $fail) use ($default) {
+                        if (!is_array($value) || empty(trim((string) ($value[$default] ?? '')))) {
+                            $fail("Title must include a non-empty '{$default}' value.");
+                        }
+                    };
+                }),
 
             KeyValue::make('excerpt')
                 ->label('Excerpt (multilingual)')

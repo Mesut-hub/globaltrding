@@ -13,6 +13,7 @@ class Page extends Model
         'slug',
         'title',
         'content',
+        'blocks',
         'seo',
         'is_published',
         'show_in_footer',
@@ -21,6 +22,7 @@ class Page extends Model
     protected $casts = [
         'title' => 'array',
         'content' => 'array',
+        'blocks' => 'array',
         'seo' => 'array',
         'is_published' => 'boolean',
         'show_in_footer' => 'boolean',

@@ -25,13 +25,12 @@ class NewsPostForm
                     ->schema([
                         TextInput::make('slug')
                             ->required()
+                            ->maxLength(255)
+                            ->regex('/^[a-z0-9]+(?:-[a-z0-9]+)*$/')
                             ->unique(ignoreRecord: true)
                             ->helperText('Example: new-partnership-rotork')
                             ->afterStateUpdated(function (?string $state, callable $set) {
-                                if (! is_string($state)) {
-                                    return;
-                                }
-
+                                if (! is_string($state)) return;
                                 $set('slug', Str::slug($state));
                             }),
 
@@ -45,7 +44,12 @@ class NewsPostForm
                         Toggle::make('is_published')
                             ->label('Published')
                             ->default(true)
-                            ->required(),
+                            ->required()
+                            ->afterStateUpdated(function ($state, callable $get, callable $set) {
+                                if ($state && blank($get('published_at'))) {
+                                    $set('published_at', now());
+                                }
+                            }),
 
                         Toggle::make('is_featured')
                             ->label('Featured on Home')
