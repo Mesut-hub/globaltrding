@@ -114,5 +114,7 @@ Route::prefix('{locale}')
         Route::get('/industries', [IndustryController::class, 'index'])->name('industries.index');
         Route::get('/industries/{industry:slug}', [IndustryController::class, 'show'])->name('industries.show');
 
-        Route::get('/search', [SearchController::class, 'index'])->name('search.index');
+        Route::get('/search', [SearchController::class, 'index'])
+            ->middleware('search.throttle')
+            ->name('search.index');
     });

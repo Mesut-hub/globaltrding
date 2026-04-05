@@ -281,6 +281,7 @@
   display: flex;
   align-items: flex-start;
   padding-top: 90px;
+  overflow: hidden;
 }
 
 .search-overlay__panel{
@@ -288,6 +289,9 @@
   margin: 0 auto;
   color: #fff;
   max-width: 520px;
+  max-height: calc(100vh - 140px);
+  overflow: auto;
+  padding-right: 6px;
 }
 
 .search-overlay__h{
@@ -342,6 +346,8 @@
   display: grid;
   gap: 12px;
   max-width: 780px;
+  max-height: calc(100vh - 200px);
+  overflow: auto;
 }
 
 .search-result{
