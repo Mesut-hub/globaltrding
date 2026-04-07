@@ -179,13 +179,13 @@
 
         {{-- Row 1 --}}
         <div class="gt-insights__row gt-insights__row--top">
-            <div class="gt-insights__tile gt-insights__tile--image">
+            <div class="gt-insights__tile gt-insights__tile--image1">
                 @if ($topImgUrl)
                     <img src="{{ $topImgUrl }}" alt="" class="gt-insights__img">
                 @endif
             </div>
 
-            <div class="gt-insights__tile gt-insights__tile--panel {{ $panelClass }}">
+            <div class="gt-insights__tile gt-insights__tile--panel1 {{ $panelClass }}">
                 @if ($kicker)
                     <div class="gt-insights__kicker">{{ $kicker }}</div>
                 @endif
@@ -214,7 +214,7 @@
                 @endphp
 
                 @if ($t === 'panel')
-                    <div class="gt-insights__tile gt-insights__tile--panel {{ $panelClass }}">
+                    <div class="gt-insights__tile gt-insights__tile--panel2 {{ $panelClass }}">
                         <div class="gt-insights__title">{{ $tt }}</div>
                         @if ($tx)
                             <div class="gt-insights__text">{{ $tx }}</div>
@@ -224,7 +224,7 @@
                         @endif
                     </div>
                 @else
-                    <div class="gt-insights__tile gt-insights__tile--image">
+                    <div class="gt-insights__tile gt-insights__tile--image2">
                         @if ($imgUrl)
                             <img src="{{ $imgUrl }}" alt="" class="gt-insights__img">
                         @endif
@@ -241,123 +241,6 @@
                 @endif
             @endforeach
         </div>
-    </section>
-
-@elseif ($type === 'splitV2')
-    @php
-        $bg = $data['bg'] ?? 'white';
-        $side = $data['media_side'] ?? 'left';
-
-        $videoPath = $data['video'] ?? null;
-        $videoUrl = $videoPath ? \Illuminate\Support\Facades\Storage::disk('public')->url($videoPath) : null;
-
-        $imgs = $data['images'] ?? [];
-        $imgUrls = collect(is_array($imgs) ? $imgs : [])
-            ->map(fn ($p) => $p ? \Illuminate\Support\Facades\Storage::disk('public')->url($p) : null)
-            ->filter()
-            ->values()
-            ->all();
-
-        $primary = $imgUrls[0] ?? null;
-        $thumbs = array_slice($imgUrls, 1);
-
-        $kicker = $data['kicker'] ?? '';
-        $title = $data['title'] ?? '';
-        $lead = $data['lead'] ?? '';
-
-        $ctaLabel = $data['cta_label'] ?? null;
-        $ctaUrl = $data['cta_url'] ?? null;
-
-        $titleSize = $data['title_size'] ?? 'lg';
-        $textSize = $data['text_size'] ?? 'md';
-
-        $wrapClass = match($bg) {
-            'dark' => 'bg-slate-900 text-white',
-            'slate' => 'bg-slate-50 text-slate-900',
-            default => 'bg-white text-slate-900',
-        };
-
-        $cardClass = $bg === 'dark'
-            ? 'border-white/10 bg-white/5'
-            : 'border-slate-200 bg-white';
-
-        $titleClass = $titleSize === 'md' ? 'text-xl md:text-2xl' : 'text-2xl md:text-3xl';
-        $textClass = $textSize === 'sm' ? 'text-sm' : 'text-base';
-
-        $thumbCols = count($thumbs) >= 6 ? 6 : max(3, min(5, count($thumbs)));
-    @endphp
-
-    <section class="rounded-2xl border {{ $bg === 'dark' ? 'border-white/10' : 'border-slate-200' }} {{ $wrapClass }} p-6 md:p-10">
-        <div class="grid md:grid-cols-2 gap-8 items-center">
-            {{-- media --}}
-            <div class="{{ $side === 'right' ? 'md:order-2' : '' }}">
-                <div class="rounded-2xl overflow-hidden border {{ $bg === 'dark' ? 'border-white/10 bg-black' : 'border-slate-200 bg-slate-50' }}">
-                    @if ($videoUrl)
-                        <video controls class="w-full h-auto">
-                            <source src="{{ $videoUrl }}" />
-                        </video>
-                    @elseif ($primary)
-                        <img src="{{ $primary }}" alt="" class="w-full h-auto object-cover" />
-                    @else
-                        <div class="aspect-[16/10] w-full bg-slate-200"></div>
-                    @endif
-                </div>
-            </div>
-            
-
-            {{-- text --}}
-            <div class="{{ $side === 'right' ? 'md:order-1' : '' }}">
-                @if ($kicker)
-                    <div class="text-xs uppercase tracking-widest opacity-80">{{ $kicker }}</div>
-                @endif
-                <h3 class="mt-2 font-semibold tracking-tight {{ $titleClass }}">{{ $title }}</h3>
-                @if ($lead)
-                    <p class="mt-3 opacity-90 {{ $textClass }}">{{ $lead }}</p>
-                @endif
-
-                @if ($ctaLabel && $ctaUrl)
-                    <div class="mt-5">
-                        <a href="{{ $ctaUrl }}" class="inline-flex rounded-md bg-slate-900 px-4 py-2 text-white hover:bg-slate-800">
-                            {{ $ctaLabel }}
-                        </a>
-                    </div>
-                @endif
-            </div>
-        </div>
-        @if (count($thumbs))
-                    <div class="mt-6 grid gap-4 sm:grid-cols-4">
-                        @foreach ($thumbs as $t)
-                            @php
-                                $img = $t['images'] ?? null;
-                                $imgUrl = $img ? \Illuminate\Support\Facades\Storage::disk('public')->url($img) : null;
-                                $tt = $t['title'] ?? '';
-                                $tx = $t['text'] ?? '';
-                                $ctaLabel = $t['cta_label'] ?? null;
-                                $ctaUrl = $t['cta_url'] ?? null;
-                            @endphp
-
-                            <div class="rounded-xl border {{ $bg === 'dark' ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white' }} p-3">
-                                @if ($imgUrl)
-                                    <img src="{{ $thumbs }}" alt="" class="h-28 w-full object-cover rounded-lg border {{ $bg === 'dark' ? 'border-white/10' : 'border-slate-200' }}">
-                                @endif
-
-                                <div class="mt-2 font-semibold">{{ $tt }}</div>
-
-                                @if ($tx)
-                                    <div class="mt-1 text-sm opacity-80">{{ $tx }}</div>
-                                @endif
-
-                                @if ($ctaLabel && $ctaUrl)
-                                    <div class="mt-2">
-                                        <a href="{{ $ctaUrl }}" class="inline-flex rounded-md bg-slate-900 px-3 py-2 text-white text-sm hover:bg-slate-800">
-                                            {{ $ctaLabel }}
-                                        </a>
-                                    </div>
-                                @endif
-                            </div>
-                        @endforeach
-                    </div>
-                @endif
     </section>
 
 @elseif ($type === 'cardsCarousel')
@@ -386,7 +269,7 @@
         $id = 'cc_' . substr(md5(json_encode($data)), 0, 8);
     @endphp
 
-    <section class="rounded-2xl border {{ $wrapClass }} p-6 md:p-10"
+    <section class="mt-6 rounded-2xl border {{ $wrapClass }} p-6 md:p-10"
              data-carousel
              data-carousel-autoplay="{{ $autoplay ? '1' : '0' }}"
              data-carousel-interval="{{ max(1500, $autoplayMs) }}"

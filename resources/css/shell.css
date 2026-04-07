@@ -634,6 +634,9 @@ body.has-hero-header .gt-hero{
 .gt-hero__nav--next{ right: 14px; }
 
 /* ===== Cards carousel ===== */
+.gt-car__text {
+  align-items: center;
+}
 .gt-car__track{
   display:flex;
   gap:16px;
@@ -722,7 +725,11 @@ body.has-hero-header .gt-hero{
   border: 0;
   overflow:hidden;
 }
-.gt-insights__tile--image{
+.gt-insights__tile--image1{
+  background:#000;
+  border-top-left-radius: 10px;
+}
+.gt-insights__tile--image2{
   background:#000;
 }
 .gt-insights__img{
@@ -731,8 +738,15 @@ body.has-hero-header .gt-hero{
   object-fit:cover;
   display:block;
 }
-
-.gt-insights__tile--panel{
+.gt-insights__tile--panel1{
+  padding: 20px 22px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap: 10px;
+  border-top-right-radius: 10px;
+}
+.gt-insights__tile--panel2{
   padding: 20px 22px;
   display:flex;
   flex-direction:column;

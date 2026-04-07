@@ -193,7 +193,7 @@ class PageForm
                             ]),
 
                         Block::make('insightsGrid')
-                            ->label('Insights Grid (BASF-style)')
+                            ->label('Insights Grid')
                             ->schema([
                                 TextInput::make('heading')
                                     ->label('Heading')
@@ -257,77 +257,6 @@ class PageForm
                                         TextInput::make('cta_url'),
                                     ])
                                     ->columns(2),
-                            ]),
-
-                        Block::make('splitV2')
-                            ->label('Split (media + text)')
-                            ->schema([
-                                Select::make('bg')
-                                    ->label('Background')
-                                    ->options([
-                                        'white' => 'White',
-                                        'slate' => 'Light gray',
-                                        'dark' => 'Dark',
-                                    ])
-                                    ->default('white')
-                                    ->required(),
-
-                                Select::make('media_side')
-                                    ->label('Media side')
-                                    ->options(['left' => 'Left', 'right' => 'Right'])
-                                    ->default('left')
-                                    ->required(),
-
-                                FileUpload::make('video')
-                                    ->label('Video (optional, max 1)')
-                                    ->disk('public')
-                                    ->directory('pages/split')
-                                    ->acceptedFileTypes(['video/mp4', 'video/webm'])
-                                    ->maxSize((auth()->user()?->maxUploadMb() ?? 150) * 1024),
-
-                                FileUpload::make('images')
-                                    ->label('Images (multiple)')
-                                    ->disk('public')
-                                    ->directory('pages/split')
-                                    ->image()
-                                    ->multiple()
-                                    ->reorderable()
-                                    ->maxFiles(12),
-
-                                Repeater::make('thumbs')
-                                    ->label('Thumbnails (image + title + text + button)')
-                                    ->schema([
-                                        FileUpload::make('images')
-                                            ->disk('public')
-                                            ->directory('pages/split/thumbs')
-                                            ->image()
-                                            ->required(),
-                                        TextInput::make('title')->required(),
-                                        Textarea::make('text')->rows(2),
-                                        TextInput::make('cta_label')->default('Learn more'),
-                                        TextInput::make('cta_url'),
-                                    ])
-                                    ->minItems(0)
-                                    ->columns(2),
-
-                                TextInput::make('kicker')->label('Kicker'),
-                                TextInput::make('title')->label('Title')->required(),
-                                Textarea::make('lead')->label('Lead')->rows(3),
-
-                                Select::make('title_size')
-                                    ->label('Title size')
-                                    ->options(['md' => 'Medium', 'lg' => 'Large'])
-                                    ->default('lg')
-                                    ->required(),
-
-                                Select::make('text_size')
-                                    ->label('Text size')
-                                    ->options(['sm' => 'Small', 'md' => 'Medium'])
-                                    ->default('md')
-                                    ->required(),
-
-                                TextInput::make('cta_label')->label('CTA label'),
-                                TextInput::make('cta_url')->label('CTA URL'),
                             ]),
 
                         Block::make('cardsCarousel')
