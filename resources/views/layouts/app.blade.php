@@ -146,7 +146,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen bg-white text-slate-900 antialiased">
+<body class="@stack('body_class') class="min-h-screen bg-white text-slate-900 antialiased">
     {{-- Top bar / header placeholder --}}
     @php $locale = app()->getLocale(); @endphp
     <header id="siteHeader" class="site-header">
@@ -407,6 +407,18 @@
                     Use our Product Finder to browse and discover the right product for your needs.
                 </div>
                 <a href="/{{ app()->getLocale() }}/products" class="search-overlay__btn">Find products</a>
+            </div>
+        </div>
+    </div>
+    <div id="cookieBanner" class="cookie-banner hidden" aria-live="polite">
+        <div class="cookie-banner__inner">
+            <div class="cookie-banner__text">
+                We use cookies to improve your experience and to measure site usage (Google Analytics).
+                Read our <a href="/{{ app()->getLocale() }}/pages/cookie-policy">Cookie Policy</a>.
+            </div>
+            <div class="cookie-banner__actions">
+                <button type="button" id="cookieReject" class="cookie-btn cookie-btn--secondary">Reject</button>
+                <button type="button" id="cookieAccept" class="cookie-btn cookie-btn--primary">Accept</button>
             </div>
         </div>
     </div>

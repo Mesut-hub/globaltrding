@@ -16,7 +16,16 @@
         ?: '';
 
     $content = data_get($page->content, $locale) ?: data_get($page->content, $fallback) ?: null;
+    $blocks = $page->blocks ?? [];
+
+    // detect if first block is hero
+    $firstBlockType = is_array($blocks) && count($blocks) ? ($blocks[0]['type'] ?? null) : null;
+    $hasHeroHeader = $firstBlockType === 'hero';
 @endphp
+
+@push('body_class')
+    has-hero-header
+@endpush
 
 @section('meta_title', $metaTitle)
 @section('meta_description', $metaDescription)
@@ -35,13 +44,13 @@
                 '@type' => 'ListItem',
                 'position' => 1,
                 'name' => 'Home',
-                'item' => rtrim(config('app.url', 'https://globaltrding.com'), '/') . "/{$locale}",
+                'item' => rtrim((string) config('app.url'), '/') . "/{$locale}",
             ],
             [
                 '@type' => 'ListItem',
                 'position' => 2,
                 'name' => $title,
-                'item' => rtrim(config('app.url', 'https://globaltrding.com'), '/') . "/{$locale}/pages/{$page->slug}",
+                'item' => rtrim((string) config('app.url'), '/') . "/{$locale}/pages/{$page->slug}",
             ],
         ],
     ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
@@ -49,28 +58,61 @@
 @endpush
 
 @section('content')
-    <section class="mx-auto max-w-7xl px-4 py-12">
-        <a href="/{{ $locale }}/" class="text-sm text-slate-600 hover:underline">
-            ← Back to Home
-        </a>
+    {{-- If first block is hero, render it full-width as header --}}
+    @if ($hasHeroHeader)
+        @php $hero = $blocks[0]; @endphp
+        @include('shared.blocks.render', ['block' => $hero])
 
-        <h1 class="mt-4 text-4xl font-semibold tracking-tight">{{ $title }}</h1>
-
-        {{-- Content renderer (MVP) --}}
-        <div class="mt-8 space-y-8">
-            @if (is_array($content))
-                @foreach ($content as $block)
+        {{-- Render remaining blocks as normal page sections --}}
+        <section class="mx-auto max-w-7xl px-4 py-12">
+            <div class="space-y-8">
+                @foreach (array_slice($blocks, 1) as $block)
                     @include('shared.blocks.render', ['block' => $block])
                 @endforeach
-            @elseif (is_string($content) && trim($content) !== '')
-                <div class="prose prose-slate max-w-none">
-                    {!! nl2br(e($content)) !!}
-                </div>
-            @else
-                <div class="text-slate-600">
-                    This page has no content yet.
-                </div>
-            @endif
-        </div>
-    </section>
+
+                {{-- fallback to legacy content if blocks are empty after hero --}}
+                @if (count($blocks) <= 1)
+                    @if (is_array($content))
+                        @foreach ($content as $block)
+                            @include('shared.blocks.render', ['block' => $block])
+                        @endforeach
+                    @elseif (is_string($content) && trim($content) !== '')
+                        <div class="prose prose-slate max-w-none">
+                            {!! nl2br(e($content)) !!}
+                        </div>
+                    @endif
+                @endif
+            </div>
+        </section>
+
+    @else
+        {{-- Normal page (no hero header) --}}
+        <section class="mx-auto max-w-7xl px-4 py-12">
+            <a href="/{{ $locale }}/" class="text-sm text-slate-600 hover:underline">
+                ← Back to Home
+            </a>
+
+            <h1 class="mt-4 text-4xl font-semibold tracking-tight">{{ $title }}</h1>
+
+            <div class="mt-8 space-y-8">
+                @if (is_array($blocks) && count($blocks))
+                    @foreach ($blocks as $block)
+                        @include('shared.blocks.render', ['block' => $block])
+                    @endforeach
+                @elseif (is_array($content))
+                    @foreach ($content as $block)
+                        @include('shared.blocks.render', ['block' => $block])
+                    @endforeach
+                @elseif (is_string($content) && trim($content) !== '')
+                    <div class="prose prose-slate max-w-none">
+                        {!! nl2br(e($content)) !!}
+                    </div>
+                @else
+                    <div class="text-slate-600">
+                        This page has no content yet.
+                    </div>
+                @endif
+            </div>
+        </section>
+    @endif
 @endsection

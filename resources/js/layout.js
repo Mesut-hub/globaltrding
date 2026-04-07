@@ -1,5 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Header scroll state
+    
+    // fixed header: expose height as CSS variable
+  const headerEl = document.getElementById('siteHeader');
+  const setHeaderVar = () => {
+    if (!headerEl) return;
+    document.documentElement.style.setProperty('--header-h', `${headerEl.offsetHeight}px`);
+  };
+  setHeaderVar();
+  window.addEventListener('resize', setHeaderVar, { passive: true });
+    // Header scroll state
   const header = document.getElementById('siteHeader');
   if (header) {
     const onScroll = () => {
@@ -8,6 +17,84 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
+  }
+
+    // Generic horizontal carousel (cards)
+  document.querySelectorAll('[data-carousel]').forEach((root) => {
+    const track = root.querySelector('[data-carousel-track]');
+    const prev = root.querySelector('[data-carousel-prev]');
+    const next = root.querySelector('[data-carousel-next]');
+    if (!track) return;
+
+    const autoplay = root.getAttribute('data-carousel-autoplay') === '1';
+    const interval = Math.max(1500, Number(root.getAttribute('data-carousel-interval') || '4500'));
+    const pauseHover = root.getAttribute('data-carousel-pause-hover') === '1';
+
+    let paused = false;
+    let timer = null;
+
+    const step = () => Math.min(track.clientWidth * 0.9, 700);
+
+    prev?.addEventListener('click', () => track.scrollBy({ left: -step(), behavior: 'smooth' }));
+    next?.addEventListener('click', () => track.scrollBy({ left: step(), behavior: 'smooth' }));
+
+    if (pauseHover) {
+      root.addEventListener('mouseenter', () => { paused = true; });
+      root.addEventListener('mouseleave', () => { paused = false; });
+    }
+
+    if (autoplay) {
+      timer = setInterval(() => {
+        if (paused) return;
+        // loop effect: if near end, go back to start
+        const eps = 4;
+        const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - eps;
+        if (atEnd) track.scrollTo({ left: 0, behavior: 'smooth' });
+        else track.scrollBy({ left: step(), behavior: 'smooth' });
+      }, interval);
+    }
+  });
+
+    // Count-up animation
+  const countEls = Array.from(document.querySelectorAll('[data-countup]'));
+  if (countEls.length) {
+    const seen = new WeakSet();
+
+    const format = (n) => {
+      // integer formatting
+      return Math.round(n).toLocaleString();
+    };
+
+    const animate = (el) => {
+      if (seen.has(el)) return;
+      seen.add(el);
+
+      const target = Number(el.getAttribute('data-countup') || '0');
+      const suffix = el.getAttribute('data-countup-suffix') || '';
+      const start = 0;
+      const dur = 900;
+
+      const t0 = performance.now();
+
+      const tick = (t) => {
+        const p = Math.min(1, (t - t0) / dur);
+        // ease-out
+        const eased = 1 - Math.pow(1 - p, 3);
+        const val = start + (target - start) * eased;
+        el.textContent = `${format(val)}${suffix}`;
+        if (p < 1) requestAnimationFrame(tick);
+      };
+
+      requestAnimationFrame(tick);
+    };
+
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) animate(e.target);
+      });
+    }, { threshold: 0.25 });
+
+    countEls.forEach((el) => io.observe(el));
   }
 
   // Language menu
@@ -210,5 +297,156 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = links[activeIndex].href;
       }
     }
+  });
+  // Cookie consent + GA4 (consent gated)
+  const GA_ID = 'G-HLE66GHDML';
+  const KEY = 'cookie_consent_v1'; // values: 'accepted' | 'rejected'
+
+  function loadGA() {
+    if (!GA_ID) return;
+    if (document.querySelector('script[data-ga="1"]')) return;
+
+    const s1 = document.createElement('script');
+    s1.async = true;
+    s1.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(GA_ID)}`;
+    s1.dataset.ga = '1';
+    document.head.appendChild(s1);
+
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ window.dataLayer.push(arguments); }
+    window.gtag = gtag;
+
+    gtag('js', new Date());
+    gtag('config', GA_ID);
+  }
+
+  const banner = document.getElementById('cookieBanner');
+  const acceptBtn = document.getElementById('cookieAccept');
+  const rejectBtn = document.getElementById('cookieReject');
+
+  const existing = localStorage.getItem(KEY);
+
+  if (existing === 'accepted') {
+    loadGA();
+  } else if (existing === 'rejected') {
+    // do nothing
+  } else {
+    banner?.classList.remove('hidden');
+  }
+
+  acceptBtn?.addEventListener('click', () => {
+    localStorage.setItem(KEY, 'accepted');
+    banner?.classList.add('hidden');
+    loadGA();
+  });
+
+  rejectBtn?.addEventListener('click', () => {
+    localStorage.setItem(KEY, 'rejected');
+    banner?.classList.add('hidden');
+  });
+
+    // Hero slider (for blocks)
+    // Hero slider: changes slide + updates kicker/title/lead/cta per slide
+  document.querySelectorAll('[data-hero]').forEach((hero) => {
+    const slider = hero.querySelector('[data-hero-slider]');
+    if (!slider) return;
+
+    const slides = Array.from(slider.querySelectorAll('.gt-hero__slide'));
+    if (slides.length <= 1) return;
+
+    const prev = slider.querySelector('[data-hero-prev]');
+    const next = slider.querySelector('[data-hero-next]');
+
+    const content = hero.querySelector('[data-hero-content]');
+    const kickerEl = hero.querySelector('[data-hero-kicker]');
+    const titleEl = hero.querySelector('[data-hero-title]');
+    const leadEl = hero.querySelector('[data-hero-lead]');
+    const ctaEl = hero.querySelector('[data-hero-cta]');
+    const ctaWrap = hero.querySelector('[data-hero-cta-wrap]');
+
+    let slideData = [];
+    try {
+      slideData = JSON.parse(content?.getAttribute('data-hero-slides') || '[]');
+    } catch (e) {
+      slideData = [];
+    }
+
+    const autoplay = hero.getAttribute('data-hero-autoplay') === '1';
+    const interval = Math.max(1500, Number(hero.getAttribute('data-hero-interval') || '4500'));
+    const pauseOnHover = hero.getAttribute('data-hero-pause-hover') === '1';
+
+    let idx = slides.findIndex(s => s.classList.contains('is-active'));
+    if (idx < 0) idx = 0;
+
+    let timer = null;
+    let paused = false;
+
+    const pickSlideText = (i) => {
+      if (!Array.isArray(slideData) || slideData.length === 0) return {};
+      // If fewer slide texts than images, reuse first slide text
+      return slideData[i] || slideData[0] || {};
+    };
+
+    const applyText = (i) => {
+      const s = pickSlideText(i);
+
+      const kicker = (s.kicker || '').trim();
+      const title = (s.title || '').trim();
+      const lead = (s.lead || '').trim();
+      const ctaLabel = (s.cta_label || '').trim();
+      const ctaUrl = (s.cta_url || '').trim();
+
+      if (kickerEl) {
+        kickerEl.textContent = kicker;
+        kickerEl.classList.toggle('hidden', !kicker);
+      }
+      if (titleEl) titleEl.textContent = title || '';
+      if (leadEl) {
+        leadEl.textContent = lead;
+        leadEl.classList.toggle('hidden', !lead);
+      }
+      if (ctaEl) {
+        if (ctaLabel && ctaUrl) {
+          ctaEl.textContent = ctaLabel;
+          ctaEl.href = ctaUrl;
+          ctaEl.classList.remove('hidden');
+          ctaWrap?.classList.remove('hidden');
+        } else {
+          ctaEl.classList.add('hidden');
+        }
+      }
+    };
+
+    const set = (i) => {
+      idx = (i + slides.length) % slides.length;
+      slides.forEach((s, k) => s.classList.toggle('is-active', k === idx));
+      applyText(idx);
+    };
+
+    const start = () => {
+      if (!autoplay) return;
+      if (timer) return;
+      timer = setInterval(() => {
+        if (!paused) set(idx + 1);
+      }, interval);
+    };
+
+    const stop = () => {
+      if (!timer) return;
+      clearInterval(timer);
+      timer = null;
+    };
+
+    prev?.addEventListener('click', () => set(idx - 1));
+    next?.addEventListener('click', () => set(idx + 1));
+
+    if (pauseOnHover) {
+      hero.addEventListener('mouseenter', () => { paused = true; });
+      hero.addEventListener('mouseleave', () => { paused = false; });
+    }
+
+    // initial text
+    applyText(idx);
+    start();
   });
 });
