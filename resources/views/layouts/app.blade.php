@@ -146,7 +146,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="@stack('body_class') class="min-h-screen bg-white text-slate-900 antialiased">
+<body class="@stack('body_class') min-h-screen bg-white text-slate-900 antialiased">
     {{-- Top bar / header placeholder --}}
     @php $locale = app()->getLocale(); @endphp
     <header id="siteHeader" class="site-header">
@@ -155,11 +155,36 @@
             <nav class="main-nav" aria-label="Main navigation">
                 <ul>
                     <li><a href="/{{ $locale }}/" class="is-global">Global</a></li>
-                    <li><a href="/{{ $locale }}/pages/who-we-are">Who we are</a></li>
-                    <li><a href="/{{ $locale }}/products">Products</a></li>
-                    <li><a href="/{{ $locale }}/pages/investors">Investors</a></li>
-                    <li><a href="/{{ $locale }}/pages/careers">Careers</a></li>
-                    <li><a href="/{{ $locale }}/pages/media">Media</a></li>
+                    <li><a href="/{{ $locale }}/pages/who-we-are"
+                           data-overlay-key="who-we-are"
+                           data-overlay-title="Who We Are"
+                           data-overlay-desc="Globaltrding is a multilingual supplier of industrial equipment and raw materials, serving Oil &amp; Gas, Petrochemical, Refinery, and Chemical industries worldwide."
+                           data-overlay-items='[{"label":"About Globaltrding","href":"/{{ $locale }}/pages/who-we-are"},{"label":"Our Mission","href":"/{{ $locale }}/pages/who-we-are#mission"},{"label":"Our Values","href":"/{{ $locale }}/pages/who-we-are#values"}]'
+                        >Who we are</a></li>
+                    <li><a href="/{{ $locale }}/products"
+                           data-overlay-key="products"
+                           data-overlay-title="Products"
+                           data-overlay-desc="Browse our full range of industrial equipment and raw materials for Oil &amp; Gas, Petrochemical, and Chemical industries."
+                           data-overlay-items='[{"label":"Product Finder","href":"/{{ $locale }}/products","isProductFinder":true},{"label":"Industrial Equipment","href":"/{{ $locale }}/products?category=equipment"},{"label":"Raw Materials","href":"/{{ $locale }}/products?category=materials"},{"label":"Valves &amp; Fittings","href":"/{{ $locale }}/products?category=valves"}]'
+                        >Products</a></li>
+                    <li><a href="/{{ $locale }}/pages/investors"
+                           data-overlay-key="investors"
+                           data-overlay-title="Investors"
+                           data-overlay-desc="Corporate governance, financial information and investor relations for Globaltrding."
+                           data-overlay-items='[{"label":"Investor Relations","href":"/{{ $locale }}/pages/investors"},{"label":"Annual Reports","href":"/{{ $locale }}/pages/investors#reports"},{"label":"Corporate Governance","href":"/{{ $locale }}/pages/investors#governance"}]'
+                        >Investors</a></li>
+                    <li><a href="/{{ $locale }}/pages/careers"
+                           data-overlay-key="careers"
+                           data-overlay-title="Careers"
+                           data-overlay-desc="Join our global team. Build your future with Globaltrding and contribute to the industrial supply chain."
+                           data-overlay-items='[{"label":"Open Positions","href":"/{{ $locale }}/pages/careers"},{"label":"Our Culture","href":"/{{ $locale }}/pages/careers#culture"},{"label":"Benefits","href":"/{{ $locale }}/pages/careers#benefits"}]'
+                        >Careers</a></li>
+                    <li><a href="/{{ $locale }}/pages/media"
+                           data-overlay-key="media"
+                           data-overlay-title="Media"
+                           data-overlay-desc="Latest news, press releases, and media resources from Globaltrding."
+                           data-overlay-items='[{"label":"Latest News","href":"/{{ $locale }}/news"},{"label":"Press Releases","href":"/{{ $locale }}/pages/media"},{"label":"Market Data","href":"/{{ $locale }}/market"}]'
+                        >Media</a></li>
                 </ul>
             </nav>
 
@@ -378,6 +403,43 @@
             </div>
         </div>
     </footer>
+    {{-- Nav Overlay (BASF-style mega menu) --}}
+    <div id="navOverlay" class="nav-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+        {{-- Close button aligned with nav bar --}}
+        <button id="navOverlayClose" class="nav-overlay__close" type="button" aria-label="Close menu">&#x2715;</button>
+
+        <div class="nav-overlay__body">
+            {{-- Left: scrollable nav list --}}
+            <div class="nav-overlay__left-wrap">
+                {{-- Products-only search (injected by JS under Product Finder) --}}
+                <div id="navOverlaySearch" class="nav-overlay__search" style="display:none;" aria-hidden="true">
+                    <input id="navOverlaySearchInput" type="search"
+                           class="nav-overlay__search-input"
+                           placeholder="Search products…"
+                           autocomplete="off">
+                </div>
+
+                <nav id="navOverlayList" class="nav-overlay__list" aria-label="Section links"></nav>
+            </div>
+
+            {{-- Middle: scroll indicator --}}
+            <div class="nav-overlay__scrolltrack" aria-hidden="true">
+                <div id="navOverlayScrollThumb" class="nav-overlay__scrollthumb"></div>
+            </div>
+
+            {{-- Right: 2-column preview (image | description) --}}
+            <div class="nav-overlay__preview">
+                <div class="nav-overlay__preview-img-col">
+                    <img id="navOverlayPreviewImg" class="nav-overlay__preview-img" src="" alt="">
+                </div>
+                <div class="nav-overlay__preview-text-col">
+                    <div id="navOverlayPreviewTitle" class="nav-overlay__preview-title"></div>
+                    <div id="navOverlayPreviewDesc" class="nav-overlay__preview-desc"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Search Overlay --}}
     <div id="searchOverlay" class="search-overlay hidden" aria-hidden="true">
         <div class="search-overlay__bar">

@@ -449,4 +449,149 @@ document.addEventListener('DOMContentLoaded', () => {
     applyText(idx);
     start();
   });
+
+  // ─── Nav Overlay (BASF-style mega menu) ─────────────────────────────────────
+  const navOverlay     = document.getElementById('navOverlay');
+  const navOverlayClose= document.getElementById('navOverlayClose');
+  const navOverlayList = document.getElementById('navOverlayList');
+  const navScrollThumb = document.getElementById('navOverlayScrollThumb');
+  const navSearchWrap  = document.getElementById('navOverlaySearch');
+  const navSearchInput = document.getElementById('navOverlaySearchInput');
+  const navPreviewImg  = document.getElementById('navOverlayPreviewImg');
+  const navPreviewTitle= document.getElementById('navOverlayPreviewTitle');
+  const navPreviewDesc = document.getElementById('navOverlayPreviewDesc');
+
+  /** Minimum height (px) for the scroll thumb — must match CSS min-height */
+  const NAV_SCROLL_THUMB_MIN_H = 32;
+
+  let activeOverlayKey = null;
+
+  function openNavOverlay(triggerEl) {
+    if (!navOverlay) return;
+
+    const key   = triggerEl.getAttribute('data-overlay-key');
+    const title = triggerEl.getAttribute('data-overlay-title') || '';
+    const desc  = triggerEl.getAttribute('data-overlay-desc')  || '';
+    let   items = [];
+
+    try { items = JSON.parse(triggerEl.getAttribute('data-overlay-items') || '[]'); }
+    catch (e) { items = []; }
+
+    activeOverlayKey = key;
+
+    // Fill preview text
+    if (navPreviewTitle) navPreviewTitle.textContent = title;
+    if (navPreviewDesc)  navPreviewDesc.textContent  = desc;
+
+    // Preview image: hide until explicitly set (no default image, graceful)
+    if (navPreviewImg) {
+      navPreviewImg.src = '';
+      navPreviewImg.classList.remove('is-loaded');
+      navPreviewImg.style.display = 'none';
+    }
+
+    // Build nav list
+    if (navOverlayList) {
+      // Clear list safely without innerHTML
+      while (navOverlayList.firstChild) navOverlayList.removeChild(navOverlayList.firstChild);
+
+      // For products: show search after the Product Finder item
+      const isProducts = key === 'products';
+
+      items.forEach((item) => {
+        const a = document.createElement('a');
+        a.href = item.href || '#';
+        a.className = 'nav-overlay__list-item' + (item.isProductFinder ? ' is-finder' : '');
+        a.textContent = item.label || '';
+        navOverlayList.appendChild(a);
+
+        // Insert search input right after Product Finder (products only)
+        if (isProducts && item.isProductFinder && navSearchWrap) {
+          navSearchWrap.style.display = '';
+          navSearchWrap.setAttribute('aria-hidden', 'false');
+          navOverlayList.appendChild(navSearchWrap);
+        }
+      });
+
+      // Hide search for non-products sections
+      if (!isProducts && navSearchWrap) {
+        navSearchWrap.style.display = 'none';
+        navSearchWrap.setAttribute('aria-hidden', 'true');
+      }
+
+      // Scroll indicator tracking
+      syncScrollThumb();
+      navOverlayList.addEventListener('scroll', syncScrollThumb, { passive: true });
+    }
+
+    // Open
+    navOverlay.classList.add('is-open');
+    navOverlay.setAttribute('aria-hidden', 'false');
+    lockBody(true);
+
+    // Focus search if products, else close button
+    if (key === 'products' && navSearchInput) {
+      setTimeout(() => navSearchInput.focus(), 80);
+    } else {
+      setTimeout(() => navOverlayClose?.focus(), 80);
+    }
+  }
+
+  function closeNavOverlay() {
+    if (!navOverlay) return;
+    navOverlay.classList.remove('is-open');
+    navOverlay.setAttribute('aria-hidden', 'true');
+    activeOverlayKey = null;
+    lockBody(false);
+  }
+
+  function syncScrollThumb() {
+    if (!navScrollThumb || !navOverlayList) return;
+    const el    = navOverlayList;
+    const track = navScrollThumb.parentElement;
+    if (!track) return;
+
+    const ratio = el.scrollHeight > el.clientHeight
+      ? el.scrollTop / (el.scrollHeight - el.clientHeight)
+      : 0;
+
+    const thumbH   = Math.max(NAV_SCROLL_THUMB_MIN_H, track.clientHeight * (el.clientHeight / Math.max(el.scrollHeight, 1)));
+    const thumbTop = ratio * (track.clientHeight - thumbH);
+
+    navScrollThumb.style.height = `${thumbH}px`;
+    navScrollThumb.style.top    = `${thumbTop}px`;
+  }
+
+  // Click on nav items with data-overlay-key
+  document.addEventListener('click', (e) => {
+    // Backdrop click: closes overlay (check first so inner clicks don't reach here)
+    if (e.target === navOverlay) {
+      closeNavOverlay();
+      return;
+    }
+
+    // Clicks inside the overlay body are handled by event targets within it
+    if (e.target.closest('.nav-overlay__body')) return;
+
+    // Nav trigger clicked
+    const trigger = e.target.closest('[data-overlay-key]');
+    if (trigger) {
+      e.preventDefault();
+      // Toggle: clicking the same section closes it; a different section opens
+      if (activeOverlayKey === trigger.getAttribute('data-overlay-key')) {
+        closeNavOverlay();
+      } else {
+        openNavOverlay(trigger);
+      }
+    }
+  });
+
+  navOverlayClose?.addEventListener('click', closeNavOverlay);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && activeOverlayKey !== null) {
+      e.preventDefault();
+      closeNavOverlay();
+    }
+  });
 });

@@ -16,6 +16,7 @@
     };
 
     $posterPath = $data['poster_path'] ?? null;
+    $posterPath = is_array($posterPath) ? (reset($posterPath) ?: null) : ($posterPath ?: null);
     $posterUrl = $posterPath ? Storage::disk('public')->url($posterPath) : null;
 @endphp
 
@@ -36,7 +37,22 @@
 
         $mediaType = $data['media_type'] ?? 'video'; // video|image
         $mediaPath = $data['media_path'] ?? null;
+        $mediaPath = is_array($mediaPath) ? (reset($mediaPath) ?: null) : ($mediaPath ?: null);
         $mediaUrl = $mediaPath ? \Illuminate\Support\Facades\Storage::disk('public')->url($mediaPath) : null;
+
+        // Public override: if HOME_HERO_PUBLIC_VIDEO is configured and the file exists, prefer it.
+        $heroPublicVideo = config('home.hero_public_video', '');
+        if ($heroPublicVideo !== '') {
+            $publicBase   = realpath(public_path());
+            $resolvedPath = realpath(public_path($heroPublicVideo));
+            // Only accept paths that are within the public directory (prevent traversal)
+            if ($resolvedPath !== false
+                && $publicBase !== false
+                && str_starts_with($resolvedPath, $publicBase . DIRECTORY_SEPARATOR)) {
+                $mediaUrl  = asset($heroPublicVideo);
+                $mediaType = 'video';
+            }
+        }
 
         $overlayTop = (float) ($data['overlay_top'] ?? 0.45);
         $overlayMid = (float) ($data['overlay_mid'] ?? 0.15);

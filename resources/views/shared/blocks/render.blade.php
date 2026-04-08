@@ -163,6 +163,7 @@
         };
 
         $topImgPath = $data['top_left_image'] ?? null;
+        $topImgPath = is_array($topImgPath) ? (reset($topImgPath) ?: null) : ($topImgPath ?: null);
         $topImgUrl = $topImgPath ? \Illuminate\Support\Facades\Storage::disk('public')->url($topImgPath) : null;
 
         $kicker = $data['top_right_kicker'] ?? '';
@@ -210,6 +211,7 @@
                     $cu = $tile['cta_url'] ?? '';
 
                     $imgPath = $tile['image'] ?? null;
+                    $imgPath = is_array($imgPath) ? (reset($imgPath) ?: null) : ($imgPath ?: null);
                     $imgUrl = $imgPath ? \Illuminate\Support\Facades\Storage::disk('public')->url($imgPath) : null;
                 @endphp
 
@@ -289,6 +291,7 @@
                 @foreach ($items as $it)
                     @php
                         $img = $it['image'] ?? null;
+                        $img = is_array($img) ? (reset($img) ?: null) : ($img ?: null);
                         $imgUrl = $img ? \Illuminate\Support\Facades\Storage::disk('public')->url($img) : null;
                         $t = $it['title'] ?? '';
                         $txt = $it['text'] ?? '';
@@ -376,6 +379,7 @@
             @foreach ($items as $it)
                 @php
                     $imgPath = $it['image'] ?? null;
+                    $imgPath = is_array($imgPath) ? (reset($imgPath) ?: null) : ($imgPath ?: null);
                     $imgUrl = $imgPath ? \Illuminate\Support\Facades\Storage::disk('public')->url($imgPath) : null;
                     $t = $it['title'] ?? '';
                     $text = $it['text'] ?? '';
