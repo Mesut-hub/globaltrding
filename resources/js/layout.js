@@ -500,7 +500,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       items.forEach((item) => {
         const a = document.createElement('a');
-        a.href = item.href || '#';
+        // Only allow safe relative or absolute http(s) URLs — reject javascript: etc.
+        const rawHref = String(item.href || '');
+        a.href = /^(\/|https?:\/\/)/.test(rawHref) ? rawHref : '#';
         a.className = 'nav-overlay__list-item' + (item.isProductFinder ? ' is-finder' : '');
         a.textContent = item.label || '';
         navOverlayList.appendChild(a);
@@ -529,11 +531,13 @@ document.addEventListener('DOMContentLoaded', () => {
     navOverlay.setAttribute('aria-hidden', 'false');
     lockBody(true);
 
-    // Focus search if products, else close button
+    // Focus after a short delay to allow CSS display transition to complete
+    // before the browser processes the focus call (avoids invisible-element focus issues)
+    const FOCUS_DELAY_MS = 80;
     if (key === 'products' && navSearchInput) {
-      setTimeout(() => navSearchInput.focus(), 80);
+      setTimeout(() => navSearchInput.focus(), FOCUS_DELAY_MS);
     } else {
-      setTimeout(() => navOverlayClose?.focus(), 80);
+      setTimeout(() => navOverlayClose?.focus(), FOCUS_DELAY_MS);
     }
   }
 
