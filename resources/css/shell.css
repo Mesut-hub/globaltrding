@@ -1,9 +1,9 @@
 /* (header + hero overlay) */
 
 :root{
-  --header-height: 90px;
+  --header-height: 100px;
   --header-top-offset: 42px;
-  --page-top-padding: calc(var(--header-height) + var(--header-top-offset) + 24px);
+  --page-top-padding: calc(var(--header-height) + var(--header-top-offset) + 46px);
 }
 
 .main-offset{
@@ -192,7 +192,21 @@
   overflow: hidden;
 }
 
-.hero-shell{ height: auto; min-height: 0; }
+.hero-shell{     /* force exact height */
+  min-height: var(--hero-min-h, 100vh);
+}
+
+/* Home hero content offset: respect fixed header area */
+.hero-home__content{
+  height: 100%;
+  padding-top: var(--page-top-padding);
+}
+
+@media (max-width: 768px){
+  .hero-home__content{
+    padding-top: calc(var(--page-top-padding) - 40px);
+  }
+}
 
 /* Controls ONLY the hero text position (not the video) */
 .hero-text-offset{

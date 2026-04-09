@@ -48,7 +48,8 @@
         $textOffset = (int) ($data['text_offset_px'] ?? 290); // pushes only text down
     @endphp
 
-    <section class="relative text-white hero-shell" style="height: {{ $minH }}; min-height: {{ $minH }};" data-hero>
+    <section class="relative text-white hero-shell"
+                data-hero>
         <div class="absolute inset-0 overflow-hidden bg-slate-950">
             @if ($mediaType === 'image')
                 @if ($mediaUrl)
@@ -84,9 +85,8 @@
                     rgba(0,0,0,{{ $overlayBottom }}));"></div>
         </div>
 
-        <div class="relative mx-auto max-w-7xl px-4"
-                style="height: 100%; padding-top: 0;">
-            <div class="max-w-3xl hero-text-offset">
+        <div class="relative mx-auto max-w-7xl px-4 hero-home__content">
+            <div class="max-w-3xl">
                 <h1 class="text-4xl sm:text-5xl font-semibold tracking-tight leading-tight">
                     {{ $title }}
                 </h1>

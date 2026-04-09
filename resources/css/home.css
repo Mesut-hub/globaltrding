@@ -1,6 +1,6 @@
 /* resources/css/home.css */
 
-.hero-shell { min-height: var(--hero-min-h, 100vh); }
+.hero-shell { min-height: var(--hero-min-h, 92vh); }
 
 .ind-btn{
   width: 36px;
