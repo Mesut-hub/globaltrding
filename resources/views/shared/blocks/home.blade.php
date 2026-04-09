@@ -24,7 +24,10 @@
 ========================================================= --}}
 @if ($type === 'hero')
     @php
-        $minH = $data['min_h'] ?? '90vh';
+        $publicHeroVideo = config('home.hero_public_video'); // e.g. '/media/hero.mp4'
+        $publicHeroVideoUrl = $publicHeroVideo ? url($publicHeroVideo) : null;  
+
+        $minH = $data['min_h'] ?? '100vh';
         $title = $t($data['title'] ?? []);
         $subtitle = $t($data['subtitle'] ?? []);
 
@@ -45,7 +48,7 @@
         $textOffset = (int) ($data['text_offset_px'] ?? 290); // pushes only text down
     @endphp
 
-    <section class="relative text-white hero-shell" style="--hero-min-h: {{ $minH }};" data-hero>
+    <section class="relative text-white hero-shell" style="height: {{ $minH }}; min-height: {{ $minH }};" data-hero>
         <div class="absolute inset-0 overflow-hidden bg-slate-950">
             @if ($mediaType === 'image')
                 @if ($mediaUrl)
@@ -54,11 +57,14 @@
                     <img src="{{ $posterUrl }}" class="h-full w-full object-cover" alt="">
                 @endif
             @else
-                @if ($mediaUrl)
+                @php
+                    $videoSrc = $publicHeroVideoUrl ?: $mediaUrl;
+                @endphp
+                @if ($videoSrc)
                     <video class="h-full w-full object-cover opacity-80"
                         autoplay muted loop playsinline preload="metadata"
                         @if($posterUrl) poster="{{ $posterUrl }}" @endif>
-                        <source src="{{ $mediaUrl }}" type="video/mp4">
+                        <source src="{{ $videoSrc }}" type="video/mp4">
                     </video>
                 @endif
 
@@ -78,9 +84,9 @@
                     rgba(0,0,0,{{ $overlayBottom }}));"></div>
         </div>
 
-        <div class="relative mx-auto max-w-7xl px-4 py-14 sm:py-20"
-             style="padding-top: {{ $textOffset }}px;">
-            <div class="max-w-3xl">
+        <div class="relative mx-auto max-w-7xl px-4"
+                style="height: 100%; padding-top: 0;">
+            <div class="max-w-3xl hero-text-offset">
                 <h1 class="text-4xl sm:text-5xl font-semibold tracking-tight leading-tight">
                     {{ $title }}
                 </h1>

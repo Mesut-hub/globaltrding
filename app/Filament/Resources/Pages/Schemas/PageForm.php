@@ -210,6 +210,14 @@ class PageForm
                                     ->default('blue')
                                     ->required(),
 
+                                ColorPicker::make('panel_text_color')
+                                    ->label('Panel text color (optional)')
+                                    ->default('#ffffff'),
+
+                                ColorPicker::make('row2_link_color')
+                                    ->label('Row 2 link color (optional)')
+                                    ->default('#0ea5e9'),
+
                                 // Top row: 2 tiles
                                 \Filament\Schemas\Components\Grid::make(2)
                                     ->schema([
@@ -245,22 +253,37 @@ class PageForm
                                             ->disk('public')
                                             ->directory('pages/insights')
                                             ->image()
+                                            ->visible(fn ($get) => $get('type') === 'image')
+                                            ->required(fn ($get) => $get('type') === 'image'),
+
+                                        TextInput::make('kicker')
+                                            ->label('Kicker')
                                             ->visible(fn ($get) => $get('type') === 'image'),
 
                                         TextInput::make('title')
-                                            ->required(),
+                                            ->label('Title')
+                                            ->required()
+                                            ->visible(fn ($get) => $get('type') === 'image'),
 
-                                        Textarea::make('text')
-                                            ->rows(3),
+                                        Textarea::make('lead')
+                                            ->label('Lead text')
+                                            ->rows(3)
+                                            ->visible(fn ($get) => $get('type') === 'image'),
 
-                                        TextInput::make('cta_label')->default('Learn more'),
-                                        TextInput::make('cta_url'),
+                                        TextInput::make('cta_label')
+                                            ->label('CTA label')
+                                            ->default('Find out more')
+                                            ->visible(fn ($get) => $get('type') === 'image'),
+                                        
+                                        TextInput::make('cta_url')
+                                            ->label('CTA URL')
+                                            ->visible(fn ($get) => $get('type') === 'image'),
                                     ])
                                     ->columns(2),
                             ]),
 
                         Block::make('cardsCarousel')
-                            ->label('Cards carousel (BASF-style)')
+                            ->label('Cards carousel')
                             ->schema([
                                 Select::make('bg')
                                     ->label('Background')

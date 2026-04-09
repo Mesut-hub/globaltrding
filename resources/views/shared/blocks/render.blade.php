@@ -172,6 +172,9 @@
         $ctaUrl = $data['top_right_cta_url'] ?? '';
 
         $bottom = is_array($data['bottom_tiles'] ?? null) ? $data['bottom_tiles'] : [];
+
+        $panelTextColor = $data['panel_text_color'] ?? '#ffffff';
+        $row2LinkColor = $data['row2_link_color'] ?? '#0ea5e9';
     @endphp
 
     <section class="gt-insights">
@@ -185,7 +188,7 @@
                 @endif
             </div>
 
-            <div class="gt-insights__tile gt-insights__tile--panel1 {{ $panelClass }}">
+            <div class="gt-insights__tile gt-insights__tile--panel1 {{ $panelClass }}" style="color: {{ $panelTextColor }};">
                 @if ($kicker)
                     <div class="gt-insights__kicker">{{ $kicker }}</div>
                 @endif
@@ -204,19 +207,22 @@
             @foreach ($bottom as $tile)
                 @php
                     $t = $tile['type'] ?? 'image';
-                    $tt = $tile['title'] ?? '';
-                    $tx = $tile['text'] ?? '';
-                    $cl = $tile['cta_label'] ?? '';
-                    $cu = $tile['cta_url'] ?? '';
 
                     $imgPath = $tile['image'] ?? null;
                     $imgUrl = $imgPath ? \Illuminate\Support\Facades\Storage::disk('public')->url($imgPath) : null;
+
+                    // image tile
+                    $k = $tile['kicker'] ?? '';
+                    $tt = $tile['title'] ?? '';
+                    $lead = $tile['lead'] ?? '';
+                    $cl = $tile['cta_label'] ?? '';
+                    $cu = $tile['cta_url'] ?? '';
                 @endphp
 
                 @if ($t === 'panel')
-                    <div class="gt-insights__tile gt-insights__tile--panel2 {{ $panelClass }}">
+                    <div class="gt-insights__tile gt-insights__tile--panel2 {{ $panelClass }}" style="color: {{ $panelTextColor }};">
                         <div class="gt-insights__title">{{ $tt }}</div>
-                        @if ($tx)
+                        @if ($lead)
                             <div class="gt-insights__text">{{ $tx }}</div>
                         @endif
                         @if ($cl && $cu)
@@ -224,17 +230,27 @@
                         @endif
                     </div>
                 @else
-                    <div class="gt-insights__tile gt-insights__tile--image2">
-                        @if ($imgUrl)
-                            <img src="{{ $imgUrl }}" alt="" class="gt-insights__img">
-                        @endif
-                        <div class="gt-insights__below">
-                            <div class="gt-insights__belowTitle">{{ $tt }}</div>
-                            @if ($tx)
-                                <div class="gt-insights__belowText">{{ $tx }}</div>
+                    <div class="gt-insights__tile gt-insights__tile--image gt-insights__tile--image2">
+                        <div class="gt-insights__media">
+                            @if ($imgUrl)
+                                <img src="{{ $imgUrl }}" alt="" class="gt-insights__img">
                             @endif
+                        </div>
+                        <div class="gt-insights__below">
+                            @if ($k)
+                                <div class="gt-insights__belowKicker">{{ $k }}</div>
+                            @endif
+
+                            <div class="gt-insights__belowTitle">{{ $tt }}</div>
+
+                            @if ($lead)
+                                <div class="gt-insights__belowText">{{ $lead }}</div>
+                            @endif
+
                             @if ($cl && $cu)
-                                <a href="{{ $cu }}" class="gt-insights__belowCta">{{ $cl }}</a>
+                                <a href="{{ $cu }}" class="gt-insights__belowCta" style="color: {{ $row2LinkColor }};">
+                                    {{ $cl }}
+                                </a>
                             @endif
                         </div>
                     </div>
@@ -269,7 +285,7 @@
         $id = 'cc_' . substr(md5(json_encode($data)), 0, 8);
     @endphp
 
-    <section class="mt-6 rounded-2xl border {{ $wrapClass }} p-6 md:p-10"
+    <section class="mt-8 rounded-2xl border {{ $wrapClass }} p-6 md:p-10"
              data-carousel
              data-carousel-autoplay="{{ $autoplay ? '1' : '0' }}"
              data-carousel-interval="{{ max(1500, $autoplayMs) }}"
@@ -411,11 +427,11 @@
 
         $n = max(1, count($items));
 
-        // auto-size like BASF: fewer items => bigger numbers, more items => smaller
+        // auto-size: fewer items => bigger numbers, more items => smaller
         $valueClass = $n <= 3 ? 'gt-m__val--xl' : ($n === 4 ? 'gt-m__val--lg' : 'gt-m__val--md');
     @endphp
 
-    <section class="rounded-2xl border {{ $wrapClass }} p-6 md:p-10">
+    <section class="mt-8 rounded-2xl border {{ $wrapClass }} p-6 md:p-10">
         @if ($title)
             <h3 class="text-xl font-semibold tracking-tight">{{ $title }}</h3>
         @endif

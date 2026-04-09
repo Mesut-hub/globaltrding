@@ -155,10 +155,10 @@
             <nav class="main-nav" aria-label="Main navigation">
                 <ul>
                     <li><a href="/{{ $locale }}/" class="is-global">Global</a></li>
-                    <li><a href="/{{ $locale }}/pages/who-we-are">Who we are</a></li>
-                    <li><a href="/{{ $locale }}/products">Products</a></li>
-                    <li><a href="/{{ $locale }}/pages/investors">Investors</a></li>
-                    <li><a href="/{{ $locale }}/pages/careers">Careers</a></li>
+                    <li><a href="/{{ $locale }}/pages/who-we-are" data-overlay-key="who-we-are">Who we are</a></li>
+                    <li><a href="/{{ $locale }}/products" data-overlay-key="products">Products</a></li>
+                    <li><a href="/{{ $locale }}/pages/investors" data-overlay-key="investors">Investors</a></li>
+                    <li><a href="/{{ $locale }}/pages/careers" data-overlay-key="careers">Careers</a></li>
                     <li><a href="/{{ $locale }}/pages/media">Media</a></li>
                 </ul>
             </nav>
@@ -408,6 +408,29 @@
                 </div>
                 <a href="/{{ app()->getLocale() }}/products" class="search-overlay__btn">Find products</a>
             </div>
+        </div>
+    </div>
+    <div id="navOverlay" class="nav-overlay hidden" aria-hidden="true">
+        <button type="button" id="navOverlayClose" class="nav-overlay__close" aria-label="Close menu">×</button>
+
+        <div class="nav-overlay__content" role="dialog" aria-modal="true" aria-label="Navigation">
+            <aside class="nav-overlay__left">
+                <div class="nav-overlay__sectionTitle" id="navOverlayTitle">Menu</div>
+                <div class="nav-overlay__list" id="navOverlayList"></div>
+            </aside>
+
+            <div class="nav-overlay__mid" aria-hidden="true">
+                <div class="nav-overlay__scrollLine">
+                    <div class="nav-overlay__scrollThumb"></div>
+                </div>
+            </div>
+
+            <section class="nav-overlay__right">
+                <div class="nav-overlay__panel">
+                    <div class="nav-overlay__desc" id="navOverlayDesc"></div>
+                    <div class="nav-overlay__preview" id="navOverlayPreview"></div>
+                </div>
+            </section>
         </div>
     </div>
     <div id="cookieBanner" class="cookie-banner hidden" aria-live="polite">

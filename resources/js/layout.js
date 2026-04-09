@@ -449,4 +449,265 @@ document.addEventListener('DOMContentLoaded', () => {
     applyText(idx);
     start();
   });
+    // ===== BASF-like NAV OVERLAY (single instance) =====
+  (function () {
+    const overlay = document.getElementById('navOverlay');
+    const btnClose = document.getElementById('navOverlayClose');
+    const elTitle = document.getElementById('navOverlayTitle');
+    const elList = document.getElementById('navOverlayList');
+    const elDesc = document.getElementById('navOverlayDesc');
+    const elPreview = document.getElementById('navOverlayPreview');
+
+    const searchWrap = document.getElementById('navOverlaySearchWrap');
+    const searchInput = document.getElementById('navOverlaySearchInput');
+    const searchBtn = document.getElementById('navOverlaySearchBtn');
+
+    if (!overlay || !elTitle || !elList || !elDesc || !elPreview) return;
+
+    const locale = document.documentElement.lang || 'en';
+
+    // NOTE: update these URLs/images whenever you create pages
+    const NAV_DATA = {
+      "who-we-are": {
+        title: "Who we are",
+        showSearch: false,
+        defaultIndex: 0,
+        items: [
+          { title: "Organization", url: `/${locale}/pages/who-we-are`, desc: "Learn about our organization.", previewImage: "/images/overlay/who-we-are.jpg" },
+          { title: "Strategy", url: `/${locale}/pages/strategy`, desc: "Our strategy and long-term direction.", previewImage: "/images/overlay/strategy.jpg" },
+          { title: "Sustainability", url: `/${locale}/pages/sustainability`, desc: "Our sustainability approach.", previewImage: "/images/overlay/sustainability.jpg" },
+          { title: "Innovation", url: `/${locale}/pages/innovation`, desc: "Innovation in products and processes.", previewImage: "/images/overlay/innovation.jpg" },
+          { title: "Digitalization", url: `/${locale}/pages/digitalization`, desc: "How we use digital tools.", previewImage: "/images/overlay/digitalization.jpg" },
+        ],
+      },
+
+      "products": {
+        title: "Products",
+        showSearch: true,
+        searchUrl: `/${locale}/products`,
+        defaultIndex: 0,
+        items: [
+          { title: "Product Finder", url: `/${locale}/products`, desc: "Search products by name, brand, or industry.", previewImage: "/images/overlay/products.jpg", isFinder: true },
+          { title: "Adhesives & Sealants", url: `/${locale}/products?category=adhesives-sealants`, desc: "Adhesives and sealants.", previewImage: "/images/overlay/products.jpg" },
+          { title: "Agriculture", url: `/${locale}/products?category=agriculture`, desc: "Agriculture products.", previewImage: "/images/overlay/products.jpg" },
+          { title: "Chemicals", url: `/${locale}/products?category=chemicals`, desc: "Chemicals.", previewImage: "/images/overlay/products.jpg" },
+        ],
+      },
+
+      "investors": {
+        title: "Investors",
+        showSearch: false,
+        defaultIndex: 0,
+        items: [
+          { title: "At a glance", url: `/${locale}/pages/investors`, desc: "Key information for stakeholders.", previewImage: "/images/overlay/investors.jpg" },
+          { title: "Calendar and Publications", url: `/${locale}/pages/investors-publications`, desc: "Publications and calendar.", previewImage: "/images/overlay/investors.jpg" },
+          { title: "Share and ADRs", url: `/${locale}/pages/investors-share`, desc: "Share information.", previewImage: "/images/overlay/investors.jpg" },
+        ],
+      },
+
+      "careers": {
+        title: "Careers",
+        showSearch: false,
+        defaultIndex: 0,
+        items: [
+          { title: "Job search", url: `/${locale}/pages/careers`, desc: "Explore job opportunities.", previewImage: "/images/overlay/careers.jpg" },
+          { title: "Professionals", url: `/${locale}/pages/careers-professionals`, desc: "For experienced professionals.", previewImage: "/images/overlay/careers.jpg" },
+          { title: "Graduates", url: `/${locale}/pages/careers-graduates`, desc: "For graduates.", previewImage: "/images/overlay/careers.jpg" },
+          { title: "Students", url: `/${locale}/pages/careers-students`, desc: "For students.", previewImage: "/images/overlay/careers.jpg" },
+        ],
+      },
+    };
+
+    let state = {
+      key: null,
+      idx: 0,
+    };
+
+    function lockScroll(lock) {
+      document.documentElement.classList.toggle('overflow-hidden', lock);
+      document.body.classList.toggle('overflow-hidden', lock);
+    }
+
+    function setThumbFromScroll() {
+      const line = overlay.querySelector('.nav-overlay__scrollLine');
+      const thumb = overlay.querySelector('.nav-overlay__scrollThumb');
+      if (!line || !thumb) return;
+
+      const maxScroll = elList.scrollHeight - elList.clientHeight;
+      if (maxScroll <= 0) {
+        thumb.style.height = '86px';
+        thumb.style.top = '36px';
+        return;
+      }
+
+      const ratio = elList.clientHeight / elList.scrollHeight;
+      const lineH = line.clientHeight;
+      const thumbH = Math.max(60, Math.floor(lineH * ratio));
+      const top = Math.floor((lineH - thumbH) * (elList.scrollTop / maxScroll));
+
+      thumb.style.height = `${thumbH}px`;
+      thumb.style.top = `${top}px`;
+    }
+
+    function renderRight() {
+      const data = NAV_DATA[state.key];
+      if (!data) return;
+      const item = data.items?.[state.idx] || data.items?.[0];
+      if (!item) return;
+
+      elDesc.textContent = item.desc || '';
+      elPreview.innerHTML = item.previewImage ? `<img src="${item.previewImage}" alt="">` : '';
+    }
+
+    function renderLeft() {
+      const data = NAV_DATA[state.key];
+      if (!data) return;
+
+      elTitle.textContent = data.title || 'Menu';
+
+      // Search only for products; placed under title, like BASF
+      const showSearch = !!data.showSearch;
+      searchWrap?.classList.toggle('hidden', !showSearch);
+
+      elList.innerHTML = (data.items || []).map((it, i) => {
+        const active = i === state.idx ? 'is-active' : '';
+        const safeTitle = (it.title || '').replace(/</g, '&lt;');
+
+        const finder = it.isFinder ? `
+          <div class="nav-overlay__finder" data-nav-finder>
+            <input type="text"
+                  class="nav-overlay__finderInput"
+                  placeholder="What are you looking for?"
+                  data-nav-find-input>
+            <button type="button"
+                    class="nav-overlay__finderBtn"
+                    data-nav-find-btn
+                    aria-label="Search">⌕</button>
+          </div>
+        ` : '';
+
+        return `
+          <div class="nav-overlay__row ${it.isFinder ? 'is-finder' : ''}">
+            <div class="nav-overlay__item ${active}" data-idx="${i}">
+              <div class="nav-overlay__itemTitle">${safeTitle}</div>
+              <div class="nav-overlay__chev">›</div>
+            </div>
+
+            ${it.isFinder ? `
+              <div class="nav-overlay__finder" data-nav-finder>
+                <input type="text"
+                      class="nav-overlay__finderInput"
+                      placeholder="What are you looking for?"
+                      data-nav-find-input>
+                <button type="button"
+                        class="nav-overlay__finderBtn"
+                        data-nav-find-btn
+                        aria-label="Search">⌕</button>
+              </div>
+              <div class="nav-overlay__divider"></div>
+            ` : `
+              <div class="nav-overlay__divider"></div>
+            `}
+          </div>
+        `;
+      }).join('');
+
+      const finderInput = overlay.querySelector('[data-nav-find-input]');
+      const finderBtn = overlay.querySelector('[data-nav-find-btn]');
+
+      function goFinder() {
+        const base = data.searchUrl;
+        if (!base) return;
+        const q = (finderInput?.value || '').trim();
+        window.location.href = q ? `${base}?q=${encodeURIComponent(q)}` : base;
+      }
+
+      finderBtn?.addEventListener('click', goFinder);
+      finderInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') goFinder();
+      });
+
+      elList.querySelectorAll('.nav-overlay__item').forEach((row) => {
+        row.addEventListener('mouseenter', () => {
+          state.idx = Number(row.getAttribute('data-idx') || '0');
+          elList.querySelectorAll('.nav-overlay__item').forEach(x => x.classList.remove('is-active'));
+          row.classList.add('is-active');
+          renderRight();
+        });
+
+        row.addEventListener('click', () => {
+          const idx = Number(row.getAttribute('data-idx') || '0');
+          const item = NAV_DATA[state.key]?.items?.[idx];
+          if (item?.url) window.location.href = item.url;
+        });
+      });
+
+      // Make list scrollable like BASF
+      elList.classList.add('nav-overlay__list--scroll');
+      elList.addEventListener('scroll', setThumbFromScroll, { passive: true });
+      setThumbFromScroll();
+    }
+
+    function open(key) {
+      const data = NAV_DATA[key];
+      if (!data) return;
+
+      state.key = key;
+      state.idx = data.defaultIndex ?? 0;
+
+      overlay.classList.remove('hidden');
+      overlay.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('nav-overlay-open'); // used to hide header
+      lockScroll(true);
+
+      renderLeft();
+      renderRight();
+
+      if (data.showSearch) setTimeout(() => searchInput?.focus(), 10);
+    }
+
+    function close() {
+      overlay.classList.add('hidden');
+      overlay.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('nav-overlay-open');
+      lockScroll(false);
+      state.key = null;
+      state.idx = 0;
+    }
+
+    // Bind header links
+    document.querySelectorAll('[data-overlay-key]').forEach((a) => {
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        open(a.getAttribute('data-overlay-key'));
+      });
+    });
+
+    btnClose?.addEventListener('click', close);
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) close();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      const isOpen = !overlay.classList.contains('hidden');
+      if (!isOpen) return;
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        close();
+      }
+    });
+
+    function goSearch() {
+      const data = NAV_DATA[state.key];
+      if (!data?.searchUrl) return;
+      const q = (searchInput?.value || '').trim();
+      if (q) window.location.href = `${data.searchUrl}?q=${encodeURIComponent(q)}`;
+      else window.location.href = data.searchUrl;
+    }
+    searchBtn?.addEventListener('click', goSearch);
+    searchInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') goSearch();
+    });
+  })();
 });
