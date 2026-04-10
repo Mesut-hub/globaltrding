@@ -62,7 +62,7 @@
                     $videoSrc = $publicHeroVideoUrl ?: $mediaUrl;
                 @endphp
                 @if ($videoSrc)
-                    <video class="h-full w-full object-cover opacity-80"
+                    <video class="h-full w-full object-cover opacity-100"
                         autoplay muted loop playsinline preload="metadata"
                         @if($posterUrl) poster="{{ $posterUrl }}" @endif>
                         <source src="{{ $videoSrc }}" type="video/mp4">

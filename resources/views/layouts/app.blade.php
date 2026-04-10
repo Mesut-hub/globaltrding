@@ -419,12 +419,6 @@
                 <div class="nav-overlay__list" id="navOverlayList"></div>
             </aside>
 
-            <div class="nav-overlay__mid" aria-hidden="true">
-                <div class="nav-overlay__scrollLine">
-                    <div class="nav-overlay__scrollThumb"></div>
-                </div>
-            </div>
-
             <section class="nav-overlay__right">
                 <div class="nav-overlay__panel">
                     <div class="nav-overlay__desc" id="navOverlayDesc"></div>

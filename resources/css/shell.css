@@ -192,10 +192,6 @@
   overflow: hidden;
 }
 
-.hero-shell{     /* force exact height */
-  min-height: var(--hero-min-h, 100vh);
-}
-
 /* Home hero content offset: respect fixed header area */
 .hero-home__content{
   height: 100%;
@@ -887,7 +883,7 @@ body.nav-overlay-open #siteHeader .header-icons {
   margin: 0 auto;
   padding-top: 120px; /* space under your header */
   display:grid;
-  grid-template-columns: 340px 70px 1fr;
+  grid-template-columns: 340px 1fr;
   gap: 30px;
   align-items: start;
 }
@@ -900,8 +896,9 @@ body.nav-overlay-open #siteHeader .header-icons {
 
 /* left list */
 .nav-overlay__list{
-  display:flex;
-  flex-direction:column;
+  max-height: calc(100vh - 220px);
+  overflow: auto;
+  padding-right: 18px;
 }
 
 .nav-overlay__item{
@@ -969,23 +966,6 @@ body.nav-overlay-open #siteHeader .header-icons {
   padding-top: 16px;
   margin-top: 80px;
 }
-.nav-overlay__scrollLine{
-  width: 4px;
-  height: 380px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.18);
-  position: relative;
-  overflow:hidden;
-}
-.nav-overlay__scrollThumb{
-  position:absolute;
-  top: 36px;
-  left: 0;
-  right: 0;
-  height: 86px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.55);
-}
 
 /* right preview */
 .nav-overlay__right{
@@ -998,7 +978,7 @@ body.nav-overlay-open #siteHeader .header-icons {
 
 .nav-overlay__panel{
   display:grid;
-  grid-template-columns: 520px 1fr;   /* LEFT image, RIGHT text */
+  grid-template-columns: 320px 1fr;   /* LEFT image, RIGHT text */
   gap: 26px;
   align-items: start;
 }
@@ -1045,7 +1025,7 @@ body.nav-overlay-open #siteHeader .header-icons {
 .nav-overlay__list--scroll{
   max-height: calc(100vh - 220px);
   overflow: auto;
-  padding-right: 8px;
+  padding-right: 40px;
 }
 
 /* nicer scrollbar */

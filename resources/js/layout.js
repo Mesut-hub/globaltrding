@@ -449,7 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
     applyText(idx);
     start();
   });
-    // ===== BASF-like NAV OVERLAY (single instance) =====
+    // ===== NAV OVERLAY (single instance) =====
   (function () {
     const overlay = document.getElementById('navOverlay');
     const btnClose = document.getElementById('navOverlayClose');
@@ -526,27 +526,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function lockScroll(lock) {
       document.documentElement.classList.toggle('overflow-hidden', lock);
       document.body.classList.toggle('overflow-hidden', lock);
-    }
-
-    function setThumbFromScroll() {
-      const line = overlay.querySelector('.nav-overlay__scrollLine');
-      const thumb = overlay.querySelector('.nav-overlay__scrollThumb');
-      if (!line || !thumb) return;
-
-      const maxScroll = elList.scrollHeight - elList.clientHeight;
-      if (maxScroll <= 0) {
-        thumb.style.height = '86px';
-        thumb.style.top = '36px';
-        return;
-      }
-
-      const ratio = elList.clientHeight / elList.scrollHeight;
-      const lineH = line.clientHeight;
-      const thumbH = Math.max(60, Math.floor(lineH * ratio));
-      const top = Math.floor((lineH - thumbH) * (elList.scrollTop / maxScroll));
-
-      thumb.style.height = `${thumbH}px`;
-      thumb.style.top = `${top}px`;
     }
 
     function renderRight() {
@@ -642,7 +621,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       });
 
-      // Make list scrollable like BASF
+      // Make list scrollable
       elList.classList.add('nav-overlay__list--scroll');
       elList.addEventListener('scroll', setThumbFromScroll, { passive: true });
       setThumbFromScroll();
