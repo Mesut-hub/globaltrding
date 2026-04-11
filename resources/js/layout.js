@@ -298,9 +298,36 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   });
-  // Cookie consent + GA4 (consent gated)
+
+  // Cookie consent (categories) + GA4 (analytics consent gated)
   const GA_ID = 'G-HLE66GHDML';
-  const KEY = 'cookie_consent_v1'; // values: 'accepted' | 'rejected'
+
+  // Stored as JSON:
+  // { analytics: true|false|null, social: true|false|null }
+  // null means "not chosen yet"
+  const KEY = 'cookie_consent_v2';
+
+  function readConsent() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (!raw) return { analytics: null, social: null };
+      const v = JSON.parse(raw);
+      return {
+        analytics: typeof v.analytics === 'boolean' ? v.analytics : null,
+        social: typeof v.social === 'boolean' ? v.social : null,
+      };
+    } catch {
+      return { analytics: null, social: null };
+    }
+  }
+
+  function writeConsent(next) {
+    const cur = readConsent();
+    const merged = { ...cur, ...next };
+    localStorage.setItem(KEY, JSON.stringify(merged));
+    window.dispatchEvent(new CustomEvent('cookie-consent:changed', { detail: merged }));
+    return merged;
+  }
 
   function loadGA() {
     if (!GA_ID) return;
@@ -324,26 +351,44 @@ document.addEventListener('DOMContentLoaded', () => {
   const acceptBtn = document.getElementById('cookieAccept');
   const rejectBtn = document.getElementById('cookieReject');
 
-  const existing = localStorage.getItem(KEY);
+  // Optional: create extra button in HTML for social consent (recommended)
+  const acceptSocialBtn = document.getElementById('cookieAcceptSocial'); // add in Blade
 
-  if (existing === 'accepted') {
-    loadGA();
-  } else if (existing === 'rejected') {
-    // do nothing
-  } else {
+  const consent = readConsent();
+
+  // Apply existing consent
+  if (consent.analytics === true) loadGA();
+
+  // Show banner if analytics not chosen OR social not chosen
+  if (consent.analytics === null || consent.social === null) {
     banner?.classList.remove('hidden');
   }
 
+  // Accept ALL (analytics + social)
   acceptBtn?.addEventListener('click', () => {
-    localStorage.setItem(KEY, 'accepted');
+    const next = writeConsent({ analytics: true, social: true });
     banner?.classList.add('hidden');
-    loadGA();
+    if (next.analytics) loadGA();
   });
 
+  // Reject ALL (analytics + social)
   rejectBtn?.addEventListener('click', () => {
-    localStorage.setItem(KEY, 'rejected');
+    writeConsent({ analytics: false, social: false });
     banner?.classList.add('hidden');
   });
+
+  // Accept SOCIAL only (no GA). This matches your requirement.
+  acceptSocialBtn?.addEventListener('click', () => {
+    const next = writeConsent({ social: true });
+    // Keep banner visible if analytics still null (user hasn't decided analytics)
+    if (next.analytics !== null) banner?.classList.add('hidden');
+  });
+
+  // Expose a tiny helper for other scripts (home.js)
+  window.__cookieConsent = {
+    read: readConsent,
+    write: writeConsent,
+  };
 
     // Hero slider (for blocks)
     // Hero slider: changes slide + updates kicker/title/lead/cta per slide

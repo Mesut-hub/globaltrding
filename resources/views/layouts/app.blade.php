@@ -434,8 +434,9 @@
                 Read our <a href="/{{ app()->getLocale() }}/pages/cookie-policy">Cookie Policy</a>.
             </div>
             <div class="cookie-banner__actions">
-                <button type="button" id="cookieReject" class="cookie-btn cookie-btn--secondary">Reject</button>
-                <button type="button" id="cookieAccept" class="cookie-btn cookie-btn--primary">Accept</button>
+                <button type="button" id="cookieReject" class="cookie-btn cookie-btn--secondary">Reject all</button>
+                <button type="button" id="cookieAcceptSocial" class="cookie-btn cookie-btn--secondary">Accept social only</button>
+                <button type="button" id="cookieAccept" class="cookie-btn cookie-btn--primary">Accept all</button>
             </div>
         </div>
     </div>

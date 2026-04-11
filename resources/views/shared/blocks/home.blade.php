@@ -314,25 +314,274 @@
 ========================================================= --}}
 @elseif ($type === 'trending_topics')
     @php
-        $title = $t($data['title'] ?? ['en' => 'Trending topics']);
-        $topics = $data['topics'] ?? [];
+        // Expect exactly 5 topics in this order:
+        // 0 left_top (instagram)
+        // 1 left_bottom (instagram)
+        // 2 center (linkedin - big)
+        // 3 right_top (linkedin)
+        // 4 right_bottom (linkedin)
+        //
+        // Each topic item example:
+        // [
+        //   'source' => 'instagram'|'linkedin',
+        //   'image_path' => 'pages/trending/xx.jpg' (optional),
+        //   'title' => ['en' => '...'] (optional),
+        //   'text' => ['en' => '...'],
+        //   'profile_name' => 'BASF' (or your brand),
+        //   'time_ago' => '7 days ago',
+        //   'original_url' => 'https://...',
+        //   'privacy_url' => '/{locale}/pages/privacy-policy'
+        // ]
+        $sectionTitle = $t($data['title'] ?? ['en' => 'Trending Topics']);
+        $bgPath = $data['background_image_path'] ?? null;
+        $bgUrl = $bgPath ? \Illuminate\Support\Facades\Storage::disk('public')->url($bgPath) : null;
+
+        $topics = is_array($data['topics'] ?? null) ? $data['topics'] : [];
+
+        $getImg = function ($it) {
+            $p = $it['image_path'] ?? null;
+            return $p ? \Illuminate\Support\Facades\Storage::disk('public')->url($p) : null;
+        };
+
+        // Fill missing with empty items to avoid errors
+        for ($i = count($topics); $i < 5; $i++) $topics[$i] = [];
     @endphp
 
-    <section class="mx-auto max-w-7xl px-4 py-12">
-        <h2 class="text-2xl font-semibold tracking-tight">{{ $title }}</h2>
+    <section class="tt-stage" data-tt>
+        <div class="tt-stage__bg">
+            @if ($bgUrl)
+                <img src="{{ $bgUrl }}" alt="" class="tt-stage__bgImg">
+            @else
+                {{-- fallback --}}
+                <div class="tt-stage__bgFallback"></div>
+            @endif
+            <div class="tt-stage__bgOverlay"></div>
+        </div>
 
-        <div class="mt-6 flex flex-wrap gap-3">
-            @foreach ($topics as $topic)
+        <div class="tt-stage__inner">
+            <div class="tt-rig">
+                {{-- LEFT TOP (IG) --}}
                 @php
-                    $label = $t($topic['label'] ?? []);
-                    $url = $urlWithLocale($topic['url'] ?? '#');
+                    $it = $topics[0] ?? [];
+                    $src = $it['source'] ?? 'instagram';
+                    $img = $getImg($it);
+                    $text = $t($it['text'] ?? []);
+                    $orig = $urlWithLocale($it['original_url'] ?? '#');
+                    $privacy = $urlWithLocale($it['privacy_url'] ?? '/{locale}/pages/privacy-policy');
+                    $timeAgo = (string) ($it['time_ago'] ?? '—');
+                    $profile = (string) ($it['profile_name'] ?? 'Globaltrding');
                 @endphp
 
-                <a href="{{ $url }}"
-                   class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition">
-                    {{ $label }}
-                </a>
-            @endforeach
+                <article class="tt-card tt-card--sm tt-slot tt-slot--leftTop" data-social-card data-tt-card>
+                    <div class="tt-card__consent">
+                        <div class="tt-consent__box">
+                            <div class="tt-consent__text">
+                                I agree to the transmission of my personal data to Instagram in order to be shown content provided by Instagram.
+                                I have read the <a href="{{ $privacy }}" target="_blank" rel="noopener">privacy policy</a>.
+                            </div>
+                            <a href="#" class="tt-consent__btn" data-social-accept>Accept</a>
+                        </div>
+                    </div>
+
+                    <div class="tt-card__content">
+                        <div class="tt-card__media">
+                            @if ($img)
+                                <img src="{{ $img }}" alt="" class="tt-card__img">
+                            @endif
+                            <div class="tt-card__badge tt-card__badge--ig">IG</div>
+                        </div>
+
+                        <div class="tt-card__body">
+                            <div class="tt-card__meta">
+                                <span class="tt-card__profile">{{ $profile }}</span>
+                                <span class="tt-card__time">{{ $timeAgo }}</span>
+                            </div>
+                            <div class="tt-card__text">{{ $text }}</div>
+                            <a class="tt-card__link" href="{{ $orig }}" target="_blank" rel="noopener">Show original post</a>
+                        </div>
+                    </div>
+                </article>
+
+                {{-- LEFT BOTTOM (IG) --}}
+                @php
+                    $it = $topics[1] ?? [];
+                    $src = $it['source'] ?? 'instagram';
+                    $img = $getImg($it);
+                    $text = $t($it['text'] ?? []);
+                    $orig = $urlWithLocale($it['original_url'] ?? '#');
+                    $privacy = $urlWithLocale($it['privacy_url'] ?? '/{locale}/pages/privacy-policy');
+                    $timeAgo = (string) ($it['time_ago'] ?? '—');
+                    $profile = (string) ($it['profile_name'] ?? 'Globaltrding');
+                @endphp
+
+                <article class="tt-card tt-card--sm tt-slot tt-slot--leftBottom" data-social-card data-tt-card>
+                    <div class="tt-card__consent">
+                        <div class="tt-consent__box">
+                            <div class="tt-consent__text">
+                                I agree to the transmission of my personal data to Instagram in order to be shown content provided by Instagram.
+                                I have read the <a href="{{ $privacy }}" target="_blank" rel="noopener">privacy policy</a>.
+                            </div>
+                            <a href="#" class="tt-consent__btn" data-social-accept>Accept</a>
+                        </div>
+                    </div>
+
+                    <div class="tt-card__content">
+                        <div class="tt-card__media">
+                            @if ($img)
+                                <img src="{{ $img }}" alt="" class="tt-card__img">
+                            @endif
+                            <div class="tt-card__badge tt-card__badge--ig">IG</div>
+                        </div>
+
+                        <div class="tt-card__body">
+                            <div class="tt-card__meta">
+                                <span class="tt-card__profile">{{ $profile }}</span>
+                                <span class="tt-card__time">{{ $timeAgo }}</span>
+                            </div>
+                            <div class="tt-card__text">{{ $text }}</div>
+                            <a class="tt-card__link" href="{{ $orig }}" target="_blank" rel="noopener">Show original post</a>
+                        </div>
+                    </div>
+                </article>
+
+                {{-- CENTER BIG (LI) --}}
+                @php
+                    $it = $topics[2] ?? [];
+                    $img = $getImg($it);
+                    $text = $t($it['text'] ?? []);
+                    $orig = $urlWithLocale($it['original_url'] ?? '#');
+                    $privacy = $urlWithLocale($it['privacy_url'] ?? '/{locale}/pages/privacy-policy');
+                    $timeAgo = (string) ($it['time_ago'] ?? '—');
+                    $profile = (string) ($it['profile_name'] ?? 'Globaltrding');
+                    $title = $t($it['title'] ?? []);
+                @endphp
+
+                <article class="tt-card tt-card--lg tt-slot tt-slot--center" data-social-card data-tt-card>
+                    <div class="tt-card__consent">
+                        <div class="tt-consent__box">
+                            <div class="tt-consent__text">
+                                I agree to the transmission of my personal data to LinkedIn in order to be shown content provided by LinkedIn.
+                                I have read the <a href="{{ $privacy }}" target="_blank" rel="noopener">privacy policy</a>.
+                            </div>
+                            <a href="#" class="tt-consent__btn" data-social-accept>Accept</a>
+                        </div>
+                    </div>
+
+                    <div class="tt-card__content">
+                        <div class="tt-card__media">
+                            <div class="tt-card__badge tt-card__badge--li">in</div>
+                        </div>
+
+                        <div class="tt-card__body tt-card__body--lg">
+                            <div class="tt-card__meta">
+                                <span class="tt-card__profile">{{ $profile }}</span>
+                                <span class="tt-card__time">{{ $timeAgo }}</span>
+                            </div>
+
+                            @if ($title)
+                                <div class="tt-card__title">{{ $title }}</div>
+                            @endif
+
+                            <div class="tt-card__text tt-card__text--lg">{{ $text }}</div>
+
+                            <a class="tt-card__link" href="{{ $orig }}" target="_blank" rel="noopener">Show original post</a>
+                        </div>
+                    </div>
+                </article>
+
+                {{-- RIGHT TOP (LI) --}}
+                @php
+                    $it = $topics[3] ?? [];
+                    $img = $getImg($it);
+                    $text = $t($it['text'] ?? []);
+                    $orig = $urlWithLocale($it['original_url'] ?? '#');
+                    $privacy = $urlWithLocale($it['privacy_url'] ?? '/{locale}/pages/privacy-policy');
+                    $timeAgo = (string) ($it['time_ago'] ?? '—');
+                    $profile = (string) ($it['profile_name'] ?? 'Globaltrding');
+                @endphp
+
+                <article class="tt-card tt-card--sm tt-card--liTall tt-slot tt-slot--rightTop" data-social-card data-tt-card>
+                    <div class="tt-card__consent">
+                        <div class="tt-consent__box">
+                            <div class="tt-consent__text">
+                                I agree to the transmission of my personal data to LinkedIn in order to be shown content provided by LinkedIn.
+                                I have read the <a href="{{ $privacy }}" target="_blank" rel="noopener">privacy policy</a>.
+                            </div>
+                            <a href="#" class="tt-consent__btn" data-social-accept>Accept</a>
+                        </div>
+                    </div>
+
+                    <div class="tt-card__content">
+                        <div class="tt-card__media">
+                            @if ($img)
+                                <img src="{{ $img }}" alt="" class="tt-card__img">
+                            @endif
+                            <div class="tt-card__badge tt-card__badge--li">in</div>
+                        </div>
+
+                        <div class="tt-card__body">
+                            <div class="tt-card__meta">
+                                <span class="tt-card__profile">{{ $profile }}</span>
+                                <span class="tt-card__time">{{ $timeAgo }}</span>
+                            </div>
+                            <div class="tt-card__text">{{ $text }}</div>
+                            <a class="tt-card__link" href="{{ $orig }}" target="_blank" rel="noopener">Show original post</a>
+                        </div>
+                    </div>
+                </article>
+
+                {{-- RIGHT BOTTOM (LI) --}}
+                @php
+                    $it = $topics[4] ?? [];
+                    $img = $getImg($it);
+                    $text = $t($it['text'] ?? []);
+                    $orig = $urlWithLocale($it['original_url'] ?? '#');
+                    $privacy = $urlWithLocale($it['privacy_url'] ?? '/{locale}/pages/privacy-policy');
+                    $timeAgo = (string) ($it['time_ago'] ?? '—');
+                    $profile = (string) ($it['profile_name'] ?? 'Globaltrding');
+                @endphp
+
+                <article class="tt-card tt-card--sm tt-card--liTall tt-slot tt-slot--rightBottom" data-social-card data-tt-card>
+                    <div class="tt-card__consent">
+                        <div class="tt-consent__box">
+                            <div class="tt-consent__text">
+                                I agree to the transmission of my personal data to LinkedIn in order to be shown content provided by LinkedIn.
+                                I have read the <a href="{{ $privacy }}" target="_blank" rel="noopener">privacy policy</a>.
+                            </div>
+                            <a href="#" class="tt-consent__btn" data-social-accept>Accept</a>
+                        </div>
+                    </div>
+
+                    <div class="tt-card__content">
+                        <div class="tt-card__media">
+                            @if ($img)
+                                <img src="{{ $img }}" alt="" class="tt-card__img">
+                            @endif
+                            <div class="tt-card__badge tt-card__badge--li">in</div>
+                        </div>
+
+                        <div class="tt-card__body">
+                            <div class="tt-card__meta">
+                                <span class="tt-card__profile">{{ $profile }}</span>
+                                <span class="tt-card__time">{{ $timeAgo }}</span>
+                            </div>
+                            <div class="tt-card__text">{{ $text }}</div>
+                            <a class="tt-card__link" href="{{ $orig }}" target="_blank" rel="noopener">Show original post</a>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+
+        {{-- Bottom nav bar like BASF --}}
+        <div class="tt-nav">
+            <div class="tt-nav__bg"></div>
+            <div class="tt-nav__inner">
+                <div class="tt-nav__title">{{ $sectionTitle }}</div>
+                <div class="tt-nav__labels">
+                    <span class="tt-nav__label is-active">#Trending</span>
+                </div>
+            </div>
         </div>
     </section>
 @endif
