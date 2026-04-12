@@ -140,9 +140,10 @@
   --zmul: 0.45;
 
   transform:
+    translate3d(-50%, -50%, 0px)
     translate3d(
-      calc(-420px + (var(--tt-x) * 46px * var(--zmul))),
-      calc(-210px + (var(--tt-y) * 34px * var(--zmul))),
+      calc(-300px + (var(--tt-x) * 46px * var(--zmul))),
+      calc(-170px + (var(--tt-y) * 34px * var(--zmul))),
       -240px
     )
     rotateY(-12deg)
@@ -157,9 +158,10 @@
   --zmul: 0.40;
 
   transform:
+    translate3d(-50%, -50%, 0px)
     translate3d(
-      calc(-420px + (var(--tt-x) * 46px * var(--zmul))),
-      calc(120px + (var(--tt-y) * 34px * var(--zmul))),
+      calc(-300px + (var(--tt-x) * 46px * var(--zmul))),
+      calc(160px + (var(--tt-y) * 34px * var(--zmul))),
       -280px
     )
     rotateY(-12deg)
@@ -169,14 +171,15 @@
 
 /* CENTER (front, biggest, above all) */
 .tt-slot--center{
-  width: 520px;
+  width: 1020px;
   height: 590px;
   --zmul: 1.0;
 
   transform:
+    translate3d(-50%, -50%, 0px)
     translate3d(
-      calc(-260px + (var(--tt-x) * 70px * var(--zmul))),
-      calc(-295px + (var(--tt-y) * 54px * var(--zmul))),
+      calc(0px + (var(--tt-x) * 70px * var(--zmul))),
+      calc(0px + (var(--tt-y) * 54px * var(--zmul))),
       260px
     )
     rotateY(0deg)
@@ -191,9 +194,10 @@
   --zmul: 0.55;
 
   transform:
+    translate3d(-50%, -50%, 0px)
     translate3d(
-      calc(250px + (var(--tt-x) * 56px * var(--zmul))),
-      calc(-160px + (var(--tt-y) * 40px * var(--zmul))),
+      calc(330px + (var(--tt-x) * 56px * var(--zmul))),
+      calc(-120px + (var(--tt-y) * 40px * var(--zmul))),
       -180px
     )
     rotateY(14deg)
@@ -208,9 +212,10 @@
   --zmul: 0.50;
 
   transform:
+    translate3d(-50%, -50%, 0px)
     translate3d(
-      calc(250px + (var(--tt-x) * 56px * var(--zmul))),
-      calc(120px + (var(--tt-y) * 40px * var(--zmul))),
+      calc(330px + (var(--tt-x) * 56px * var(--zmul))),
+      calc(210px + (var(--tt-y) * 40px * var(--zmul))),
       -220px
     )
     rotateY(14deg)
@@ -233,11 +238,10 @@
   transition: transform 140ms ease;
 }
 
-/* Keep your internal structure sizing flexible */
-.tt-card--sm{ height: 100%; }
-.tt-card--lg{ height: 100%; width: 100%; margin: 0; }
-
-.tt-card--liTall{ height: 320px; }
+/* IMPORTANT: sizes are controlled by slot classes, not these modifiers */
+.tt-card--sm{ height: auto; }
+.tt-card--lg{ height: auto; width: auto; margin: 0; }
+.tt-card--liTall{ height: auto; }
 
 .tt-card__content{
   height: 100%;
@@ -328,6 +332,31 @@
 }
 .tt-card__link:hover{ text-decoration: underline; }
 
+/* Scrollable long content + down button */
+.tt-card__scroll{
+  position: relative;
+  overflow: auto;
+  max-height: 140px;
+  padding-right: 6px;
+}
+.tt-card__scroll--lg{
+  max-height: 360px;
+}
+
+.tt-card__down{
+  margin-top: 8px;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 0;
+  background: #10a6df;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.tt-card__downIcon{ font-size: 22px; line-height: 1; transform: translateY(1px); }
+
 /* Consent overlay */
 [data-social-card] .tt-card__content{ opacity: 0; pointer-events:none; }
 [data-social-card] .tt-card__consent{ display:flex; }
@@ -404,6 +433,46 @@
   font-weight: 800;
   font-size: 18px;
   color: #21a0d2;
+}
+
+/* Confirm overlay (Show original post) */
+.tt-confirm{
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0,0,0,0.55);
+  display: grid;
+  place-items: center;
+}
+.tt-confirm.hidden{ display: none; }
+.tt-confirm__dialog{
+  width: min(520px, 92%);
+  background: #fff;
+  padding: 18px;
+  border: 1px solid rgba(0,0,0,0.16);
+}
+.tt-confirm__text{
+  font-size: 14px;
+  color: #111;
+}
+.tt-confirm__actions{
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.tt-confirm__btn{
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: 800;
+  cursor: pointer;
+  border: 1px solid rgba(0,0,0,0.14);
+  background: #fff;
+}
+.tt-confirm__btn--primary{
+  background: #10a6df;
+  color: #fff;
+  border-color: transparent;
 }
 
 /* Playable hover motion (subtle) */

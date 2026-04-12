@@ -348,6 +348,22 @@
     @endphp
 
     <section class="tt-stage" data-tt>
+        {{-- Confirm overlay for "Show original post" (BASF-like) --}}
+         <div class="tt-confirm hidden" data-tt-confirm aria-hidden="true">
+             <div class="tt-confirm__dialog" role="dialog" aria-modal="true" aria-label="Leave page confirmation">
+                 <div class="tt-confirm__text">
+                     You are now leaving this website. Do you want to continue?
+                 </div>
+                 <div class="tt-confirm__actions">
+                     <button type="button" class="tt-confirm__btn tt-confirm__btn--secondary" data-tt-confirm-cancel>
+                         Cancel
+                     </button>
+                     <button type="button" class="tt-confirm__btn tt-confirm__btn--primary" data-tt-confirm-leave>
+                         Leave page
+                     </button>
+                 </div>
+             </div>
+         </div>
         <div class="tt-stage__bg">
             @if ($bgUrl)
                 <img src="{{ $bgUrl }}" alt="" class="tt-stage__bgImg">
@@ -372,7 +388,7 @@
                     $profile = (string) ($it['profile_name'] ?? 'Globaltrding');
                 @endphp
 
-                <article class="tt-card tt-card--sm tt-slot tt-slot--leftTop" data-social-card data-tt-card>
+                <article class="tt-card tt-card--sm tt-slot tt-slot--leftTop" data-social-card data-tt-card data-slot="leftTop" data-source="{{ $src }}">
                     <div class="tt-card__consent">
                         <div class="tt-consent__box">
                             <div class="tt-consent__text">
@@ -396,8 +412,14 @@
                                 <span class="tt-card__profile">{{ $profile }}</span>
                                 <span class="tt-card__time">{{ $timeAgo }}</span>
                             </div>
-                            <div class="tt-card__text">{{ $text }}</div>
-                            <a class="tt-card__link" href="{{ $orig }}" target="_blank" rel="noopener">Show original post</a>
+                            <div class="tt-card__scroll" data-tt-scroll>
+                                 <div class="tt-card__text">{{ $text }}</div>
+                                 <a class="tt-card__link" href="{{ $orig }}" target="_blank" rel="noopener"
+                                    data-tt-original data-url="{{ $orig }}">Show original post</a>
+                            </div>
+                            <button type="button" class="tt-card__down" aria-label="Scroll down" data-tt-down>
+                                <span class="tt-card__downIcon">⌄</span>
+                            </button>
                         </div>
                     </div>
                 </article>
@@ -414,7 +436,7 @@
                     $profile = (string) ($it['profile_name'] ?? 'Globaltrding');
                 @endphp
 
-                <article class="tt-card tt-card--sm tt-slot tt-slot--leftBottom" data-social-card data-tt-card>
+                <article class="tt-card tt-card--sm tt-slot tt-slot--leftBottom" data-social-card data-tt-card data-slot="leftBottom" data-source="{{ $src }}">
                     <div class="tt-card__consent">
                         <div class="tt-consent__box">
                             <div class="tt-consent__text">
@@ -438,8 +460,14 @@
                                 <span class="tt-card__profile">{{ $profile }}</span>
                                 <span class="tt-card__time">{{ $timeAgo }}</span>
                             </div>
-                            <div class="tt-card__text">{{ $text }}</div>
-                            <a class="tt-card__link" href="{{ $orig }}" target="_blank" rel="noopener">Show original post</a>
+                            <div class="tt-card__scroll" data-tt-scroll>
+                                 <div class="tt-card__text">{{ $text }}</div>
+                                 <a class="tt-card__link" href="{{ $orig }}" target="_blank" rel="noopener"
+                                    data-tt-original data-url="{{ $orig }}">Show original post</a>
+                            </div>
+                            <button type="button" class="tt-card__down" aria-label="Scroll down" data-tt-down>
+                                <span class="tt-card__downIcon">⌄</span>
+                            </button>
                         </div>
                     </div>
                 </article>
@@ -456,7 +484,7 @@
                     $title = $t($it['title'] ?? []);
                 @endphp
 
-                <article class="tt-card tt-card--lg tt-slot tt-slot--center" data-social-card data-tt-card>
+                <article class="tt-card tt-card--lg tt-slot tt-slot--center" data-social-card data-tt-card data-slot="center" data-source="linkedin">
                     <div class="tt-card__consent">
                         <div class="tt-consent__box">
                             <div class="tt-consent__text">
@@ -482,9 +510,15 @@
                                 <div class="tt-card__title">{{ $title }}</div>
                             @endif
 
-                            <div class="tt-card__text tt-card__text--lg">{{ $text }}</div>
+                            <div class="tt-card__scroll tt-card__scroll--lg" data-tt-scroll>
+                                <div class="tt-card__text tt-card__text--lg">{{ $text }}</div>
+                                <a class="tt-card__link" href="{{ $orig }}" target="_blank" rel="noopener"
+                                   data-tt-original data-url="{{ $orig }}">Show original post</a>
+                            </div>
 
-                            <a class="tt-card__link" href="{{ $orig }}" target="_blank" rel="noopener">Show original post</a>
+                            <button type="button" class="tt-card__down" aria-label="Scroll down" data-tt-down>
+                                <span class="tt-card__downIcon">⌄</span>
+                            </button>
                         </div>
                     </div>
                 </article>
@@ -500,7 +534,7 @@
                     $profile = (string) ($it['profile_name'] ?? 'Globaltrding');
                 @endphp
 
-                <article class="tt-card tt-card--sm tt-card--liTall tt-slot tt-slot--rightTop" data-social-card data-tt-card>
+                <article class="tt-card tt-card--sm tt-card--liTall tt-slot tt-slot--rightTop" data-social-card data-tt-card data-slot="rightTop" data-source="linkedin">
                     <div class="tt-card__consent">
                         <div class="tt-consent__box">
                             <div class="tt-consent__text">
@@ -524,8 +558,14 @@
                                 <span class="tt-card__profile">{{ $profile }}</span>
                                 <span class="tt-card__time">{{ $timeAgo }}</span>
                             </div>
-                            <div class="tt-card__text">{{ $text }}</div>
-                            <a class="tt-card__link" href="{{ $orig }}" target="_blank" rel="noopener">Show original post</a>
+                            <div class="tt-card__scroll" data-tt-scroll>
+                                <div class="tt-card__text">{{ $text }}</div>
+                                <a class="tt-card__link" href="{{ $orig }}" target="_blank" rel="noopener"
+                                   data-tt-original data-url="{{ $orig }}">Show original post</a>
+                            </div>
+                            <button type="button" class="tt-card__down" aria-label="Scroll down" data-tt-down>
+                                <span class="tt-card__downIcon">⌄</span>
+                            </button>
                         </div>
                     </div>
                 </article>
@@ -541,7 +581,7 @@
                     $profile = (string) ($it['profile_name'] ?? 'Globaltrding');
                 @endphp
 
-                <article class="tt-card tt-card--sm tt-card--liTall tt-slot tt-slot--rightBottom" data-social-card data-tt-card>
+                <article class="tt-card tt-card--sm tt-card--liTall tt-slot tt-slot--rightBottom" data-social-card data-tt-card data-slot="rightBottom" data-source="linkedin">
                     <div class="tt-card__consent">
                         <div class="tt-consent__box">
                             <div class="tt-consent__text">
@@ -565,8 +605,14 @@
                                 <span class="tt-card__profile">{{ $profile }}</span>
                                 <span class="tt-card__time">{{ $timeAgo }}</span>
                             </div>
-                            <div class="tt-card__text">{{ $text }}</div>
-                            <a class="tt-card__link" href="{{ $orig }}" target="_blank" rel="noopener">Show original post</a>
+                            <div class="tt-card__scroll" data-tt-scroll>
+                                <div class="tt-card__text">{{ $text }}</div>
+                                <a class="tt-card__link" href="{{ $orig }}" target="_blank" rel="noopener"
+                                   data-tt-original data-url="{{ $orig }}">Show original post</a>
+                            </div>
+                            <button type="button" class="tt-card__down" aria-label="Scroll down" data-tt-down>
+                                <span class="tt-card__downIcon">⌄</span>
+                            </button>
                         </div>
                     </div>
                 </article>

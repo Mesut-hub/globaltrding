@@ -82,8 +82,97 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // TRENDING TOPICS: playable tilt animation (like BASF subtle motion)
-    // TRENDING TOPICS: BASF-like 3D rig (stage parallax)
+  // ===== TRENDING TOPICS: BASF-like interactions =====
+  function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+
+  // Confirm overlay handling (Show original post)
+  document.querySelectorAll('[data-tt]').forEach((stage) => {
+    const confirm = stage.querySelector('[data-tt-confirm]');
+    const btnCancel = stage.querySelector('[data-tt-confirm-cancel]');
+    const btnLeave = stage.querySelector('[data-tt-confirm-leave]');
+    if (!confirm || !btnCancel || !btnLeave) return;
+
+    let pendingUrl = null;
+
+    const openConfirm = (url) => {
+      pendingUrl = url;
+      confirm.classList.remove('hidden');
+      confirm.setAttribute('aria-hidden', 'false');
+      document.documentElement.classList.add('overflow-hidden');
+      document.body.classList.add('overflow-hidden');
+    };
+
+    const closeConfirm = () => {
+      pendingUrl = null;
+      confirm.classList.add('hidden');
+      confirm.setAttribute('aria-hidden', 'true');
+      document.documentElement.classList.remove('overflow-hidden');
+      document.body.classList.remove('overflow-hidden');
+    };
+
+    stage.addEventListener('click', (e) => {
+      const a = e.target.closest('[data-tt-original]');
+      if (!a) return;
+      e.preventDefault();
+      const url = a.getAttribute('data-url') || a.getAttribute('href');
+      if (url) openConfirm(url);
+    });
+
+    btnCancel.addEventListener('click', closeConfirm);
+    confirm.addEventListener('click', (e) => { if (e.target === confirm) closeConfirm(); });
+
+    btnLeave.addEventListener('click', () => {
+      // Accept social consent (acts like the BASF acceptance behavior)
+      window.__cookieConsent?.write?.({ social: true });
+      if (pendingUrl) window.open(pendingUrl, '_blank', 'noopener');
+      closeConfirm();
+    });
+  });
+
+  // Scroll/down-arrow logic inside cards
+  function initCardScroll(card) {
+    const scroller = card.querySelector('[data-tt-scroll]');
+    const btnDown = card.querySelector('[data-tt-down]');
+    if (!scroller || !btnDown) return;
+
+    const refresh = () => {
+      const max = scroller.scrollHeight - scroller.clientHeight;
+      const atEnd = max <= 2 || scroller.scrollTop >= max - 2;
+      btnDown.style.display = atEnd ? 'none' : 'grid';
+    };
+
+    btnDown.addEventListener('click', () => {
+      scroller.scrollBy({ top: Math.round(scroller.clientHeight * 0.85), behavior: 'smooth' });
+    });
+
+    scroller.addEventListener('scroll', refresh, { passive: true });
+    refresh();
+  }
+
+  document.querySelectorAll('[data-social-card]').forEach(initCardScroll);
+
+  // Swap-to-center logic
+  function swapSlots(stage, fromSlot) {
+    const center = stage.querySelector('[data-slot="center"]');
+    const other = stage.querySelector(`[data-slot="${fromSlot}"]`);
+    if (!center || !other) return;
+
+    const from = other.getAttribute('data-slot');
+    center.setAttribute('data-slot', from);
+    other.setAttribute('data-slot', 'center');
+
+    // Update classes to match slots
+    const slots = ['leftTop','leftBottom','rightTop','rightBottom','center'];
+    const applySlotClass = (el) => {
+      slots.forEach(s => el.classList.remove(`tt-slot--${s}`));
+      const s = el.getAttribute('data-slot');
+      el.classList.add(`tt-slot--${s}`);
+    };
+    applySlotClass(center);
+    applySlotClass(other);
+  }
+
+  // Stage parallax direction fix + click-to-swap
   document.querySelectorAll('[data-tt]').forEach((stage) => {
     const rig = stage.querySelector('.tt-rig');
     if (!rig) return;
@@ -95,39 +184,26 @@ document.addEventListener('DOMContentLoaded', () => {
     let tx = 0;
     let ty = 0;
 
-    const apply = () => {
-      raf = null;
-
-      // stronger than before (BASF feel)
-      const rotY = tx * 14;           // rotate stage
-      const rotX = -ty * 10;
-      const moveX = tx * 30;          // translate stage
-      const moveY = ty * 22;
-
-      rig.style.transform =
-        `translate3d(${moveX}px, ${moveY}px, 0px) rotateX(${rotX}deg) rotateY(${rotY}deg)`;
-
-      // Add slight “independent drift” per card based on depth
-      stage.querySelectorAll('.tt-card').forEach((card) => {
-        const z = card.classList.contains('tt-slot--center') ? 1.0 : 0.55;
-        const cx = tx * 26 * z;
-        const cy = ty * 18 * z;
-        card.style.transform = card.style.transform.replace(/translate3d\([^)]*\)/, (m) => m)
-        // We do NOT overwrite base transforms here; we add CSS variable offsets instead:
-      });
-    };
-
-    // Use CSS variables to add offsets without destroying base slot transforms
     const setVars = () => {
-      const rotY = tx * 14;
-      const rotX = -ty * 10;
-      const moveX = tx * 30;
-      const moveY = ty * 22;
+      // Direction fix:
+      // BASF feel: move mouse right => cards drift right; move mouse up => cards drift up.
+      // Your previous logic created the opposite on your build; invert here.
+      const x = -tx;
+      const y = -ty;
+
+      const rotY = x * 14;
+      const rotX = -y * 10;
+      const moveX = x * 30;
+      const moveY = y * 22;
 
       rig.style.setProperty('--tt-mx', `${moveX}px`);
       rig.style.setProperty('--tt-my', `${moveY}px`);
       rig.style.setProperty('--tt-rx', `${rotX}deg`);
       rig.style.setProperty('--tt-ry', `${rotY}deg`);
+
+      // ALSO set --tt-x/--tt-y for per-slot drift (CSS uses these)
+      rig.style.setProperty('--tt-x', `${x}`);
+      rig.style.setProperty('--tt-y', `${y}`);
     };
 
     const onMove = (e) => {
@@ -135,8 +211,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const x = (e.clientX - r.left) / r.width;  // 0..1
       const y = (e.clientY - r.top) / r.height;  // 0..1
 
-      tx = (x - 0.5) * 2; // -1..1
-      ty = (y - 0.5) * 2;
+      tx = clamp((x - 0.5) * 2, -1, 1);
+      ty = clamp((y - 0.5) * 2, -1, 1);
 
       if (!raf) {
         raf = requestAnimationFrame(() => {
@@ -154,8 +230,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     stage.addEventListener('mousemove', onMove);
     stage.addEventListener('mouseleave', reset);
-
-    // init
     setVars();
+
+    // Click surrounding cards to swap with center
+    stage.addEventListener('click', (e) => {
+      const card = e.target.closest('[data-slot]');
+      if (!card) return;
+
+      const slot = card.getAttribute('data-slot');
+      if (!slot || slot === 'center') return;
+
+      swapSlots(stage, slot);
+    });
   });
 });
