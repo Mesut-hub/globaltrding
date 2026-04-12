@@ -388,7 +388,7 @@
                     $profile = (string) ($it['profile_name'] ?? 'Globaltrding');
                 @endphp
 
-                <article class="tt-card tt-card--sm tt-slot tt-slot--leftTop" data-social-card data-tt-card data-slot="leftTop" data-source="{{ $src }}">
+                <article class="tt-card tt-slot tt-slot--leftTop" data-social-card data-tt-card data-slot="leftTop" data-source="{{ $src }}">
                     <div class="tt-card__consent">
                         <div class="tt-consent__box">
                             <div class="tt-consent__text">
@@ -436,7 +436,7 @@
                     $profile = (string) ($it['profile_name'] ?? 'Globaltrding');
                 @endphp
 
-                <article class="tt-card tt-card--sm tt-slot tt-slot--leftBottom" data-social-card data-tt-card data-slot="leftBottom" data-source="{{ $src }}">
+                <article class="tt-card tt-slot tt-slot--leftBottom" data-social-card data-tt-card data-slot="leftBottom" data-source="{{ $src }}">
                     <div class="tt-card__consent">
                         <div class="tt-consent__box">
                             <div class="tt-consent__text">
@@ -484,7 +484,7 @@
                     $title = $t($it['title'] ?? []);
                 @endphp
 
-                <article class="tt-card tt-card--lg tt-slot tt-slot--center" data-social-card data-tt-card data-slot="center" data-source="linkedin">
+                <article class="tt-card tt-slot tt-slot--center" data-social-card data-tt-card data-slot="center" data-source="linkedin">
                     <div class="tt-card__consent">
                         <div class="tt-consent__box">
                             <div class="tt-consent__text">
@@ -534,7 +534,7 @@
                     $profile = (string) ($it['profile_name'] ?? 'Globaltrding');
                 @endphp
 
-                <article class="tt-card tt-card--sm tt-card--liTall tt-slot tt-slot--rightTop" data-social-card data-tt-card data-slot="rightTop" data-source="linkedin">
+                <article class="tt-card tt-card--liTall tt-slot tt-slot--rightTop" data-social-card data-tt-card data-slot="rightTop" data-source="linkedin">
                     <div class="tt-card__consent">
                         <div class="tt-consent__box">
                             <div class="tt-consent__text">
@@ -581,7 +581,7 @@
                     $profile = (string) ($it['profile_name'] ?? 'Globaltrding');
                 @endphp
 
-                <article class="tt-card tt-card--sm tt-card--liTall tt-slot tt-slot--rightBottom" data-social-card data-tt-card data-slot="rightBottom" data-source="linkedin">
+                <article class="tt-card tt-card--liTall tt-slot tt-slot--rightBottom" data-social-card data-tt-card data-slot="rightBottom" data-source="linkedin">
                     <div class="tt-card__consent">
                         <div class="tt-consent__box">
                             <div class="tt-consent__text">

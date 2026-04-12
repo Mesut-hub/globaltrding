@@ -116,6 +116,10 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       const url = a.getAttribute('data-url') || a.getAttribute('href');
       if (url) openConfirm(url);
+      // Don't swap when interacting with UI controls/links inside cards
+      if (e.target.closest('a,button,input,textarea,[data-social-accept],[data-tt-down],[data-tt-original]')) {
+        return;
+      }
     });
 
     btnCancel.addEventListener('click', closeConfirm);

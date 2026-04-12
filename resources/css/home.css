@@ -60,10 +60,10 @@
 
 /* ===== Trending Topics (BASF-like stage) ===== */
 .tt-stage{
+  display: block;
   position: relative;
-  width: 100%;
-  height: 92vh;
-  min-height: 640px;
+  width: auto;
+  height: 861px;
   overflow: hidden;
   /* mouse vars (JS updates these) */
   --tt-x: 0;
@@ -133,100 +133,15 @@
 /* Helper: dynamic drift amount by depth */
 .tt-slot{ --zmul: 0.6; }
 
-/* Slot positions (tuned to match BASF composition) */
-.tt-slot--leftTop{
-  width: 260px;
-  height: 310px;
-  --zmul: 0.45;
-
-  transform:
-    translate3d(-50%, -50%, 0px)
-    translate3d(
-      calc(-300px + (var(--tt-x) * 46px * var(--zmul))),
-      calc(-170px + (var(--tt-y) * 34px * var(--zmul))),
-      -240px
-    )
-    rotateY(-12deg)
-    rotateX(5deg);
-  z-index: 2;
+/* BASF-like card metrics */
+:root{
+  --tt-card-w: 378.81px;
+  --tt-card-h-sm: 430.5px;
+  --tt-card-h-lg: 602.7px;
+  --tt-card-scale-sm: 0.671746;
 }
 
-/* LEFT BOTTOM */
-.tt-slot--leftBottom{
-  width: 260px;
-  height: 310px;
-  --zmul: 0.40;
-
-  transform:
-    translate3d(-50%, -50%, 0px)
-    translate3d(
-      calc(-300px + (var(--tt-x) * 46px * var(--zmul))),
-      calc(160px + (var(--tt-y) * 34px * var(--zmul))),
-      -280px
-    )
-    rotateY(-12deg)
-    rotateX(5deg);
-  z-index: 1;
-}
-
-/* CENTER (front, biggest, above all) */
-.tt-slot--center{
-  width: 1020px;
-  height: 590px;
-  --zmul: 1.0;
-
-  transform:
-    translate3d(-50%, -50%, 0px)
-    translate3d(
-      calc(0px + (var(--tt-x) * 70px * var(--zmul))),
-      calc(0px + (var(--tt-y) * 54px * var(--zmul))),
-      260px
-    )
-    rotateY(0deg)
-    rotateX(0deg);
-  z-index: 10;
-}
-
-/* RIGHT TOP */
-.tt-slot--rightTop{
-  width: 260px;
-  height: 520px;
-  --zmul: 0.55;
-
-  transform:
-    translate3d(-50%, -50%, 0px)
-    translate3d(
-      calc(330px + (var(--tt-x) * 56px * var(--zmul))),
-      calc(-120px + (var(--tt-y) * 40px * var(--zmul))),
-      -180px
-    )
-    rotateY(14deg)
-    rotateX(5deg);
-  z-index: 3;
-}
-
-/* RIGHT BOTTOM */
-.tt-slot--rightBottom{
-  width: 260px;
-  height: 520px;
-  --zmul: 0.50;
-
-  transform:
-    translate3d(-50%, -50%, 0px)
-    translate3d(
-      calc(330px + (var(--tt-x) * 56px * var(--zmul))),
-      calc(210px + (var(--tt-y) * 40px * var(--zmul))),
-      -220px
-    )
-    rotateY(14deg)
-    rotateX(5deg);
-  z-index: 2;
-}
-
-/* Make cards look like floating sheets */
-
-
-/* Card base */
+/* Default card behavior (BASF-like) */
 .tt-card{
   position: absolute;
   left: 50%;
@@ -236,12 +151,128 @@
   background: #fff;
   box-shadow: 0 24px 90px rgba(0,0,0,0.40);
   transition: transform 140ms ease;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-mask-image: -webkit-radial-gradient(center, white, black);
+  mask-image: -webkit-radial-gradient(center, white, black);
 }
 
-/* IMPORTANT: sizes are controlled by slot classes, not these modifiers */
+/* Slot positions (tuned to match BASF composition) */
+.tt-slot--leftTop{
+  width: var(--tt-card-w);
+  height: var(--tt-card-h-sm);
+  --zmul: 0.45;
+
+  transform:
+    translate3d(-50%, -50%, 0px)
+    translate3d(
+      calc(-530px + (var(--tt-x) * 46px * var(--zmul))),
+      calc(-310px + (var(--tt-y) * 34px * var(--zmul))),
+      -240px
+    )
+    rotateY(0deg)
+    rotateX(0deg);
+  z-index: 2;
+  opacity: 0.8;
+  cursor: pointer;
+  transform-origin: center center;
+  /* BASF: side cards are scaled down */
+  scale: var(--tt-card-scale-sm);
+}
+
+/* LEFT BOTTOM */
+.tt-slot--leftBottom{
+  width: var(--tt-card-w);
+  height: var(--tt-card-h-sm);
+  --zmul: 0.40;
+
+  transform:
+    translate3d(-50%, -50%, 0px)
+    translate3d(
+      calc(-630px + (var(--tt-x) * 46px * var(--zmul))),
+      calc(220px + (var(--tt-y) * 34px * var(--zmul))),
+      -280px
+    )
+    rotateY(0deg)
+    rotateX(0deg);
+  z-index: 1;
+  opacity: 0.8;
+  cursor: pointer;
+  scale: var(--tt-card-scale-sm);
+}
+
+/* CENTER (front, biggest, above all) */
+.tt-slot--center{
+  width: var(--tt-card-w);
+  height: var(--tt-card-h-lg);
+  --zmul: 1.0;
+
+  transform:
+    translate3d(-50%, -50%, 0px)
+    translate3d(
+      calc(0px + (var(--tt-x) * 70px * var(--zmul))),
+      calc(100px + (var(--tt-y) * 54px * var(--zmul))),
+      0px
+    )
+    rotateY(0deg)
+    rotateX(0deg);
+  z-index: 10;
+  opacity: 1;
+  cursor: default;
+  scale: 1;
+}
+
+/* RIGHT TOP */
+.tt-slot--rightTop{
+  width: var(--tt-card-w);
+  height: var(--tt-card-h-sm);
+  --zmul: 0.55;
+
+  transform:
+    translate3d(-50%, -50%, 0px)
+    translate3d(
+      calc(400px + (var(--tt-x) * 56px * var(--zmul))),
+      calc(-250px + (var(--tt-y) * 40px * var(--zmul))),
+      -180px
+    )
+    rotateY(0deg)
+    rotateX(0deg);
+  z-index: 3;
+  opacity: 0.8;
+  cursor: pointer;
+  scale: var(--tt-card-scale-sm);
+}
+
+/* RIGHT BOTTOM */
+.tt-slot--rightBottom{
+  width: var(--tt-card-w);
+  height: var(--tt-card-h-sm);
+  --zmul: 0.50;
+
+  transform:
+    translate3d(-50%, -50%, 0px)
+    translate3d(
+      calc(430px + (var(--tt-x) * 56px * var(--zmul))),
+      calc(350px + (var(--tt-y) * 40px * var(--zmul))),
+      -220px
+    )
+    rotateY(0deg)
+    rotateX(0deg);
+  z-index: 2;
+  opacity: 0.8;
+  cursor: pointer;
+  scale: var(--tt-card-scale-sm);
+}
+
+/* Make cards look like floating sheets */
+
+
+/* Card base */
+
+/* IMPORTANT: sizes are controlled by slot classes, not these modifiers 
 .tt-card--sm{ height: auto; }
 .tt-card--lg{ height: auto; width: auto; margin: 0; }
-.tt-card--liTall{ height: auto; }
+.tt-card--liTall{ height: auto; }*/
 
 .tt-card__content{
   height: 100%;
@@ -357,11 +388,21 @@
 }
 .tt-card__downIcon{ font-size: 22px; line-height: 1; transform: translateY(1px); }
 
-/* Consent overlay */
-[data-social-card] .tt-card__content{ opacity: 0; pointer-events:none; }
-[data-social-card] .tt-card__consent{ display:flex; }
-[data-social-card].is-allowed .tt-card__content{ opacity: 1; pointer-events:auto; }
-[data-social-card].is-allowed .tt-card__consent{ display:none; }
+/* Gate ONLY LinkedIn cards (external). Instagram is local/static. */
+[data-social-card][data-source="linkedin"] .tt-card__content{ opacity: 0; pointer-events:none; }
+[data-social-card][data-source="linkedin"] .tt-card__consent{ display:flex; }
+[data-social-card][data-source="linkedin"].is-allowed .tt-card__content{ opacity: 1; pointer-events:auto; }
+[data-social-card][data-source="linkedin"].is-allowed .tt-card__consent{ display:none; }
+
+[data-social-card][data-source="instagram"] .tt-card__content{ opacity: 1; pointer-events:auto; }
+[data-social-card][data-source="instagram"] .tt-card__consent{ display:none; }
+
+/* If an editor forgets data-source, default to "visible" to avoid a broken UI */
+[data-social-card]:not([data-source]) .tt-card__content{ opacity: 1; pointer-events:auto; }
+[data-social-card]:not([data-source]) .tt-card__consent{ display:none; }
+
+/* Ensure card box respects slot sizing */
+.tt-card__content{ height: 100%; }
 
 .tt-card__consent{
   position:absolute;
