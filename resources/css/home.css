@@ -139,6 +139,8 @@
   --tt-card-h-sm: 430.5px;
   --tt-card-h-lg: 602.7px;
   --tt-card-scale-sm: 0.671746;
+  --tt-hover-scale: 0.705; /* slightly larger than 0.6717 */
+  --tt-hover-opacity: 0.95;
 }
 
 /* Default card behavior (BASF-like) */
@@ -180,6 +182,13 @@
   scale: var(--tt-card-scale-sm);
 }
 
+.tt-slot--leftTop:hover{
+  scale: var(--tt-hover-scale);
+  opacity: var(--tt-hover-opacity);
+  z-index: 6;
+}
+.tt-slot--leftTop:hover .tt-card__content{ filter: brightness(1.02); }
+
 /* LEFT BOTTOM */
 .tt-slot--leftBottom{
   width: var(--tt-card-w);
@@ -200,6 +209,13 @@
   cursor: pointer;
   scale: var(--tt-card-scale-sm);
 }
+
+.tt-slot--leftBottom:hover{
+  scale: var(--tt-hover-scale);
+  opacity: var(--tt-hover-opacity);
+  z-index: 6;
+}
+.tt-slot--leftBottom:hover .tt-card__content{ filter: brightness(1.02); }
 
 /* CENTER (front, biggest, above all) */
 .tt-slot--center{
@@ -243,6 +259,13 @@
   scale: var(--tt-card-scale-sm);
 }
 
+.tt-slot--rightTop:hover{
+  scale: var(--tt-hover-scale);
+  opacity: var(--tt-hover-opacity);
+  z-index: 6;
+}
+.tt-slot--rightTop:hover .tt-card__content{ filter: brightness(1.02); }
+
 /* RIGHT BOTTOM */
 .tt-slot--rightBottom{
   width: var(--tt-card-w);
@@ -263,6 +286,13 @@
   cursor: pointer;
   scale: var(--tt-card-scale-sm);
 }
+
+.tt-slot--rightBottom:hover{
+  scale: var(--tt-hover-scale);
+  opacity: var(--tt-hover-opacity);
+  z-index: 6;
+}
+.tt-slot--rightBottom:hover .tt-card__content{ filter: brightness(1.02); }
 
 /* Make cards look like floating sheets */
 
@@ -389,7 +419,7 @@
 .tt-card__downIcon{ font-size: 22px; line-height: 1; transform: translateY(1px); }
 
 /* Gate ONLY LinkedIn cards (external). Instagram is local/static. */
-[data-social-card][data-source="linkedin"] .tt-card__content{ opacity: 0; pointer-events:none; }
+[data-social-card][data-source="linkedin"] .tt-card__content{ opacity: 1; pointer-events:auto; }
 [data-social-card][data-source="linkedin"] .tt-card__consent{ display:flex; }
 [data-social-card][data-source="linkedin"].is-allowed .tt-card__content{ opacity: 1; pointer-events:auto; }
 [data-social-card][data-source="linkedin"].is-allowed .tt-card__consent{ display:none; }
@@ -408,10 +438,12 @@
   position:absolute;
   inset:0;
   display:flex;
-  align-items:center;
+  align-items:flex-start;
   justify-content:center;
-  background: rgba(255,255,255,0.88);
+  padding-top: 18px;
+  background: rgba(255,255,255,0.70);
   z-index: 2;
+  pointer-events: auto;
 }
 
 .tt-card[data-tt-card]{
@@ -423,9 +455,11 @@
 
 .tt-consent__box{
   width: min(420px, 88%);
-  background: #fff;
   padding: 18px;
-  border: 1px solid rgba(0,0,0,0.12);
+}
+/*//////////////////////////////////////////////////// optionally added ///////////////////////////////////////////////////////////////*/
+[data-social-card][data-source="linkedin"]:not(.is-allowed) .tt-card__content{
+  filter: blur(0.1px) grayscale(0.15) brightness(0.95);
 }
 
 .tt-consent__text{

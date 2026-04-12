@@ -176,6 +176,17 @@ document.addEventListener('DOMContentLoaded', () => {
     applySlotClass(other);
   }
 
+  function isInteractiveTarget(t) {
+    return !!t.closest('a,button,input,textarea,select,[data-social-accept],[data-tt-down],[data-tt-original]');
+  }
+
+  function markClickable(stage) {
+    stage.querySelectorAll('[data-slot]').forEach((card) => {
+      const slot = card.getAttribute('data-slot');
+      card.dataset.clickable = slot && slot !== 'center' ? '1' : '0';
+    });
+  }
+
   // Stage parallax direction fix + click-to-swap
   document.querySelectorAll('[data-tt]').forEach((stage) => {
     const rig = stage.querySelector('.tt-rig');
@@ -236,15 +247,22 @@ document.addEventListener('DOMContentLoaded', () => {
     stage.addEventListener('mouseleave', reset);
     setVars();
 
-    // Click surrounding cards to swap with center
-    stage.addEventListener('click', (e) => {
-      const card = e.target.closest('[data-slot]');
-      if (!card) return;
+    // Make swap reliable: attach handler to cards themselves
+    const bindCardClicks = () => {
+      stage.querySelectorAll('[data-slot]').forEach((card) => {
+        if (card.__swapBound) return;
+        card.__swapBound = true;
+        card.addEventListener('click', (e) => {
+          if (isInteractiveTarget(e.target)) return;
+          const slot = card.getAttribute('data-slot');
+          if (!slot || slot === 'center') return;
+          swapSlots(stage, slot);
+          markClickable(stage);
+        });
+      });
+    };
 
-      const slot = card.getAttribute('data-slot');
-      if (!slot || slot === 'center') return;
-
-      swapSlots(stage, slot);
-    });
+    bindCardClicks();
+    markClickable(stage);
   });
 });
