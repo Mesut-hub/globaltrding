@@ -1,5 +1,11 @@
 /* resources/css/home.css */
 
+@property --tt-s {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+
 .hero-shell {
   min-height: var(--hero-min-h, 92vh);
   min-height: var(--hero-min-h, 92svh);
@@ -58,20 +64,16 @@
   cursor: not-allowed;
 }
 
-/* ===== Trending Topics (BASF-like stage) ===== */
+/* ===== Trending Topics ===== */
 .tt-stage{
   display: block;
   position: relative;
   width: auto;
-  height: 861px;
+  min-height: min(861px, 90vh);  /* fluid on smaller viewports */
+  height: min(861px, 90vh);
   overflow: hidden;
-  /* mouse vars (JS updates these) */
-  --tt-x: 0;
-  --tt-y: 0;
-
-  /* intensity knobs (tune to match BASF) */
-  --tt-rot: 14deg;   /* scene rotation */
-  --tt-move: 36px;   /* scene translate */
+  perspective: 1200px;
+  perspective-origin: 50% 50%;
 }
 
 .tt-stage__bg{
@@ -88,7 +90,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.6;
+  opacity: 0.35;
   pointer-events:none;
 }
 
@@ -109,10 +111,8 @@
   width: min(92%, 1320px);
   height: 100%;
   margin: 0 auto;
-  padding-bottom: 64px; /* nav bar room */
-  perspective: 1200px;
-  perspective-origin: 50% 50%;
-  transform-style: preserve-3d;
+  padding-bottom: 64px;
+  /* No perspective here — it lives on .tt-stage below */
 }
 
 /* We no longer use columns */
@@ -123,17 +123,11 @@
   position: absolute;
   inset: 0;
   transform-style: preserve-3d;
-  transform:
-    translate3d(var(--tt-mx, 0px), var(--tt-my, 0px), 0px)
-    rotateX(var(--tt-rx, 0deg))
-    rotateY(var(--tt-ry, 0deg));
-  transition: transform 120ms ease;
+  transform: translate3d(0px,0px,0px) rotateX(0deg) rotateY(0deg);
+  transition: transform 100ms linear;
 }
 
-/* Helper: dynamic drift amount by depth */
-.tt-slot{ --zmul: 0.6; }
-
-/* BASF-like card metrics */
+/* card metrics */
 :root{
   --tt-card-w: 378.81px;
   --tt-card-h-sm: 430.5px;
@@ -141,18 +135,9 @@
   --tt-card-scale-sm: 0.671746;
   --tt-hover-scale: 0.705; /* slightly larger than 0.6717 */
   --tt-hover-opacity: 0.95;
-  --tt-card-scale-hover: 0.705;
 }
 
-/* Each slot controls its own scale via a CSS variable used INSIDE transform */
-.tt-slot{ --tt-s: 1; }
-.tt-slot--leftTop,
-.tt-slot--leftBottom,
-.tt-slot--rightTop,
-.tt-slot--rightBottom{ --tt-s: var(--tt-card-scale-sm); }
-.tt-slot--center{ --tt-s: 1; }
-
-/* Default card behavior (BASF-like) */
+/* Default card behavior */
 .tt-card{
   position: absolute;
   left: 50%;
@@ -166,162 +151,98 @@
   backface-visibility: hidden;
   -webkit-mask-image: -webkit-radial-gradient(center, white, black);
   mask-image: -webkit-radial-gradient(center, white, black);
+  transition: transform 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              --tt-s    200ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              opacity   160ms ease,
+              filter    120ms ease;
 }
 
-/* Slot positions (tuned to match BASF composition) */
+/* Slot positions */
 .tt-slot--leftTop{
   width: var(--tt-card-w);
   height: var(--tt-card-h-sm);
-  --zmul: 0.45;
 
   transform:
     translate3d(-50%, -50%, 0px)
-    translate3d(
-      calc(-530px + (var(--tt-x) * 46px * var(--zmul))),
-      calc(-310px + (var(--tt-y) * 34px * var(--zmul))),
-      -240px
-    )
-    rotateY(0deg)
-    rotateX(0deg)
-    scale(var(--tt-s));
+    translate3d((-530px, -310px, -240px));
   z-index: 2;
   opacity: 0.8;
   cursor: pointer;
   transform-origin: center center;
+  /* side cards are scaled down */
+  scale: var(--tt-s);
 }
-
-.tt-slot--leftTop:hover{
-  scale: var(--tt-hover-scale);
-  opacity: var(--tt-hover-opacity);
-  z-index: 6;
-}
-.tt-slot--leftTop:hover .tt-card__content{ filter: brightness(1.02); }
 
 /* LEFT BOTTOM */
 .tt-slot--leftBottom{
   width: var(--tt-card-w);
   height: var(--tt-card-h-sm);
-  --zmul: 0.40;
 
   transform:
     translate3d(-50%, -50%, 0px)
-    translate3d(
-      calc(-630px + (var(--tt-x) * 46px * var(--zmul))),
-      calc(220px + (var(--tt-y) * 34px * var(--zmul))),
-      -280px
-    )
-    rotateY(0deg)
-    rotateX(0deg)
-    scale(var(--tt-s));
+    translate3d(-630px, 220px, -280px);
   z-index: 1;
   opacity: 0.8;
   cursor: pointer;
+  scale: var(--tt-s);
 }
-
-.tt-slot--leftBottom:hover{
-  scale: var(--tt-hover-scale);
-  opacity: var(--tt-hover-opacity);
-  z-index: 6;
-}
-.tt-slot--leftBottom:hover .tt-card__content{ filter: brightness(1.02); }
 
 /* CENTER (front, biggest, above all) */
 .tt-slot--center{
   width: var(--tt-card-w);
   height: var(--tt-card-h-lg);
-  --zmul: 1.0;
 
   transform:
     translate3d(-50%, -50%, 0px)
-    translate3d(
-      calc(0px + (var(--tt-x) * 70px * var(--zmul))),
-      calc(100px + (var(--tt-y) * 54px * var(--zmul))),
-      0px
-    )
-    rotateY(0deg)
-    rotateX(0deg)
-    scale(var(--tt-s));
+    translate3d(0px, 100px, 0px);
   z-index: 10;
   opacity: 1;
   cursor: default;
+  scale: (var(--tt-s));
 }
 
 /* RIGHT TOP */
 .tt-slot--rightTop{
   width: var(--tt-card-w);
   height: var(--tt-card-h-sm);
-  --zmul: 0.55;
 
   transform:
     translate3d(-50%, -50%, 0px)
-    translate3d(
-      calc(400px + (var(--tt-x) * 56px * var(--zmul))),
-      calc(-250px + (var(--tt-y) * 40px * var(--zmul))),
-      -180px
-    )
-    rotateY(0deg)
-    rotateX(5deg)
-    scale(var(--tt-s));
+    translate3d(400px, -250px, -180px)
+    rotateX(0deg);
   z-index: 3;
   opacity: 0.8;
   cursor: pointer;
+  scale: var(--tt-s);
 }
-
-.tt-slot--rightTop:hover{
-  scale: var(--tt-hover-scale);
-  opacity: var(--tt-hover-opacity);
-  z-index: 6;
-}
-.tt-slot--rightTop:hover .tt-card__content{ filter: brightness(1.02); }
 
 /* RIGHT BOTTOM */
 .tt-slot--rightBottom{
   width: var(--tt-card-w);
   height: var(--tt-card-h-sm);
-  --zmul: 0.50;
 
   transform:
     translate3d(-50%, -50%, 0px)
-    translate3d(
-      calc(430px + (var(--tt-x) * 56px * var(--zmul))),
-      calc(350px + (var(--tt-y) * 40px * var(--zmul))),
-      -220px
-    )
-    rotateY(0deg)
-    rotateX(5deg)
-    scale(var(--tt-s));
+    translate3d(430px, 350px, -220px)
+    rotateX(0deg);
   z-index: 2;
   opacity: 0.8;
   cursor: pointer;
+  scale: var(--tt-s);
 }
 
-/* Hover bump (only surrounding cards) */
 .tt-slot--leftTop:hover,
 .tt-slot--leftBottom:hover,
 .tt-slot--rightTop:hover,
 .tt-slot--rightBottom:hover{
-  --tt-s: var(--tt-card-scale-hover);
   opacity: 0.95;
   z-index: 20;
   filter: brightness(1.02);
+  /* Scale is handled entirely by JS applySlotStyle + CSS transition.
+     No scale: shorthand here — that would compound with transform scale(). */
 }
-
-.tt-slot--rightBottom:hover{
-  scale: var(--tt-hover-scale);
-  opacity: var(--tt-hover-opacity);
-  z-index: 6;
-}
-.tt-slot--rightBottom:hover .tt-card__content{ filter: brightness(1.02); }
 
 /* Make cards look like floating sheets */
-
-
-/* Card base */
-
-/* IMPORTANT: sizes are controlled by slot classes, not these modifiers 
-.tt-card--sm{ height: auto; }
-.tt-card--lg{ height: auto; width: auto; margin: 0; }
-.tt-card--liTall{ height: auto; }*/
 
 .tt-card__content{
   height: 100%;
@@ -437,18 +358,21 @@
 }
 .tt-card__downIcon{ font-size: 22px; line-height: 1; transform: translateY(1px); }
 
-/* Gate ONLY LinkedIn cards (external). Instagram is local/static. */
-[data-social-card][data-source="linkedin"] .tt-card__content{ opacity: 1; pointer-events:auto; }
-[data-social-card][data-source="linkedin"] .tt-card__consent{ display:flex; }
-[data-social-card][data-source="linkedin"].is-allowed .tt-card__content{ opacity: 1; pointer-events:auto; }
-[data-social-card][data-source="linkedin"].is-allowed .tt-card__consent{ display:none; }
+/* Base: all cards are visible by default */
+[data-social-card] .tt-card__content{ opacity: 1; pointer-events: auto; }
+[data-social-card] .tt-card__consent{ display: none; }
 
-[data-social-card][data-source="instagram"] .tt-card__content{ opacity: 1; pointer-events:auto; }
-[data-social-card][data-source="instagram"] .tt-card__consent{ display:none; }
+/* JS adds .needs-consent when cookie consent is missing for that source */
+[data-social-card].needs-consent .tt-card__consent{ display: flex; }
+[data-social-card].needs-consent .tt-card__content{
+  opacity: 0.6;
+  pointer-events: none;
+  filter: grayscale(0.15) brightness(0.95);
+}
 
-/* If an editor forgets data-source, default to "visible" to avoid a broken UI */
-[data-social-card]:not([data-source]) .tt-card__content{ opacity: 1; pointer-events:auto; }
-[data-social-card]:not([data-source]) .tt-card__consent{ display:none; }
+/* Instagram is always shown (static local content, no external data transfer) */
+[data-social-card][data-source="instagram"] .tt-card__consent{ display: none !important; }
+[data-social-card][data-source="instagram"] .tt-card__content{ opacity: 1 !important; pointer-events: auto !important; }
 
 /* Ensure card box respects slot sizing */
 .tt-card__content{ height: 100%; }
@@ -476,10 +400,6 @@
   width: min(420px, 88%);
   padding: 18px;
 }
-/*//////////////////////////////////////////////////// optionally added ///////////////////////////////////////////////////////////////*/
-[data-social-card][data-source="linkedin"]:not(.is-allowed) .tt-card__content{
-  filter: blur(0.1px) grayscale(0.15) brightness(0.95);
-}
 
 .tt-consent__text{
   font-size: 12px;
@@ -498,7 +418,7 @@
   text-decoration:none;
 }
 
-/* Bottom nav bar (BASF style) */
+/* Bottom nav bar */
 .tt-nav{
   position:absolute;
   left:0; right:0; bottom:0;
@@ -527,6 +447,27 @@
   font-weight: 800;
   font-size: 18px;
   color: #21a0d2;
+}
+
+.tt-nav__labels{
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.tt-nav__label.is-active{
+  color: #21a0d2;
+  position: relative;
+}
+
+.tt-nav__label.is-active::after{
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0; right: 0;
+  height: 2px;
+  background: #21a0d2;
+  border-radius: 1px;
 }
 
 /* Confirm overlay (Show original post) */
@@ -576,22 +517,42 @@
 
 /* Responsive: stack on mobile */
 @media (max-width: 1100px){
-  .tt-stage{ height: auto; min-height: 0; }
-  .tt-stage__inner{ perspective: none; padding-top: 40px; }
+  .tt-stage{
+    height: auto;
+    min-height: 0;
+    perspective: none;
+  }
+  .tt-stage__inner{
+    padding-top: 40px;
+  }
   .tt-rig{
     position: relative;
     inset: auto;
-    transform: none;
+    transform: none !important;
     display: grid;
     gap: 14px;
     padding-bottom: 64px;
   }
   .tt-card{
     position: relative;
-    left: auto;
-    top: auto;
+    left: auto !important;
+    top: auto !important;
     width: 100% !important;
     height: auto !important;
+    transform: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    z-index: auto !important;
+  }
+  .tt-slot--leftTop,
+  .tt-slot--leftBottom,
+  .tt-slot--center,
+  .tt-slot--rightTop,
+  .tt-slot--rightBottom{
+    --tt-card-h-sm: auto;
+    --tt-card-h-lg: auto;
+    width: 100%;
+    height: auto;
     transform: none !important;
   }
 }

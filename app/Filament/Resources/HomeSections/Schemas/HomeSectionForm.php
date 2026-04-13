@@ -241,7 +241,7 @@ class HomeSectionForm
                                         ->required(),
 
                                     TextInput::make('profile_name')
-                                        ->label('Profile name (e.g. BASF / globaltrding)')
+                                        ->label('Profile name (e.g. globaltrding)')
                                         ->default('Globaltrding'),
 
                                     TextInput::make('time_ago')

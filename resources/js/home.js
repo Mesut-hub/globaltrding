@@ -1,5 +1,25 @@
 // resources/js/home.js
 document.addEventListener('DOMContentLoaded', () => {
+  // Minimal __cookieConsent shim.
+  // If your app already defines window.__cookieConsent, this block is skipped.
+  if (!window.__cookieConsent) {
+    const STORAGE_KEY = 'gt_cookie_consent';
+    window.__cookieConsent = {
+      read() {
+        try {
+          return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || {};
+        } catch { return {}; }
+      },
+      write(prefs) {
+        try {
+          const current = this.read();
+          const next = { ...current, ...prefs };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+          window.dispatchEvent(new CustomEvent('cookie-consent:changed', { detail: next }));
+        } catch {}
+      },
+    };
+  }
   // INDUSTRIES SLIDER
   document.querySelectorAll('[data-industry-slider]').forEach((root) => {
     const track = root.querySelector('[data-ind="track"]');
@@ -64,11 +84,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // TRENDING TOPICS: consent gate (social)
   const applySocialGate = () => {
-    const consent = window.__cookieConsent?.read?.() || { social: null };
-    const allowed = consent.social === true;
+    const consent = window.__cookieConsent?.read?.() ?? { social: null };
+    const socialAllowed = consent.social === true;
 
     document.querySelectorAll('[data-social-card]').forEach((card) => {
-      card.classList.toggle('is-allowed', allowed);
+      const source = card.dataset.source || '';
+      // Instagram never needs consent (no external data transfer)
+      if (source === 'instagram') {
+        card.classList.remove('needs-consent');
+        return;
+      }
+      // LinkedIn (and any other external source) needs consent
+      card.classList.toggle('needs-consent', !socialAllowed);
     });
   };
 
@@ -84,54 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ===== TRENDING TOPICS: BASF-like interactions =====
   function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
-
-  // Confirm overlay handling (Show original post)
-  document.querySelectorAll('[data-tt]').forEach((stage) => {
-    const confirm = stage.querySelector('[data-tt-confirm]');
-    const btnCancel = stage.querySelector('[data-tt-confirm-cancel]');
-    const btnLeave = stage.querySelector('[data-tt-confirm-leave]');
-    if (!confirm || !btnCancel || !btnLeave) return;
-
-    let pendingUrl = null;
-
-    const openConfirm = (url) => {
-      pendingUrl = url;
-      confirm.classList.remove('hidden');
-      confirm.setAttribute('aria-hidden', 'false');
-      document.documentElement.classList.add('overflow-hidden');
-      document.body.classList.add('overflow-hidden');
-    };
-
-    const closeConfirm = () => {
-      pendingUrl = null;
-      confirm.classList.add('hidden');
-      confirm.setAttribute('aria-hidden', 'true');
-      document.documentElement.classList.remove('overflow-hidden');
-      document.body.classList.remove('overflow-hidden');
-    };
-
-    stage.addEventListener('click', (e) => {
-      const a = e.target.closest('[data-tt-original]');
-      if (!a) return;
-      e.preventDefault();
-      const url = a.getAttribute('data-url') || a.getAttribute('href');
-      if (url) openConfirm(url);
-      // Don't swap when interacting with UI controls/links inside cards
-      if (e.target.closest('a,button,input,textarea,[data-social-accept],[data-tt-down],[data-tt-original]')) {
-        return;
-      }
-    });
-
-    btnCancel.addEventListener('click', closeConfirm);
-    confirm.addEventListener('click', (e) => { if (e.target === confirm) closeConfirm(); });
-
-    btnLeave.addEventListener('click', () => {
-      // Accept social consent (acts like the BASF acceptance behavior)
-      window.__cookieConsent?.write?.({ social: true });
-      if (pendingUrl) window.open(pendingUrl, '_blank', 'noopener');
-      closeConfirm();
-    });
-  });
 
   // Scroll/down-arrow logic inside cards
   function initCardScroll(card) {
@@ -156,24 +135,60 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-social-card]').forEach(initCardScroll);
 
   // Swap-to-center logic
+  // Static position data for each slot name.
+  // Values mirror the static translate3d offsets in home.css (Fix 1).
+  // Add z-index and scale so those also transition when swapping.
+  const SLOT_POSITIONS = {
+    leftTop:     { tx: -530, ty: -310, tz: -240, s: 'var(--tt-card-scale-sm)', z: 2,  op: 0.8 },
+    leftBottom:  { tx: -630, ty:  220, tz: -280, s: 'var(--tt-card-scale-sm)', z: 1,  op: 0.8 },
+    center:      { tx:    0, ty:  100, tz:    0, s: '1',                        z: 10, op: 1.0 },
+    rightTop:    { tx:  400, ty: -250, tz: -180, s: 'var(--tt-card-scale-sm)', z: 3,  op: 0.8 },
+    rightBottom: { tx:  430, ty:  350, tz: -220, s: 'var(--tt-card-scale-sm)', z: 2,  op: 0.8 },
+  };
+
+  // Apply a slot's computed style directly as inline vars + transform.
+  // This gives CSS transition something concrete to interpolate.
+  function applySlotStyle(el, slotName) {
+    const SLOTS = ['leftTop','leftBottom','center','rightTop','rightBottom'];
+    const p = SLOT_POSITIONS[slotName];
+    if (!p) return;
+
+    SLOTS.forEach(s => el.classList.remove(`tt-slot--${s}`));
+    el.classList.add(`tt-slot--${slotName}`);
+    el.setAttribute('data-slot', slotName);
+
+    const isCursor = slotName === 'center';
+    el.style.cursor = isCursor ? 'default' : 'pointer';
+    el.style.zIndex  = p.z;
+    el.style.opacity = p.op;
+    el.style.transform =
+      `translate3d(-50%, -50%, 0px) ` +
+      `translate3d(${p.tx}px, ${p.ty}px, ${p.tz}px) ` +
+      `scale(${p.s})`;
+  }
+
+  // Call applySlotStyle on every card at init to seed inline transforms
+  // so the first swap has a starting value to animate FROM.
+  function initSlotStyles(stage) {
+    stage.querySelectorAll('[data-slot]').forEach(el => {
+      applySlotStyle(el, el.getAttribute('data-slot'));
+    });
+  }
+
   function swapSlots(stage, fromSlot) {
     const center = stage.querySelector('[data-slot="center"]');
-    const other = stage.querySelector(`[data-slot="${fromSlot}"]`);
+    const other  = stage.querySelector(`[data-slot="${fromSlot}"]`);
     if (!center || !other) return;
 
-    const from = other.getAttribute('data-slot');
-    center.setAttribute('data-slot', from);
-    other.setAttribute('data-slot', 'center');
+    const oldCenterSlot = center.getAttribute('data-slot'); // 'center'
+    const oldOtherSlot  = other.getAttribute('data-slot');  // e.g. 'leftTop'
 
-    // Update classes to match slots
-    const slots = ['leftTop','leftBottom','rightTop','rightBottom','center'];
-    const applySlotClass = (el) => {
-      slots.forEach(s => el.classList.remove(`tt-slot--${s}`));
-      const s = el.getAttribute('data-slot');
-      el.classList.add(`tt-slot--${s}`);
-    };
-    applySlotClass(center);
-    applySlotClass(other);
+    // Give the browser one frame to read the current inline transform
+    // before we write the destination — ensures the transition fires.
+    requestAnimationFrame(() => {
+      applySlotStyle(center, oldOtherSlot);
+      applySlotStyle(other,  oldCenterSlot);
+    });
   }
 
   function isInteractiveTarget(t) {
@@ -187,87 +202,86 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Stage parallax direction fix + click-to-swap
   document.querySelectorAll('[data-tt]').forEach((stage) => {
-    const rig = stage.querySelector('.tt-rig');
+    const rig     = stage.querySelector('.tt-rig');
+    const confirm = stage.querySelector('[data-tt-confirm]');
+    const btnCancel = stage.querySelector('[data-tt-confirm-cancel]');
+    const btnLeave  = stage.querySelector('[data-tt-confirm-leave]');
+
     if (!rig) return;
 
-    // Respect reduced motion
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    initSlotStyles(stage);
 
-    let raf = null;
-    let tx = 0;
-    let ty = 0;
-
-    const setVars = () => {
-      // Direction fix:
-      // BASF feel: move mouse right => cards drift right; move mouse up => cards drift up.
-      // Your previous logic created the opposite on your build; invert here.
-      const x = -tx;
-      const y = -ty;
-
-      const rotY = x * 14;
-      const rotX = -y * 10;
-      const moveX = x * 30;
-      const moveY = y * 22;
-
-      rig.style.setProperty('--tt-mx', `${moveX}px`);
-      rig.style.setProperty('--tt-my', `${moveY}px`);
-      rig.style.setProperty('--tt-rx', `${rotX}deg`);
-      rig.style.setProperty('--tt-ry', `${rotY}deg`);
-
-      // ALSO set --tt-x/--tt-y for per-slot drift (CSS uses these)
-      rig.style.setProperty('--tt-x', `${x}`);
-      rig.style.setProperty('--tt-y', `${y}`);
+    // ── Confirm dialog state ──────────────────────────────────────
+    let pendingUrl = null;
+    const openConfirm  = (url) => {
+      pendingUrl = url;
+      confirm?.classList.remove('hidden');
+      confirm?.setAttribute('aria-hidden', 'false');
+      document.documentElement.classList.add('overflow-hidden');
+    };
+    const closeConfirm = () => {
+      pendingUrl = null;
+      confirm?.classList.add('hidden');
+      confirm?.setAttribute('aria-hidden', 'true');
+      document.documentElement.classList.remove('overflow-hidden');
     };
 
-    const onMove = (e) => {
-      const r = stage.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width;  // 0..1
-      const y = (e.clientY - r.top) / r.height;  // 0..1
+    btnCancel?.addEventListener('click', closeConfirm);
+    confirm?.addEventListener('click', (e) => { if (e.target === confirm) closeConfirm(); });
+    btnLeave?.addEventListener('click', () => {
+      window.__cookieConsent?.write?.({ social: true });
+      if (pendingUrl) window.open(pendingUrl, '_blank', 'noopener');
+      closeConfirm();
+    });
 
-      tx = clamp((x - 0.5) * 2, -1, 1);
-      ty = clamp((y - 0.5) * 2, -1, 1);
-
-      if (!raf) {
-        raf = requestAnimationFrame(() => {
-          raf = null;
-          setVars();
-        });
-      }
-    };
-
-    const reset = () => {
-      tx = 0;
-      ty = 0;
+    // ── Parallax ──────────────────────────────────────────────────
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      // Still wire up click-to-swap even without motion
+    } else {
+      let raf = null, tx = 0, ty = 0;
+      const setVars = () => {
+        const rotY =  tx * 12;
+        const rotX = -ty * 8;
+        const moveX = tx * 24;
+        const moveY = ty * 16;
+        rig.style.transform =
+          `translate3d(${moveX}px,${moveY}px,0px) ` +
+          `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+      };
+      stage.addEventListener('mousemove', (e) => {
+        const r = stage.getBoundingClientRect();
+        tx = clamp((e.clientX - r.left)  / r.width  * 2 - 1, -1, 1);
+        ty = clamp((e.clientY - r.top)   / r.height * 2 - 1, -1, 1);
+        if (!raf) raf = requestAnimationFrame(() => { raf = null; setVars(); });
+      });
+      stage.addEventListener('mouseleave', () => { tx = 0; ty = 0; setVars(); });
       setVars();
-    };
+    }
 
-    stage.addEventListener('mousemove', onMove);
-    stage.addEventListener('mouseleave', reset);
-    setVars();
-
-    // Swap: reliable handler (capture phase) so transformed children don't swallow events
+    // ── Single click handler — confirm OR swap, never both ────────
     stage.addEventListener('click', (e) => {
-      const t = e.target;
-      if (!t) return;
+      // Priority 1: "Show original post" link → confirm dialog
+      const origLink = e.target.closest('[data-tt-original]');
+      if (origLink) {
+        e.preventDefault();
+        const url = origLink.dataset.url || origLink.getAttribute('href');
+        if (url) openConfirm(url);
+        return; // do NOT also swap
+      }
 
-      // Don't swap when interacting with UI
-      if (t.closest('a,button,input,textarea,select,[data-social-accept],[data-tt-down],[data-tt-original]')) {
+      // Priority 2: any other interactive element → let it bubble naturally
+      if (e.target.closest('a,button,input,textarea,select,[data-social-accept],[data-tt-down]')) {
         return;
       }
 
-      const card = t.closest('[data-slot]');
+      // Priority 3: click on a non-center card → swap it to center
+      const card = e.target.closest('[data-slot]');
       if (!card) return;
-
       const slot = card.getAttribute('data-slot');
       if (!slot || slot === 'center') return;
-
-      // Make it feel clickable even when overlays exist
-      e.preventDefault();
-      e.stopPropagation();
-
       swapSlots(stage, slot);
-    }, true);
-   });
+    }, true); // capture phase keeps transformed child coords consistent
+
+  });
 });

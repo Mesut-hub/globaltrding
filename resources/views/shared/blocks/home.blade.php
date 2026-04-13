@@ -496,30 +496,41 @@
                     </div>
 
                     <div class="tt-card__content">
+
+                        @if ($img)
                         <div class="tt-card__media">
+                            <img src="{{ $img }}" alt="" class="tt-card__img">
                             <div class="tt-card__badge tt-card__badge--li">in</div>
                         </div>
+                        @else
+                        <!-- No image: badge floats top-right inside body -->
+                        <div style="position:relative">
+                            <div class="tt-card__badge tt-card__badge--li"
+                                style="position:absolute;top:10px;right:10px">in</div>
+                        </div>
+                        @endif
 
+                        {{-- tt-card__body--lg makes this div fill remaining height (height:100%) --}}
                         <div class="tt-card__body tt-card__body--lg">
                             <div class="tt-card__meta">
-                                <span class="tt-card__profile">{{ $profile }}</span>
-                                <span class="tt-card__time">{{ $timeAgo }}</span>
+                            <span class="tt-card__profile">{{ $profile }}</span>
+                            <span class="tt-card__time">{{ $timeAgo }}</span>
                             </div>
-
                             @if ($title)
-                                <div class="tt-card__title">{{ $title }}</div>
+                            <div class="tt-card__title">{{ $title }}</div>
                             @endif
-
                             <div class="tt-card__scroll tt-card__scroll--lg" data-tt-scroll>
-                                <div class="tt-card__text tt-card__text--lg">{{ $text }}</div>
-                                <a class="tt-card__link" href="{{ $orig }}" target="_blank" rel="noopener"
-                                   data-tt-original data-url="{{ $orig }}">Show original post</a>
+                            <div class="tt-card__text tt-card__text--lg">{{ $text }}</div>
+                            <a class="tt-card__link" href="{{ $orig }}"
+                                target="_blank" rel="noopener"
+                                data-tt-original data-url="{{ $orig }}">Show original post</a>
                             </div>
-
-                            <button type="button" class="tt-card__down" aria-label="Scroll down" data-tt-down>
-                                <span class="tt-card__downIcon">⌄</span>
+                            <button type="button" class="tt-card__down"
+                                    aria-label="Scroll down" data-tt-down>
+                            <span class="tt-card__downIcon">&#8964;</span>
                             </button>
                         </div>
+
                     </div>
                 </article>
 
