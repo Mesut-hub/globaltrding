@@ -247,22 +247,27 @@ document.addEventListener('DOMContentLoaded', () => {
     stage.addEventListener('mouseleave', reset);
     setVars();
 
-    // Make swap reliable: attach handler to cards themselves
-    const bindCardClicks = () => {
-      stage.querySelectorAll('[data-slot]').forEach((card) => {
-        if (card.__swapBound) return;
-        card.__swapBound = true;
-        card.addEventListener('click', (e) => {
-          if (isInteractiveTarget(e.target)) return;
-          const slot = card.getAttribute('data-slot');
-          if (!slot || slot === 'center') return;
-          swapSlots(stage, slot);
-          markClickable(stage);
-        });
-      });
-    };
+    // Swap: reliable handler (capture phase) so transformed children don't swallow events
+    stage.addEventListener('click', (e) => {
+      const t = e.target;
+      if (!t) return;
 
-    bindCardClicks();
-    markClickable(stage);
-  });
+      // Don't swap when interacting with UI
+      if (t.closest('a,button,input,textarea,select,[data-social-accept],[data-tt-down],[data-tt-original]')) {
+        return;
+      }
+
+      const card = t.closest('[data-slot]');
+      if (!card) return;
+
+      const slot = card.getAttribute('data-slot');
+      if (!slot || slot === 'center') return;
+
+      // Make it feel clickable even when overlays exist
+      e.preventDefault();
+      e.stopPropagation();
+
+      swapSlots(stage, slot);
+    }, true);
+   });
 });

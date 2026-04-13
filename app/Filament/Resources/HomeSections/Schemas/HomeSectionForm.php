@@ -203,19 +203,63 @@ class HomeSectionForm
                                 ->keyLabel('Locale')
                                 ->valueLabel('Title'),
 
+                            FileUpload::make('background_image_path')
+                                ->label('Background image')
+                                ->disk('public')
+                                ->directory('home/trending')
+                                ->image(),
+
                             \Filament\Forms\Components\Repeater::make('topics')
+                                ->label('Cards (exactly 5 in order: IG, IG, LI big, LI, LI)')
+                                ->minItems(5)
+                                ->maxItems(5)
+                                ->defaultItems(5)
                                 ->schema([
-                                    KeyValue::make('label')
-                                        ->label('Label (en,tr,ar,fr)')
+                                    Select::make('source')
+                                        ->options([
+                                            'instagram' => 'Instagram',
+                                            'linkedin' => 'LinkedIn',
+                                        ])
+                                        ->required()
+                                        ->default('linkedin'),
+
+                                    FileUpload::make('image_path')
+                                        ->label('Card image')
+                                        ->disk('public')
+                                        ->directory('home/trending/cards')
+                                        ->image(),
+
+                                    KeyValue::make('title')
+                                        ->label('Title (en,tr,ar,fr)')
                                         ->keyLabel('Locale')
-                                        ->valueLabel('Label')
+                                        ->valueLabel('Title'),
+
+                                    KeyValue::make('text')
+                                        ->label('Text (en,tr,ar,fr)')
+                                        ->keyLabel('Locale')
+                                        ->valueLabel('Text')
                                         ->required(),
-                                    TextInput::make('url')->required(),
+
+                                    TextInput::make('profile_name')
+                                        ->label('Profile name (e.g. BASF / globaltrding)')
+                                        ->default('Globaltrding'),
+
+                                    TextInput::make('time_ago')
+                                        ->label('Time ago (e.g. 7 days ago)')
+                                        ->default('—'),
+
+                                    TextInput::make('original_url')
+                                        ->label('Original post URL')
+                                        ->url(),
+
+                                    TextInput::make('privacy_url')
+                                        ->label('Privacy policy URL (supports /{locale}/...)')
+                                        ->default('/{locale}/pages/privacy-policy'),
                                 ])
-                                ->defaultItems(8)
-                                ->collapsed(),
-                        ]),
-                ]),
-        ]);
-    }
-}
+                                ->collapsed(false)
+                                ->itemLabel(fn (array $state): ?string => $state['source'] ?? 'card'),
+                         ]),
+                 ]),
+         ]);
+     }
+ }

@@ -141,7 +141,16 @@
   --tt-card-scale-sm: 0.671746;
   --tt-hover-scale: 0.705; /* slightly larger than 0.6717 */
   --tt-hover-opacity: 0.95;
+  --tt-card-scale-hover: 0.705;
 }
+
+/* Each slot controls its own scale via a CSS variable used INSIDE transform */
+.tt-slot{ --tt-s: 1; }
+.tt-slot--leftTop,
+.tt-slot--leftBottom,
+.tt-slot--rightTop,
+.tt-slot--rightBottom{ --tt-s: var(--tt-card-scale-sm); }
+.tt-slot--center{ --tt-s: 1; }
 
 /* Default card behavior (BASF-like) */
 .tt-card{
@@ -173,13 +182,12 @@
       -240px
     )
     rotateY(0deg)
-    rotateX(0deg);
+    rotateX(0deg)
+    scale(var(--tt-s));
   z-index: 2;
   opacity: 0.8;
   cursor: pointer;
   transform-origin: center center;
-  /* BASF: side cards are scaled down */
-  scale: var(--tt-card-scale-sm);
 }
 
 .tt-slot--leftTop:hover{
@@ -203,11 +211,11 @@
       -280px
     )
     rotateY(0deg)
-    rotateX(0deg);
+    rotateX(0deg)
+    scale(var(--tt-s));
   z-index: 1;
   opacity: 0.8;
   cursor: pointer;
-  scale: var(--tt-card-scale-sm);
 }
 
 .tt-slot--leftBottom:hover{
@@ -231,11 +239,11 @@
       0px
     )
     rotateY(0deg)
-    rotateX(0deg);
+    rotateX(0deg)
+    scale(var(--tt-s));
   z-index: 10;
   opacity: 1;
   cursor: default;
-  scale: 1;
 }
 
 /* RIGHT TOP */
@@ -252,11 +260,11 @@
       -180px
     )
     rotateY(0deg)
-    rotateX(0deg);
+    rotateX(5deg)
+    scale(var(--tt-s));
   z-index: 3;
   opacity: 0.8;
   cursor: pointer;
-  scale: var(--tt-card-scale-sm);
 }
 
 .tt-slot--rightTop:hover{
@@ -280,11 +288,22 @@
       -220px
     )
     rotateY(0deg)
-    rotateX(0deg);
+    rotateX(5deg)
+    scale(var(--tt-s));
   z-index: 2;
   opacity: 0.8;
   cursor: pointer;
-  scale: var(--tt-card-scale-sm);
+}
+
+/* Hover bump (only surrounding cards) */
+.tt-slot--leftTop:hover,
+.tt-slot--leftBottom:hover,
+.tt-slot--rightTop:hover,
+.tt-slot--rightBottom:hover{
+  --tt-s: var(--tt-card-scale-hover);
+  opacity: 0.95;
+  z-index: 20;
+  filter: brightness(1.02);
 }
 
 .tt-slot--rightBottom:hover{
