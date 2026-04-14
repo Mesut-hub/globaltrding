@@ -3,7 +3,6 @@ $type = $block['type'] ?? null;
 $data = $block['data'] ?? [];
 $locale   = app()->getLocale();
 $fallback = config('locales.default', 'en');
-
 $t = function ($arr) use ($locale, $fallback) {
     if (!is_array($arr)) return (string) ($arr ?? '');
     return (string) ($arr[$locale] ?? $arr[$fallback] ?? (count($arr) ? reset($arr) : ''));
@@ -17,12 +16,13 @@ $posterUrl  = $posterPath ? Storage::disk('public')->url($posterPath) : null;
 @endphp
 
 {{-- =========================================================
-     HERO
+     HERO (video OR image)
      ========================================================= --}}
 @if ($type === 'hero')
 @php
 $publicHeroVideo    = config('home.hero_public_video');
 $publicHeroVideoUrl = $publicHeroVideo ? url($publicHeroVideo) : null;
+$minH       = $data['min_h'] ?? '100vh';
 $title      = $t($data['title']    ?? []);
 $subtitle   = $t($data['subtitle'] ?? []);
 $cta1Label  = $t($data['cta1_label'] ?? []);
@@ -35,6 +35,7 @@ $mediaUrl   = $mediaPath ? \Illuminate\Support\Facades\Storage::disk('public')->
 $overlayTop    = (float) ($data['overlay_top']    ?? 0.45);
 $overlayMid    = (float) ($data['overlay_mid']    ?? 0.15);
 $overlayBottom = (float) ($data['overlay_bottom'] ?? 0.55);
+$textOffset    = (int)   ($data['text_offset_px'] ?? 290);
 @endphp
 <section class="relative text-white hero-shell" data-hero>
     <div class="absolute inset-0 overflow-hidden bg-slate-950">
@@ -47,7 +48,7 @@ $overlayBottom = (float) ($data['overlay_bottom'] ?? 0.55);
         @else
             @php $videoSrc = $publicHeroVideoUrl ?: $mediaUrl; @endphp
             @if ($videoSrc)
-                <video class="h-full w-full object-cover"
+                <video class="h-full w-full object-cover opacity-100"
                        autoplay muted loop playsinline preload="metadata"
                        @if($posterUrl) poster="{{ $posterUrl }}" @endif>
                     <source src="{{ $videoSrc }}" type="video/mp4">
@@ -61,14 +62,16 @@ $overlayBottom = (float) ($data['overlay_bottom'] ?? 0.55);
             @endif
         @endif
         <div class="absolute inset-0"
-             style="background:linear-gradient(to bottom,
+             style="background: linear-gradient(to bottom,
                 rgba(0,0,0,{{ $overlayTop }}),
                 rgba(0,0,0,{{ $overlayMid }}),
                 rgba(0,0,0,{{ $overlayBottom }}));"></div>
     </div>
     <div class="relative mx-auto max-w-7xl px-4 hero-home__content">
         <div class="max-w-3xl">
-            <h1 class="text-4xl sm:text-5xl font-semibold tracking-tight leading-tight">{{ $title }}</h1>
+            <h1 class="text-4xl sm:text-5xl font-semibold tracking-tight leading-tight">
+                {{ $title }}
+            </h1>
             @if ($subtitle)
                 <p class="mt-5 text-slate-200 text-lg">{{ $subtitle }}</p>
             @endif
@@ -137,13 +140,14 @@ $industries   = \App\Models\Industry::query()
     <div class="flex items-end justify-between gap-4">
         <h2 class="text-2xl font-semibold tracking-tight">{{ $sectionTitle }}</h2>
         <div class="flex items-center gap-3">
-            <a href="{{ $viewAllUrl }}" class="text-sm text-slate-600 hover:underline">View all →</a>
+            <a href="{{ $viewAllUrl }}"
+               class="text-sm text-slate-600 hover:text-slate-900 hover:underline">View all →</a>
             <button type="button" class="ind-btn" data-ind="prev" aria-label="Previous">‹</button>
             <button type="button" class="ind-btn" data-ind="next" aria-label="Next">›</button>
         </div>
     </div>
     <div class="mt-6 overflow-hidden">
-        <div class="flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-2"
+        <div class="ind-track flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-2"
              data-ind="track">
             @foreach ($industries as $ind)
                 @php
@@ -153,7 +157,7 @@ $industries   = \App\Models\Industry::query()
                     : null;
                 @endphp
                 <a href="/{{ $locale }}/industries/{{ $ind->slug }}"
-                   class="snap-start shrink-0 w-[85%] sm:w-[45%] lg:w-[28%] rounded-xl border border-slate-200 bg-white overflow-hidden hover:shadow-sm transition">
+                   class="snap-start shrink-0 w-[85%] sm:w-[45%] lg:w-[28%] rounded-xl border border-slate-200 bg-white overflow-hidden hover:border-slate-300 hover:shadow-sm transition">
                     <div class="aspect-[16/9] bg-slate-100 overflow-hidden">
                         @if ($img)
                             <img src="{{ $img }}" alt="{{ $title }}"
@@ -175,8 +179,8 @@ $industries   = \App\Models\Industry::query()
      ========================================================= --}}
 @elseif ($type === 'cta')
 @php
-$title    = $t($data['title'] ?? []);
-$text     = $t($data['text']  ?? []);
+$title    = $t($data['title']  ?? []);
+$text     = $t($data['text']   ?? []);
 $btnLabel = $t($data['button_label'] ?? []);
 $btnUrl   = $urlWithLocale($data['button_url'] ?? '#');
 @endphp
@@ -218,7 +222,7 @@ $items = $data['items'] ?? [];
                 : null;
             @endphp
             <a href="{{ $itemUrl }}"
-               class="group rounded-xl border border-slate-200 bg-white overflow-hidden hover:shadow-sm transition">
+               class="group rounded-xl border border-slate-200 bg-white overflow-hidden hover:border-slate-300 hover:shadow-sm transition">
                 <div class="aspect-[16/9] bg-slate-100 overflow-hidden">
                     @if ($imgUrl)
                         <img src="{{ $imgUrl }}" alt="{{ $itemTitle }}"
@@ -239,29 +243,29 @@ $items = $data['items'] ?? [];
      TRENDING TOPICS
      =========================================================
 
-     $data['topics'] — array of exactly 5 items, in this order:
-       [0] left-top     (source: instagram, by default)
-       [1] left-bottom  (source: instagram, by default)
-       [2] center       (source: linkedin,  tall card)
-       [3] right-top    (source: linkedin)
-       [4] right-bottom (source: linkedin)
+     $data['topics'] — exactly 5 items, indices 0-4:
+       [0] left-top     — default source: instagram
+       [1] left-bottom  — default source: instagram
+       [2] center       — default source: linkedin  (tall card)
+       [3] right-top    — default source: linkedin
+       [4] right-bottom — default source: linkedin
 
-     Each item:
-       source        => 'instagram' | 'linkedin'
-       image_path    => storage path (optional for center)
-       title         => ['en' => '...']  (optional, shown in center)
-       text          => ['en' => '...']
+     Each item fields:
+       source        => 'instagram' | 'linkedin'  (must be exactly this string)
+       image_path    => storage path              (optional)
+       title         => ['en'=>'...']             (optional; used in center)
+       text          => ['en'=>'...']
        profile_name  => 'Globaltrding'
        time_ago      => '3 days ago'
        original_url  => 'https://...'
        privacy_url   => '/{locale}/pages/privacy-policy'
 
-     IMPORTANT:
-     • data-source MUST be exactly "instagram" or "linkedin" (lowercase).
-       JS uses getAttribute('data-source') to decide gating.
-     • Instagram cards are never gated — their content is served
-       locally from your CMS, no external data transfer.
-     • LinkedIn cards show the consent gate until the user accepts.
+     CONSENT RULES:
+       Instagram: content is served from your own CMS storage.
+         No personal data is sent to Instagram servers.
+         These cards are ALWAYS fully visible — never gated.
+       LinkedIn: external content. Consent overlay shown until
+         user clicks Accept. JS manages this via .needs-consent.
      ========================================================= --}}
 @elseif ($type === 'trending_topics')
 @php
@@ -272,56 +276,38 @@ $bgUrl   = $bgPath ? \Illuminate\Support\Facades\Storage::disk('public')->url($b
 $topics  = is_array($data['topics'] ?? null) ? array_values($data['topics']) : [];
 for ($i = count($topics); $i < 5; $i++) $topics[$i] = [];
 
-// Returns a normalised array of card variables for topic at index $idx.
-// $defaultSource is the fallback if no source is set in the CMS.
-$cv = function (int $idx, string $defaultSource) use ($topics, $t, $urlWithLocale) {
-    $it  = $topics[$idx] ?? [];
-    $src = strtolower(trim($it['source'] ?? $defaultSource));
-    // Ensure source is exactly 'instagram' or 'linkedin' — never empty
-    if (!in_array($src, ['instagram', 'linkedin'], true)) $src = $defaultSource;
-
-    $imgPath = $it['image_path'] ?? null;
-    $imgUrl  = $imgPath
-        ? \Illuminate\Support\Facades\Storage::disk('public')->url($imgPath)
-        : null;
-
-    return [
-        'src'     => $src,
-        'img'     => $imgUrl,
-        'title'   => $t($it['title']   ?? []),
-        'text'    => $t($it['text']    ?? []),
-        'orig'    => $urlWithLocale($it['original_url'] ?? '#'),
-        'privacy' => $urlWithLocale($it['privacy_url']  ?? '/{locale}/pages/privacy-policy'),
-        'timeAgo' => (string) ($it['time_ago']     ?? '—'),
-        'profile' => (string) ($it['profile_name'] ?? 'Globaltrding'),
-    ];
+// Safe image URL helper
+$getImg = function ($it) {
+    $p = $it['image_path'] ?? null;
+    return $p ? \Illuminate\Support\Facades\Storage::disk('public')->url($p) : null;
 };
 
-// Source display name for consent text
-$srcName = fn(string $s): string => match($s) {
-    'instagram' => 'Instagram',
-    'linkedin'  => 'LinkedIn',
-    default     => ucfirst($s),
+// Sanitise source: must be exactly 'instagram' or 'linkedin', never empty.
+// JS uses getAttribute('data-source') for the consent gate logic.
+$src = function ($it, string $default) : string {
+    $s = strtolower(trim($it['source'] ?? ''));
+    return in_array($s, ['instagram','linkedin'], true) ? $s : $default;
 };
 
 @endphp
 
 <section class="tt-stage" data-tt>
 
-    {{-- ── "Leave page" confirm overlay ─────────────────────── --}}
-    {{-- Shown when user clicks "Show original post"            --}}
-    <div class="tt-confirm hidden" data-tt-confirm
-         aria-hidden="true" role="dialog" aria-modal="true"
-         aria-label="Leave page confirmation">
-        <div class="tt-confirm__dialog">
-            <p class="tt-confirm__text">
+    {{-- ── Confirm overlay ("Show original post") ─────────────── --}}
+    <div class="tt-confirm hidden" data-tt-confirm aria-hidden="true">
+        <div class="tt-confirm__dialog"
+             role="dialog" aria-modal="true" aria-label="Leave page confirmation">
+            <div class="tt-confirm__text">
                 You will now be redirected to the selected social media channel.
-            </p>
+            </div>
             <div class="tt-confirm__actions">
-                <button type="button" class="tt-confirm__btn"
-                        data-tt-confirm-cancel>cancel</button>
+                <button type="button" class="tt-confirm__btn" data-tt-confirm-cancel>
+                    Cancel
+                </button>
                 <button type="button" class="tt-confirm__btn tt-confirm__btn--primary"
-                        data-tt-confirm-leave>leave page</button>
+                        data-tt-confirm-leave>
+                    Leave page
+                </button>
             </div>
         </div>
     </div>
@@ -340,102 +326,133 @@ $srcName = fn(string $s): string => match($s) {
     <div class="tt-stage__inner">
         <div class="tt-rig">
 
-            {{-- ══════════════════════════════════════════════════
+            {{-- ════════════════════════════════════════════
                  CARD 0 — LEFT TOP  (instagram by default)
-                 ══════════════════════════════════════════════════ --}}
-            @php $c = $cv(0, 'instagram'); @endphp
+                 ════════════════════════════════════════════ --}}
+            @php
+            $it0     = $topics[0] ?? [];
+            $src0    = $src($it0, 'instagram');
+            $img0    = $getImg($it0);
+            $text0   = $t($it0['text']         ?? []);
+            $orig0   = $urlWithLocale($it0['original_url']  ?? '#');
+            $priv0   = $urlWithLocale($it0['privacy_url']   ?? '/{locale}/pages/privacy-policy');
+            $time0   = (string) ($it0['time_ago']    ?? '—');
+            $prof0   = (string) ($it0['profile_name']?? 'Globaltrding');
+            @endphp
             <article class="tt-card tt-slot tt-slot--leftTop"
                      data-social-card data-tt-card
                      data-slot="leftTop"
-                     data-source="{{ $c['src'] }}">
+                     data-source="{{ $src0 }}">
 
+                {{-- Consent overlay — only shown when JS adds .needs-consent --}}
                 <div class="tt-card__consent">
                     <div class="tt-consent__box">
-                        <p class="tt-consent__text">
+                        <div class="tt-consent__text">
                             I agree to the transmission of my personal data to
-                            {{ $srcName($c['src']) }} in order to be shown content
-                            provided by {{ $srcName($c['src']) }}.
+                            {{ $src0 === 'instagram' ? 'Instagram' : 'LinkedIn' }}
+                            in order to be shown content provided by
+                            {{ $src0 === 'instagram' ? 'Instagram' : 'LinkedIn' }}.
                             I have read the
-                            <a href="{{ $c['privacy'] }}" target="_blank" rel="noopener">privacy policy</a>.
-                        </p>
-                        <button type="button" class="tt-consent__btn" data-social-accept>Accept</button>
+                            <a href="{{ $priv0 }}" target="_blank" rel="noopener">privacy policy</a>.
+                        </div>
+                        <a href="#" class="tt-consent__btn" data-social-accept>Accept</a>
                     </div>
                 </div>
 
                 <div class="tt-card__content">
                     <div class="tt-card__media">
-                        @if ($c['img'])<img src="{{ $c['img'] }}" alt="" class="tt-card__img">@endif
+                        @if ($img0)<img src="{{ $img0 }}" alt="" class="tt-card__img">@endif
                         <div class="tt-card__badge tt-card__badge--ig">IG</div>
                     </div>
                     <div class="tt-card__body">
                         <div class="tt-card__meta">
-                            <span class="tt-card__profile">{{ $c['profile'] }}</span>
-                            <span class="tt-card__time">{{ $c['timeAgo'] }}</span>
+                            <span class="tt-card__profile">{{ $prof0 }}</span>
+                            <span class="tt-card__time">{{ $time0 }}</span>
                         </div>
                         <div class="tt-card__scroll" data-tt-scroll>
-                            <p class="tt-card__text">{{ $c['text'] }}</p>
-                            <a class="tt-card__link"
-                               href="{{ $c['orig'] }}" target="_blank" rel="noopener"
-                               data-tt-original data-url="{{ $c['orig'] }}">Show original post</a>
+                            <div class="tt-card__text">{{ $text0 }}</div>
+                            <a class="tt-card__link" href="{{ $orig0 }}" target="_blank" rel="noopener"
+                               data-tt-original data-url="{{ $orig0 }}">Show original post</a>
                         </div>
-                        <button type="button" class="tt-card__down"
-                                aria-label="Scroll down" data-tt-down>
+                        <button type="button" class="tt-card__down" aria-label="Scroll down" data-tt-down>
                             <span class="tt-card__downIcon">&#8964;</span>
                         </button>
                     </div>
                 </div>
             </article>
 
-            {{-- ══════════════════════════════════════════════════
+            {{-- ════════════════════════════════════════════
                  CARD 1 — LEFT BOTTOM  (instagram by default)
-                 ══════════════════════════════════════════════════ --}}
-            @php $c = $cv(1, 'instagram'); @endphp
+                 ════════════════════════════════════════════ --}}
+            @php
+            $it1   = $topics[1] ?? [];
+            $src1  = $src($it1, 'instagram');
+            $img1  = $getImg($it1);
+            $text1 = $t($it1['text'] ?? []);
+            $orig1 = $urlWithLocale($it1['original_url'] ?? '#');
+            $priv1 = $urlWithLocale($it1['privacy_url']  ?? '/{locale}/pages/privacy-policy');
+            $time1 = (string) ($it1['time_ago']     ?? '—');
+            $prof1 = (string) ($it1['profile_name'] ?? 'Globaltrding');
+            @endphp
             <article class="tt-card tt-slot tt-slot--leftBottom"
                      data-social-card data-tt-card
                      data-slot="leftBottom"
-                     data-source="{{ $c['src'] }}">
+                     data-source="{{ $src1 }}">
 
                 <div class="tt-card__consent">
                     <div class="tt-consent__box">
-                        <p class="tt-consent__text">
+                        <div class="tt-consent__text">
                             I agree to the transmission of my personal data to
-                            {{ $srcName($c['src']) }} in order to be shown content
-                            provided by {{ $srcName($c['src']) }}.
+                            {{ $src1 === 'instagram' ? 'Instagram' : 'LinkedIn' }}
+                            in order to be shown content provided by
+                            {{ $src1 === 'instagram' ? 'Instagram' : 'LinkedIn' }}.
                             I have read the
-                            <a href="{{ $c['privacy'] }}" target="_blank" rel="noopener">privacy policy</a>.
-                        </p>
-                        <button type="button" class="tt-consent__btn" data-social-accept>Accept</button>
+                            <a href="{{ $priv1 }}" target="_blank" rel="noopener">privacy policy</a>.
+                        </div>
+                        <a href="#" class="tt-consent__btn" data-social-accept>Accept</a>
                     </div>
                 </div>
 
                 <div class="tt-card__content">
                     <div class="tt-card__media">
-                        @if ($c['img'])<img src="{{ $c['img'] }}" alt="" class="tt-card__img">@endif
+                        @if ($img1)<img src="{{ $img1 }}" alt="" class="tt-card__img">@endif
                         <div class="tt-card__badge tt-card__badge--ig">IG</div>
                     </div>
                     <div class="tt-card__body">
                         <div class="tt-card__meta">
-                            <span class="tt-card__profile">{{ $c['profile'] }}</span>
-                            <span class="tt-card__time">{{ $c['timeAgo'] }}</span>
+                            <span class="tt-card__profile">{{ $prof1 }}</span>
+                            <span class="tt-card__time">{{ $time1 }}</span>
                         </div>
                         <div class="tt-card__scroll" data-tt-scroll>
-                            <p class="tt-card__text">{{ $c['text'] }}</p>
-                            <a class="tt-card__link"
-                               href="{{ $c['orig'] }}" target="_blank" rel="noopener"
-                               data-tt-original data-url="{{ $c['orig'] }}">Show original post</a>
+                            <div class="tt-card__text">{{ $text1 }}</div>
+                            <a class="tt-card__link" href="{{ $orig1 }}" target="_blank" rel="noopener"
+                               data-tt-original data-url="{{ $orig1 }}">Show original post</a>
                         </div>
-                        <button type="button" class="tt-card__down"
-                                aria-label="Scroll down" data-tt-down>
+                        <button type="button" class="tt-card__down" aria-label="Scroll down" data-tt-down>
                             <span class="tt-card__downIcon">&#8964;</span>
                         </button>
                     </div>
                 </div>
             </article>
 
-            {{-- ══════════════════════════════════════════════════
+            {{-- ════════════════════════════════════════════
                  CARD 2 — CENTER  (linkedin, tall)
-                 ══════════════════════════════════════════════════ --}}
-            @php $c = $cv(2, 'linkedin'); @endphp
+                 ════════════════════════════════════════════
+                 FIX: body gets tt-card__body--lg so it fills 100% height.
+                 FIX: media block is conditional — only rendered when image exists.
+                      Without image, badge floats top-right via absolute position
+                      and body expands to fill the entire card.
+                 ════════════════════════════════════════════ --}}
+            @php
+            $it2    = $topics[2] ?? [];
+            $img2   = $getImg($it2);
+            $text2  = $t($it2['text']  ?? []);
+            $title2 = $t($it2['title'] ?? []);
+            $orig2  = $urlWithLocale($it2['original_url'] ?? '#');
+            $priv2  = $urlWithLocale($it2['privacy_url']  ?? '/{locale}/pages/privacy-policy');
+            $time2  = (string) ($it2['time_ago']     ?? '—');
+            $prof2  = (string) ($it2['profile_name'] ?? 'Globaltrding');
+            @endphp
             <article class="tt-card tt-slot tt-slot--center"
                      data-social-card data-tt-card
                      data-slot="center"
@@ -443,141 +460,152 @@ $srcName = fn(string $s): string => match($s) {
 
                 <div class="tt-card__consent">
                     <div class="tt-consent__box">
-                        <p class="tt-consent__text">
+                        <div class="tt-consent__text">
                             I agree to the transmission of my personal data to LinkedIn
                             in order to be shown content provided by LinkedIn.
                             I have read the
-                            <a href="{{ $c['privacy'] }}" target="_blank" rel="noopener">privacy policy</a>.
-                        </p>
-                        <button type="button" class="tt-consent__btn" data-social-accept>Accept</button>
+                            <a href="{{ $priv2 }}" target="_blank" rel="noopener">privacy policy</a>.
+                        </div>
+                        <a href="#" class="tt-consent__btn" data-social-accept>Accept</a>
                     </div>
                 </div>
 
                 <div class="tt-card__content">
-                    {{-- Media: only rendered when an image exists.
-                         Without an image the body expands to fill the full card. --}}
-                    @if ($c['img'])
+
+                    {{-- Media: only when image is provided.
+                         Without an image the body fills 100% and badge floats in corner. --}}
+                    @if ($img2)
                         <div class="tt-card__media">
-                            <img src="{{ $c['img'] }}" alt="" class="tt-card__img">
+                            <img src="{{ $img2 }}" alt="" class="tt-card__img">
                             <div class="tt-card__badge tt-card__badge--li">in</div>
                         </div>
                     @else
-                        {{-- No image: badge floats top-right inside body space --}}
-                        <div style="position:relative;height:0;overflow:visible">
-                            <div class="tt-card__badge tt-card__badge--li"
-                                 style="position:absolute;top:8px;right:8px;z-index:2">in</div>
-                        </div>
+                        {{-- No image: position badge in top-right corner of the card --}}
+                        <div class="tt-card__badge tt-card__badge--li"
+                             style="position:absolute;top:8px;right:8px;z-index:3">in</div>
                     @endif
 
-                    {{-- tt-card__body--lg expands to fill remaining height --}}
+                    {{-- tt-card__body--lg: flex:1 fills remaining card height,
+                         giving the scroll area room to grow and the down button room to show. --}}
                     <div class="tt-card__body tt-card__body--lg">
                         <div class="tt-card__meta">
-                            <span class="tt-card__profile">{{ $c['profile'] }}</span>
-                            <span class="tt-card__time">{{ $c['timeAgo'] }}</span>
+                            <span class="tt-card__profile">{{ $prof2 }}</span>
+                            <span class="tt-card__time">{{ $time2 }}</span>
                         </div>
-                        @if ($c['title'])
-                            <div class="tt-card__title">{{ $c['title'] }}</div>
+                        @if ($title2)
+                            <div class="tt-card__title">{{ $title2 }}</div>
                         @endif
                         <div class="tt-card__scroll" data-tt-scroll>
-                            <p class="tt-card__text tt-card__text--lg">{{ $c['text'] }}</p>
-                            <a class="tt-card__link"
-                               href="{{ $c['orig'] }}" target="_blank" rel="noopener"
-                               data-tt-original data-url="{{ $c['orig'] }}">Show original post</a>
+                            <div class="tt-card__text tt-card__text--lg">{{ $text2 }}</div>
+                            <a class="tt-card__link" href="{{ $orig2 }}" target="_blank" rel="noopener"
+                               data-tt-original data-url="{{ $orig2 }}">Show original post</a>
                         </div>
-                        <button type="button" class="tt-card__down"
-                                aria-label="Scroll down" data-tt-down>
+                        <button type="button" class="tt-card__down" aria-label="Scroll down" data-tt-down>
                             <span class="tt-card__downIcon">&#8964;</span>
                         </button>
                     </div>
+
                 </div>
             </article>
 
-            {{-- ══════════════════════════════════════════════════
+            {{-- ════════════════════════════════════════════
                  CARD 3 — RIGHT TOP  (linkedin)
-                 ══════════════════════════════════════════════════ --}}
-            @php $c = $cv(3, 'linkedin'); @endphp
+                 ════════════════════════════════════════════ --}}
+            @php
+            $it3   = $topics[3] ?? [];
+            $src3  = $src($it3, 'linkedin');
+            $img3  = $getImg($it3);
+            $text3 = $t($it3['text'] ?? []);
+            $orig3 = $urlWithLocale($it3['original_url'] ?? '#');
+            $priv3 = $urlWithLocale($it3['privacy_url']  ?? '/{locale}/pages/privacy-policy');
+            $time3 = (string) ($it3['time_ago']     ?? '—');
+            $prof3 = (string) ($it3['profile_name'] ?? 'Globaltrding');
+            @endphp
             <article class="tt-card tt-slot tt-slot--rightTop"
                      data-social-card data-tt-card
                      data-slot="rightTop"
-                     data-source="{{ $c['src'] }}">
+                     data-source="{{ $src3 }}">
 
                 <div class="tt-card__consent">
                     <div class="tt-consent__box">
-                        <p class="tt-consent__text">
-                            I agree to the transmission of my personal data to
-                            {{ $srcName($c['src']) }} in order to be shown content
-                            provided by {{ $srcName($c['src']) }}.
+                        <div class="tt-consent__text">
+                            I agree to the transmission of my personal data to LinkedIn
+                            in order to be shown content provided by LinkedIn.
                             I have read the
-                            <a href="{{ $c['privacy'] }}" target="_blank" rel="noopener">privacy policy</a>.
-                        </p>
-                        <button type="button" class="tt-consent__btn" data-social-accept>Accept</button>
+                            <a href="{{ $priv3 }}" target="_blank" rel="noopener">privacy policy</a>.
+                        </div>
+                        <a href="#" class="tt-consent__btn" data-social-accept>Accept</a>
                     </div>
                 </div>
 
                 <div class="tt-card__content">
                     <div class="tt-card__media">
-                        @if ($c['img'])<img src="{{ $c['img'] }}" alt="" class="tt-card__img">@endif
+                        @if ($img3)<img src="{{ $img3 }}" alt="" class="tt-card__img">@endif
                         <div class="tt-card__badge tt-card__badge--li">in</div>
                     </div>
                     <div class="tt-card__body">
                         <div class="tt-card__meta">
-                            <span class="tt-card__profile">{{ $c['profile'] }}</span>
-                            <span class="tt-card__time">{{ $c['timeAgo'] }}</span>
+                            <span class="tt-card__profile">{{ $prof3 }}</span>
+                            <span class="tt-card__time">{{ $time3 }}</span>
                         </div>
                         <div class="tt-card__scroll" data-tt-scroll>
-                            <p class="tt-card__text">{{ $c['text'] }}</p>
-                            <a class="tt-card__link"
-                               href="{{ $c['orig'] }}" target="_blank" rel="noopener"
-                               data-tt-original data-url="{{ $c['orig'] }}">Show original post</a>
+                            <div class="tt-card__text">{{ $text3 }}</div>
+                            <a class="tt-card__link" href="{{ $orig3 }}" target="_blank" rel="noopener"
+                               data-tt-original data-url="{{ $orig3 }}">Show original post</a>
                         </div>
-                        <button type="button" class="tt-card__down"
-                                aria-label="Scroll down" data-tt-down>
+                        <button type="button" class="tt-card__down" aria-label="Scroll down" data-tt-down>
                             <span class="tt-card__downIcon">&#8964;</span>
                         </button>
                     </div>
                 </div>
             </article>
 
-            {{-- ══════════════════════════════════════════════════
+            {{-- ════════════════════════════════════════════
                  CARD 4 — RIGHT BOTTOM  (linkedin)
-                 ══════════════════════════════════════════════════ --}}
-            @php $c = $cv(4, 'linkedin'); @endphp
+                 ════════════════════════════════════════════ --}}
+            @php
+            $it4   = $topics[4] ?? [];
+            $src4  = $src($it4, 'linkedin');
+            $img4  = $getImg($it4);
+            $text4 = $t($it4['text'] ?? []);
+            $orig4 = $urlWithLocale($it4['original_url'] ?? '#');
+            $priv4 = $urlWithLocale($it4['privacy_url']  ?? '/{locale}/pages/privacy-policy');
+            $time4 = (string) ($it4['time_ago']     ?? '—');
+            $prof4 = (string) ($it4['profile_name'] ?? 'Globaltrding');
+            @endphp
             <article class="tt-card tt-slot tt-slot--rightBottom"
                      data-social-card data-tt-card
                      data-slot="rightBottom"
-                     data-source="{{ $c['src'] }}">
+                     data-source="{{ $src4 }}">
 
                 <div class="tt-card__consent">
                     <div class="tt-consent__box">
-                        <p class="tt-consent__text">
-                            I agree to the transmission of my personal data to
-                            {{ $srcName($c['src']) }} in order to be shown content
-                            provided by {{ $srcName($c['src']) }}.
+                        <div class="tt-consent__text">
+                            I agree to the transmission of my personal data to LinkedIn
+                            in order to be shown content provided by LinkedIn.
                             I have read the
-                            <a href="{{ $c['privacy'] }}" target="_blank" rel="noopener">privacy policy</a>.
-                        </p>
-                        <button type="button" class="tt-consent__btn" data-social-accept>Accept</button>
+                            <a href="{{ $priv4 }}" target="_blank" rel="noopener">privacy policy</a>.
+                        </div>
+                        <a href="#" class="tt-consent__btn" data-social-accept>Accept</a>
                     </div>
                 </div>
 
                 <div class="tt-card__content">
                     <div class="tt-card__media">
-                        @if ($c['img'])<img src="{{ $c['img'] }}" alt="" class="tt-card__img">@endif
+                        @if ($img4)<img src="{{ $img4 }}" alt="" class="tt-card__img">@endif
                         <div class="tt-card__badge tt-card__badge--li">in</div>
                     </div>
                     <div class="tt-card__body">
                         <div class="tt-card__meta">
-                            <span class="tt-card__profile">{{ $c['profile'] }}</span>
-                            <span class="tt-card__time">{{ $c['timeAgo'] }}</span>
+                            <span class="tt-card__profile">{{ $prof4 }}</span>
+                            <span class="tt-card__time">{{ $time4 }}</span>
                         </div>
                         <div class="tt-card__scroll" data-tt-scroll>
-                            <p class="tt-card__text">{{ $c['text'] }}</p>
-                            <a class="tt-card__link"
-                               href="{{ $c['orig'] }}" target="_blank" rel="noopener"
-                               data-tt-original data-url="{{ $c['orig'] }}">Show original post</a>
+                            <div class="tt-card__text">{{ $text4 }}</div>
+                            <a class="tt-card__link" href="{{ $orig4 }}" target="_blank" rel="noopener"
+                               data-tt-original data-url="{{ $orig4 }}">Show original post</a>
                         </div>
-                        <button type="button" class="tt-card__down"
-                                aria-label="Scroll down" data-tt-down>
+                        <button type="button" class="tt-card__down" aria-label="Scroll down" data-tt-down>
                             <span class="tt-card__downIcon">&#8964;</span>
                         </button>
                     </div>

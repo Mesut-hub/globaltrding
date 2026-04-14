@@ -2,27 +2,27 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // ─── Cookie consent shim ────────────────────────────────────────
-  // Replace with your real cookie API if available.
-  // Falls back to localStorage so consent persists across page loads.
+  // ─── Cookie consent shim ──────────────────────────────────────────────────
+  // Provides window.__cookieConsent if your app hasn't defined it yet.
+  // Replace with your real cookie API. Persists in localStorage.
   if (!window.__cookieConsent) {
-    const KEY = 'gt_cookie_consent';
+    const _KEY = 'gt_cookie_consent';
     window.__cookieConsent = {
-      read()  {
-        try { return JSON.parse(localStorage.getItem(KEY) || 'null') || {}; }
+      read() {
+        try { return JSON.parse(localStorage.getItem(_KEY) || 'null') || {}; }
         catch { return {}; }
       },
       write(prefs) {
         try {
           const next = { ...this.read(), ...prefs };
-          localStorage.setItem(KEY, JSON.stringify(next));
+          localStorage.setItem(_KEY, JSON.stringify(next));
           window.dispatchEvent(new CustomEvent('cookie-consent:changed', { detail: next }));
         } catch {}
       },
     };
   }
 
-  // ─── Industries slider ──────────────────────────────────────────
+  // ─── Industries slider ────────────────────────────────────────────────────
   document.querySelectorAll('[data-industry-slider]').forEach((root) => {
     const track = root.querySelector('[data-ind="track"]');
     const prev  = root.querySelector('[data-ind="prev"]');
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('resize', updateNavState, { passive: true });
   });
 
-  // ─── Hero: video autoplay fallback ──────────────────────────────
+  // ─── Hero: video autoplay fallback ───────────────────────────────────────
   document.querySelectorAll('[data-hero]').forEach((section) => {
     const video  = section.querySelector('video');
     const poster = section.querySelector('[data-hero-poster]');
@@ -60,30 +60,28 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 
-  // ═══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════════════
   //  TRENDING TOPICS
-  // ═══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════════════
 
   function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
 
-  // ─── SLOT_CONFIG ─────────────────────────────────────────────────
-  // These values MUST mirror the CSS translate3d offsets in home.css.
-  // tx/ty/tz  = the second translate3d's x/y/z values (px)
-  // rx        = optional rotateX value (deg)
-  // scale     = uniform scale
-  // z / op    = z-index / opacity
+  // ── SLOT_CONFIG ────────────────────────────────────────────────────────────
+  // These numbers MUST exactly mirror the static translate3d values in home.css.
+  // tx/ty/tz  = second translate3d x/y/z (px)
+  // rx        = optional rotateX value (deg)  — 0 means omit
+  // scale     = uniform scale factor
+  // z, op     = z-index, opacity
   //
-  // When JS initialises, it writes each card's full transform as an
-  // inline style — so CSS  transition  has a numeric "from" value
-  // to animate from when a swap happens.
+  // JS writes each card's full transform as an inline style string on load,
+  // giving CSS transition a numeric "from" value to animate from on swap.
   const SLOT_CONFIG = {
-    leftTop:    { tx: -330, ty: -155, tz: -200, rx: 0, scale: 0.700, z:  2, op: 0.80 },
-    leftBottom: { tx: -460, ty:  172, tz: -240, rx: 0, scale: 0.700, z:  1, op: 0.74 },
-    center:     { tx:    0, ty:   50, tz:    0, rx: 0, scale: 1,     z: 10, op: 1.00 },
-    rightTop:   { tx:  310, ty: -178, tz: -165, rx: 3, scale: 0.700, z:  3, op: 0.80 },
-    rightBottom:{ tx:  340, ty:  182, tz: -200, rx: 3, scale: 0.700, z:  2, op: 0.74 },
+    leftTop:    { tx: -530, ty: -220, tz: -240, rx: 0, scale: 0.672, z:  2, op: 0.82 },
+    leftBottom: { tx: -580, ty:  195, tz: -280, rx: 0, scale: 0.672, z:  1, op: 0.78 },
+    center:     { tx:    0, ty:   60, tz:    0, rx: 0, scale: 1,     z: 10, op: 1.00 },
+    rightTop:   { tx:  395, ty: -210, tz: -180, rx: 4, scale: 0.672, z:  3, op: 0.82 },
+    rightBottom:{ tx:  430, ty:  215, tz: -220, rx: 4, scale: 0.672, z:  2, op: 0.78 },
   };
-
   const ALL_SLOTS = Object.keys(SLOT_CONFIG);
 
   // Build the full CSS transform string for a given slot name.
@@ -97,9 +95,8 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   }
 
-  // Apply a slot's full visual state as inline styles on the element.
-  // Inline styles take precedence over class rules, so the CSS
-  // transition interpolates between the inline transform values.
+  // Apply a slot's full visual state as inline styles.
+  // Inline style beats class rule → CSS transition can interpolate between values.
   function applySlotStyle(el, slotName) {
     const c = SLOT_CONFIG[slotName];
     if (!c) return;
@@ -109,10 +106,10 @@ document.addEventListener('DOMContentLoaded', () => {
     el.style.transform = buildTransform(slotName);
     el.style.zIndex    = c.z;
     el.style.opacity   = c.op;
-    el.style.cursor    = slotName === 'center' ? 'default' : 'pointer';
+    // NOTE: cursor is NOT written here; CSS class handles it so hover still works.
   }
 
-  // Seed inline transforms on page load so the first swap has a "from" value.
+  // Seed inline transforms on all cards so the first swap has a "from" value.
   function initSlotStyles(stage) {
     stage.querySelectorAll('[data-slot]').forEach(el => {
       const slot = el.getAttribute('data-slot');
@@ -120,84 +117,88 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Swap a surrounding card with the center card.
-  // rAF ensures the browser registers the current inline transform
-  // before we write the destination — guaranteeing the transition fires.
+  // Swap a surrounding card into the center and vice versa.
+  // rAF ensures the browser reads the current inline transform before we
+  // write the destination value — guaranteeing the transition fires.
   function swapSlots(stage, clickedSlot) {
     const center  = stage.querySelector('[data-slot="center"]');
     const clicked = stage.querySelector(`[data-slot="${clickedSlot}"]`);
     if (!center || !clicked) return;
-
-    const wasCenter  = center.getAttribute('data-slot');   // 'center'
-    const wasClicked = clicked.getAttribute('data-slot');  // e.g. 'leftTop'
-
+    const wasCenter  = center.getAttribute('data-slot');
+    const wasClicked = clicked.getAttribute('data-slot');
     requestAnimationFrame(() => {
-      applySlotStyle(center,  wasClicked);   // center card → side position
-      applySlotStyle(clicked, wasCenter);    // side card   → center position
+      applySlotStyle(center,  wasClicked);
+      applySlotStyle(clicked, wasCenter);
+      // Re-init scroll buttons after swap so the new center card is wired up
+      initCardScroll(center);
+      initCardScroll(clicked);
     });
   }
 
-  // ─── Consent gate ────────────────────────────────────────────────
-  // Called on load and whenever cookie-consent:changed fires.
-  // Instagram cards are NEVER gated (content served locally, no
-  // external data transfer). LinkedIn and others need consent.
+  // ── Consent gate ───────────────────────────────────────────────────────────
+  // Instagram cards: NEVER gated — content is stored locally in your CMS,
+  //   no personal data is transmitted to Instagram's servers.
+  // LinkedIn / other external: gated until social cookie accepted.
+  //
+  // Uses .needs-consent class (not .is-allowed) to match updated CSS.
   const applySocialGate = () => {
-    const consent      = window.__cookieConsent?.read?.() ?? {};
-    const socialOk     = consent.social === true;
+    const consent  = window.__cookieConsent?.read?.() ?? {};
+    const socialOk = consent.social === true;
 
     document.querySelectorAll('[data-social-card]').forEach((card) => {
       const source = (card.getAttribute('data-source') || '').toLowerCase().trim();
 
       if (source === 'instagram') {
-        // Always remove gate for Instagram regardless of consent state
+        // Always ungated — no matter what the cookie says
         card.classList.remove('needs-consent');
         return;
       }
-      // LinkedIn / other external sources: gate until social cookie accepted
+      // linkedin and any other external source
       card.classList.toggle('needs-consent', !socialOk);
     });
   };
 
-  // Run immediately so Instagram cards are never blanked,
-  // even if the event fires before DOMContentLoaded finishes.
-  applySocialGate();
+  applySocialGate(); // run immediately so Instagram cards are never blocked
   window.addEventListener('cookie-consent:changed', applySocialGate);
 
-  // Individual "Accept" button inside each gated card
+  // Individual "Accept" buttons inside each gated card
   document.querySelectorAll('[data-social-accept]').forEach((btn) => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       window.__cookieConsent?.write?.({ social: true });
-      // applySocialGate() fires via the cookie-consent:changed event above
+      // applySocialGate fires via cookie-consent:changed event above
     });
   });
 
-  // ─── Scroll-down button inside each card ─────────────────────────
-  // Hides the button when the scroller reaches the bottom
-  // (the "Show original post" link becomes visible).
+  // ── Scroll-down button inside cards ───────────────────────────────────────
+  // Hides the button when scroller reaches the bottom
+  // (the "Show original post" link becomes the bottom CTA instead).
   function initCardScroll(card) {
     const scroller = card.querySelector('[data-tt-scroll]');
     const btnDown  = card.querySelector('[data-tt-down]');
     if (!scroller || !btnDown) return;
 
+    // Remove old listener before adding new one (safe to call after swap)
+    const newBtn = btnDown.cloneNode(true);
+    btnDown.parentNode.replaceChild(newBtn, btnDown);
+
     const refresh = () => {
       const max   = scroller.scrollHeight - scroller.clientHeight;
       const atEnd = max <= 2 || scroller.scrollTop >= max - 2;
-      btnDown.style.display = atEnd ? 'none' : 'grid';
+      newBtn.style.display = atEnd ? 'none' : 'grid';
     };
-
-    btnDown.addEventListener('click', () => {
-      scroller.scrollBy({ top: Math.round(scroller.clientHeight * 0.80), behavior: 'smooth' });
+    newBtn.addEventListener('click', () => {
+      scroller.scrollBy({ top: Math.round(scroller.clientHeight * 0.8), behavior: 'smooth' });
     });
     scroller.addEventListener('scroll', refresh, { passive: true });
-    refresh(); // initial check
+    refresh();
   }
-
   document.querySelectorAll('[data-social-card]').forEach(initCardScroll);
 
-  // ─── Single [data-tt] loop ───────────────────────────────────────
-  // ONE forEach. ONE click listener per stage.
-  // Handles: confirm dialog / parallax motion / click-to-swap.
+
+  // ── Single [data-tt] forEach ─────────────────────────────────────────────
+  // ONE loop. ONE click listener per stage.
+  // Handles: confirm dialog / parallax / click-to-swap.
   document.querySelectorAll('[data-tt]').forEach((stage) => {
     const rig       = stage.querySelector('.tt-rig');
     const confirmEl = stage.querySelector('[data-tt-confirm]');
@@ -205,12 +206,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnLeave  = stage.querySelector('[data-tt-confirm-leave]');
     if (!rig) return;
 
-    // Seed inline transforms immediately
+    // Seed all inline transforms immediately
     initSlotStyles(stage);
 
-    // ── Confirm overlay ────────────────────────────────────────────
+    // ── Confirm dialog ─────────────────────────────────────────────────────
     let pendingUrl = null;
-
     const openConfirm = (url) => {
       pendingUrl = url;
       confirmEl?.classList.remove('hidden');
@@ -225,7 +225,6 @@ document.addEventListener('DOMContentLoaded', () => {
       document.documentElement.classList.remove('overflow-hidden');
       document.body.classList.remove('overflow-hidden');
     };
-
     btnCancel?.addEventListener('click', closeConfirm);
     confirmEl?.addEventListener('click', (e) => { if (e.target === confirmEl) closeConfirm(); });
     btnLeave?.addEventListener('click', () => {
@@ -234,21 +233,22 @@ document.addEventListener('DOMContentLoaded', () => {
       closeConfirm();
     });
 
-    // ── Parallax mouse tracking ────────────────────────────────────
-    // BASF parallax direction (confirmed from your description):
-    //   mouse right  → cards move LEFT  → rig translates LEFT  + rotateY negative
-    //   mouse left   → cards move RIGHT → rig translates RIGHT + rotateY positive
-    //   mouse up     → cards move DOWN  → rig translates DOWN  + rotateX positive
-    //   mouse down   → cards move UP    → rig translates UP    + rotateX negative
+    // ── Parallax ───────────────────────────────────────────────────────────
+    // BASF direction (confirmed from your description):
+    //   Mouse moves RIGHT → cards appear to move LEFT
+    //   Mouse moves LEFT  → cards appear to move RIGHT
+    //   Mouse moves UP    → cards appear to move DOWN
+    //   Mouse moves DOWN  → cards appear to move UP
     //
-    // tx/ty are normalised cursor position: 0 at centre, +1 at right/bottom.
-    // To make cards move OPPOSITE to the cursor:
-    //   rotateY  = -(tx * factor)   mouse right (tx>0) → negative rotateY → cards appear left
-    //   rotateX  = +(ty * factor)   mouse down  (ty>0) → positive rotateX → cards appear up
-    //   translate = SAME sign as rotation for subtle drift reinforcement
+    // Parallax physics: when you look through a camera and pan right,
+    // objects appear to move left. Same principle here.
+    // tx = +1 when cursor is at right edge.
+    // For cards to appear moving LEFT when cursor moves RIGHT:
+    //   rotateY must be NEGATIVE when tx is POSITIVE  → rotateY = -(tx * factor)
+    //   translate also moves in the opposite direction → moveX  = -(tx * factor)
     //
-    // "Last movement state when pointer leaves" → we keep tx/ty at their last values
-    // and only reset on mouseenter (not mouseleave).
+    // "Keeps last position when mouse leaves" → tx/ty are NOT reset on mouseleave.
+    // They only update on mousemove. One final frame is painted on leave.
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -256,79 +256,76 @@ document.addEventListener('DOMContentLoaded', () => {
       let raf = null;
       let tx  = 0;
       let ty  = 0;
-      let hasEnteredOnce = false;
 
-      const applyParallax = () => {
-        // BASF direction: negate tx for rotateY so cards drift opposite to cursor
-        const rotY  = -(tx * 10);    // mouse right → rotateY negative → cards left
-        const rotX  =  (ty *  7);    // mouse down  → rotateX positive → cards up
-        const moveX = -(tx * 18);    // reinforce: rig drifts against cursor
-        const moveY =  (ty * 12);
+      const paintRig = () => {
+        // Negate tx and ty so rig moves OPPOSITE to cursor direction
+        const rotY  = -(tx * 12);  // cursor right → negative rotateY → cards drift left
+        const rotX  =  (ty *  8);  // cursor down  → positive rotateX → cards drift up
+        const moveX = -(tx * 22);  // reinforces parallax: rig shifts opposite to cursor
+        const moveY =  (ty * 14);
 
-        rig.style.transform =
-          `translate3d(${moveX}px,${moveY}px,0px) ` +
-          `rotateX(${rotX}deg) ` +
-          `rotateY(${rotY}deg)`;
+        rig.style.setProperty('--tt-mx', `${moveX}px`);
+        rig.style.setProperty('--tt-my', `${moveY}px`);
+        rig.style.setProperty('--tt-rx', `${rotX}deg`);
+        rig.style.setProperty('--tt-ry', `${rotY}deg`);
       };
-
-      // On mouseenter: update tx/ty to current position immediately,
-      // so there's no jump from the last-state when re-entering
-      stage.addEventListener('mouseenter', (e) => {
-        const r = stage.getBoundingClientRect();
-        tx = clamp((e.clientX - r.left)  / r.width  * 2 - 1, -1, 1);
-        ty = clamp((e.clientY - r.top)   / r.height * 2 - 1, -1, 1);
-        hasEnteredOnce = true;
-        applyParallax();
-      });
 
       stage.addEventListener('mousemove', (e) => {
         const r = stage.getBoundingClientRect();
-        tx = clamp((e.clientX - r.left)  / r.width  * 2 - 1, -1, 1);
-        ty = clamp((e.clientY - r.top)   / r.height * 2 - 1, -1, 1);
-        if (!raf) {
-          raf = requestAnimationFrame(() => { raf = null; applyParallax(); });
-        }
+        // Normalise: 0 at centre, range -1..+1
+        tx = clamp((e.clientX - r.left) / r.width  * 2 - 1, -1, 1);
+        ty = clamp((e.clientY - r.top)  / r.height * 2 - 1, -1, 1);
+        if (!raf) raf = requestAnimationFrame(() => { raf = null; paintRig(); });
+      });
+
+      // On mouseenter: immediately sync tx/ty to current cursor position
+      // so there's no "snap" from a stale position when re-entering.
+      stage.addEventListener('mouseenter', (e) => {
+        const r = stage.getBoundingClientRect();
+        tx = clamp((e.clientX - r.left) / r.width  * 2 - 1, -1, 1);
+        ty = clamp((e.clientY - r.top)  / r.height * 2 - 1, -1, 1);
+        paintRig();
       });
 
       // mouseleave: keep last tx/ty — do NOT reset to zero.
-      // The stage retains the last parallax state until mouse re-enters.
-      // (This matches the BASF behaviour described.)
-      // Only apply one last frame to ensure the stored tx/ty is rendered:
+      // The stage holds the last parallax state until the mouse re-enters.
       stage.addEventListener('mouseleave', () => {
         if (raf) { cancelAnimationFrame(raf); raf = null; }
-        applyParallax(); // render the last position one more time
+        paintRig(); // ensure last state is rendered
       });
 
-      applyParallax(); // set identity on mount
+      paintRig(); // identity on mount
     }
 
-    // ── Unified click handler (capture phase) ──────────────────────
+    // ── Unified click handler (capture phase) ──────────────────────────────
+    // Capture phase runs before any child handler, so transformed-card
+    // hit-boxes are resolved against the stage coordinate space correctly.
     stage.addEventListener('click', (e) => {
-      // Priority 1: "Show original post" anchor → confirm overlay
+
+      // Priority 1: "Show original post" link → open confirm overlay
       const origLink = e.target.closest('[data-tt-original]');
       if (origLink) {
         e.preventDefault();
         e.stopPropagation();
         const url = origLink.getAttribute('data-url') || origLink.getAttribute('href');
         if (url && url !== '#') openConfirm(url);
-        return;
+        return; // do NOT trigger swap
       }
 
-      // Priority 2: interactive elements → let them handle themselves
+      // Priority 2: other interactive elements → pass through normally
       if (e.target.closest(
         'a, button, input, textarea, select, ' +
         '[data-social-accept], [data-tt-down], [data-tt-confirm]'
       )) return;
 
-      // Priority 3: click on a non-center slot → swap with center
+      // Priority 3: click on a non-center slot card → swap to center
       const card = e.target.closest('[data-slot]');
       if (!card) return;
       const slot = card.getAttribute('data-slot');
       if (!slot || slot === 'center') return;
-
       swapSlots(stage, slot);
 
-    }, true); // capture phase: runs before child handlers
+    }, true); // capture phase
 
   }); // end [data-tt] forEach
 
