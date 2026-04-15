@@ -169,34 +169,7 @@ $industries   = \App\Models\Industry::query()->where('is_published',true)->order
 {{-- ═══════════════════════════════════════════════════════════════════════════
      TRENDING TOPICS
      ═══════════════════════════════════════════════════════════════════════════
-
-     STRUCTURE (critical for correct 3D hit-boxes):
-       .tt-stage                 overflow:hidden, NO perspective
-         .tt-stage__bg           background + overlays
-         .tt-stage__scene        perspective:1100px ONLY here
-           .tt-rig               transform-style:preserve-3d, JS animates
-             div.tt-slot         position:absolute, sized, transform moves hit-box
-               article.tt-card  position:relative width:100% height:100%
-                 .tt-card__consent  absolute overlay
-                 .tt-card__content  flex column
-
-     WHY two elements (.tt-slot wrapper + .tt-card inside):
-       .tt-slot is position:absolute and carries the transform.
-       In CSS, pointer-events hit-testing for position:absolute uses the
-       TRANSFORMED bounding box (correct in all modern browsers).
-       .tt-card is position:relative so it fills the slot naturally,
-       and overflow:hidden clips the image/content to the card boundary.
-
-     $data['topics'] — 5 items, indices 0-4:
-       [0] left-top     default source: instagram
-       [1] left-bottom  default source: instagram
-       [2] center       default source: linkedin (tall)
-       [3] right-top    default source: linkedin
-       [4] right-bottom default source: linkedin
-
-     Each item: source, image_path, title (optional), text,
-                profile_name, time_ago, original_url, privacy_url
-     ═══════════════════════════════════════════════════════════════════════════ --}}
+--}}
 @elseif ($type === 'trending_topics')
 @php
 
@@ -263,7 +236,7 @@ $src = fn($it, string $default): string =>
                     <div class="tt-card__content">
                         <div class="tt-card__media">
                             @if($i0)<img src="{{ $i0 }}" alt="" class="tt-card__img">@endif
-                            <div class="tt-card__badge tt-card__badge--ig">IG</div>
+                            <div class="tt-card__badge {{ $s0==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s0==='instagram' ? 'IG' : 'in' }}</div>
                         </div>
                         <div class="tt-card__body">
                             <div class="tt-card__meta"><span class="tt-card__profile">{{ $pf0 }}</span><span class="tt-card__time">{{ $tm0 }}</span></div>
@@ -293,7 +266,7 @@ $src = fn($it, string $default): string =>
                     <div class="tt-card__content">
                         <div class="tt-card__media">
                             @if($i1)<img src="{{ $i1 }}" alt="" class="tt-card__img">@endif
-                            <div class="tt-card__badge tt-card__badge--ig">IG</div>
+                            <div class="tt-card__badge {{ $s1==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s1==='instagram' ? 'IG' : 'in' }}</div>
                         </div>
                         <div class="tt-card__body">
                             <div class="tt-card__meta"><span class="tt-card__profile">{{ $pf1 }}</span><span class="tt-card__time">{{ $tm1 }}</span></div>
@@ -309,13 +282,13 @@ $src = fn($it, string $default): string =>
 
             {{-- CARD 2 — CENTER (linkedin, tall) --}}
             @php
-            $c2=$topics[2]; $i2=$img($c2);
+            $c2=$topics[2]; $i2=$img($c2); $s2=$src($c2,'linkedin');
             $tx2=$t($c2['text']??[]); $tt2=$t($c2['title']??[]); $ti2=$urlWithLocale($c2['original_url']??'#');
             $pr2=$urlWithLocale($c2['privacy_url']??'/{locale}/pages/privacy-policy');
             $tm2=(string)($c2['time_ago']??'—'); $pf2=(string)($c2['profile_name']??'Globaltrding');
             @endphp
             <div class="tt-slot tt-slot--center" data-slot="center">
-                <article class="tt-card" data-social-card data-tt-card data-source="linkedin">
+                <article class="tt-card" data-social-card data-tt-card data-source="{{$s2}}">
                     <div class="tt-card__consent"><div class="tt-consent__box">
                         <div class="tt-consent__text">I agree to the transmission of my personal data to LinkedIn in order to be shown content provided by LinkedIn. I have read the <a href="{{ $pr2 }}" target="_blank" rel="noopener">privacy policy</a>.</div>
                         <a href="#" class="tt-consent__btn" data-social-accept>Accept</a>
@@ -325,7 +298,7 @@ $src = fn($it, string $default): string =>
                         @if($i2)
                             <div class="tt-card__media">
                                 <img src="{{ $i2 }}" alt="" class="tt-card__img">
-                                <div class="tt-card__badge tt-card__badge--li">in</div>
+                                <div class="tt-card__badge {{ $s2==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s2==='instagram' ? 'IG' : 'in' }}</div>
                             </div>
                         @else
                             <div class="tt-card__badge tt-card__badge--li" style="position:absolute;top:8px;right:8px;z-index:3">in</div>
@@ -360,7 +333,7 @@ $src = fn($it, string $default): string =>
                     <div class="tt-card__content">
                         <div class="tt-card__media">
                             @if($i3)<img src="{{ $i3 }}" alt="" class="tt-card__img">@endif
-                            <div class="tt-card__badge tt-card__badge--li">in</div>
+                            <div class="tt-card__badge {{ $s3==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s3==='instagram' ? 'IG' : 'in' }}</div>
                         </div>
                         <div class="tt-card__body">
                             <div class="tt-card__meta"><span class="tt-card__profile">{{ $pf3 }}</span><span class="tt-card__time">{{ $tm3 }}</span></div>
@@ -390,7 +363,7 @@ $src = fn($it, string $default): string =>
                     <div class="tt-card__content">
                         <div class="tt-card__media">
                             @if($i4)<img src="{{ $i4 }}" alt="" class="tt-card__img">@endif
-                            <div class="tt-card__badge tt-card__badge--li">in</div>
+                            <div class="tt-card__badge {{ $s4==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s4==='instagram' ? 'IG' : 'in' }}</div>
                         </div>
                         <div class="tt-card__body">
                             <div class="tt-card__meta"><span class="tt-card__profile">{{ $pf4 }}</span><span class="tt-card__time">{{ $tm4 }}</span></div>

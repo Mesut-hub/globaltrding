@@ -76,19 +76,35 @@ document.addEventListener('DOMContentLoaded', () => {
   // JS writes each card's full transform as an inline style string on load,
   // giving CSS transition a numeric "from" value to animate from on swap.
   const SLOT_CONFIG = {
-    leftTop:    { tx: -530, ty: -220, tz: -240, rx: 0, scale: 0.672, z:  2, op: 0.82 },
-    leftBottom: { tx: -580, ty:  200, tz: -280, rx: 0, scale: 0.672, z:  1, op: 0.78 },
-    center:     { tx:    0, ty:   55, tz:    0, rx: 0, scale: 1,     z: 10, op: 1.00 },
-    rightTop:   { tx:  390, ty: -210, tz: -180, rx: 4, scale: 0.672, z:  3, op: 0.82 },
-    rightBottom:{ tx:  430, ty:  220, tz: -220, rx: 4, scale: 0.672, z:  2, op: 0.78 },
+    leftTop:    { tx: -300, ty: -220, tz: -240, rx: 0, scale: 0.672 },
+    leftBottom: { tx: -380, ty:  205, tz: -280, rx: 0, scale: 0.672 },
+    center:     { tx:    0, ty: -150, tz:    0, rx: 0, scale: 1 },
+    rightTop:   { tx:  340, ty: -170, tz: -180, rx: 4, scale: 0.672 },
+    rightBottom:{ tx:  370, ty:  225, tz: -220, rx: 4, scale: 0.672 },
   };
+
+  // Parallax depth multiplier per slot.
+  // Center (tz=0, closest) = 1.0 → moves the most.
+  // Deep side slots (tz=-240 to -280) = 0.40-0.55 → move less.
+  // This creates the depth/parallax illusion without any Z-rotation.
+  const ZMUL = {
+    leftTop: 0.45, leftBottom: 0.40, center: 2.0, rightTop: 0.55, rightBottom: 0.50,
+  };
+ 
+  // Maximum XY drift amplitude in px (at |tx|=1, |ty|=1).
+  // Large enough to see clearly, not so large cards leave the stage.
+  const AMP_X = 52;
+  const AMP_Y = 38;
   const ALL_SLOTS = Object.keys(SLOT_CONFIG);
 
   // Build the full CSS transform string for a given slot name.
-  function buildTransform(slotName) {
+  function buildTransform(slotName, tx_cursor, ty_cursor) {
     const c = SLOT_CONFIG[slotName];
+    const zm = ZMUL[slotName] || 0.5;
+    const dx = tx_cursor * AMP_X * zm * -1;   // BASF direction: invert
+    const dy = ty_cursor * AMP_Y * zm * -1;
     return (
-      `translate3d(-50%,-50%,0px) ` +
+      `translate3d(-50%,50%,0px) ` +
       `translate3d(${c.tx}px,${c.ty}px,${c.tz}px) ` +
       (c.rx ? `rotateX(${c.rx}deg) ` : '') +
       `scale(${c.scale})`
@@ -106,6 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
     slot.style.transform = buildTransform(slotName);
     slot.style.zIndex    = c.z;
     slot.style.opacity   = c.op;
+    slot.style.cursor  = slotName === 'center' ? 'default' : 'pointer';
     // NOTE: cursor is NOT written here; CSS class handles it so hover still works.
   }
 
