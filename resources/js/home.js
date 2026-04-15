@@ -6,16 +6,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // Provides window.__cookieConsent if your app hasn't defined it yet.
   // Replace with your real cookie API. Persists in localStorage.
   if (!window.__cookieConsent) {
-    const _KEY = 'gt_cookie_consent';
+    const _K = 'gt_cookie_consent';
     window.__cookieConsent = {
       read() {
-        try { return JSON.parse(localStorage.getItem(_KEY) || 'null') || {}; }
+        try { return JSON.parse(localStorage.getItem(_K) || 'null') || {}; }
         catch { return {}; }
       },
       write(prefs) {
         try {
           const next = { ...this.read(), ...prefs };
-          localStorage.setItem(_KEY, JSON.stringify(next));
+          localStorage.setItem(_K, JSON.stringify(next));
           window.dispatchEvent(new CustomEvent('cookie-consent:changed', { detail: next }));
         } catch {}
       },
@@ -77,10 +77,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // giving CSS transition a numeric "from" value to animate from on swap.
   const SLOT_CONFIG = {
     leftTop:    { tx: -530, ty: -220, tz: -240, rx: 0, scale: 0.672, z:  2, op: 0.82 },
-    leftBottom: { tx: -580, ty:  195, tz: -280, rx: 0, scale: 0.672, z:  1, op: 0.78 },
-    center:     { tx:    0, ty:   60, tz:    0, rx: 0, scale: 1,     z: 10, op: 1.00 },
-    rightTop:   { tx:  395, ty: -210, tz: -180, rx: 4, scale: 0.672, z:  3, op: 0.82 },
-    rightBottom:{ tx:  430, ty:  215, tz: -220, rx: 4, scale: 0.672, z:  2, op: 0.78 },
+    leftBottom: { tx: -580, ty:  200, tz: -280, rx: 0, scale: 0.672, z:  1, op: 0.78 },
+    center:     { tx:    0, ty:   55, tz:    0, rx: 0, scale: 1,     z: 10, op: 1.00 },
+    rightTop:   { tx:  390, ty: -210, tz: -180, rx: 4, scale: 0.672, z:  3, op: 0.82 },
+    rightBottom:{ tx:  430, ty:  220, tz: -220, rx: 4, scale: 0.672, z:  2, op: 0.78 },
   };
   const ALL_SLOTS = Object.keys(SLOT_CONFIG);
 
@@ -97,15 +97,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Apply a slot's full visual state as inline styles.
   // Inline style beats class rule → CSS transition can interpolate between values.
-  function applySlotStyle(el, slotName) {
+  function applySlotStyle(slot, slotName) {
     const c = SLOT_CONFIG[slotName];
     if (!c) return;
-    ALL_SLOTS.forEach(s => el.classList.remove(`tt-slot--${s}`));
-    el.classList.add(`tt-slot--${slotName}`);
-    el.setAttribute('data-slot', slotName);
-    el.style.transform = buildTransform(slotName);
-    el.style.zIndex    = c.z;
-    el.style.opacity   = c.op;
+    ALL_SLOTS.forEach(s => slot.classList.remove(`tt-slot--${s}`));
+    slot.classList.add(`tt-slot--${slotName}`);
+    slot.setAttribute('data-slot', slotName);
+    slot.style.transform = buildTransform(slotName);
+    slot.style.zIndex    = c.z;
+    slot.style.opacity   = c.op;
     // NOTE: cursor is NOT written here; CSS class handles it so hover still works.
   }
 
@@ -120,18 +120,18 @@ document.addEventListener('DOMContentLoaded', () => {
   // Swap a surrounding card into the center and vice versa.
   // rAF ensures the browser reads the current inline transform before we
   // write the destination value — guaranteeing the transition fires.
-  function swapSlots(stage, clickedSlot) {
-    const center  = stage.querySelector('[data-slot="center"]');
-    const clicked = stage.querySelector(`[data-slot="${clickedSlot}"]`);
-    if (!center || !clicked) return;
-    const wasCenter  = center.getAttribute('data-slot');
-    const wasClicked = clicked.getAttribute('data-slot');
+  function swapSlots(stage, clickedSlotName) {
+    const centerE1  = stage.querySelector('[data-slot="center"]');
+    const clickedE1 = stage.querySelector(`[data-slot="${clickedSlotName}"]`);
+    if (!centerE1 || !clickedE1) return;
+    const wasCenter  = centerE1.getAttribute('data-slot');
+    const wasClicked = clickedE1.getAttribute('data-slot');
     requestAnimationFrame(() => {
-      applySlotStyle(center,  wasClicked);
-      applySlotStyle(clicked, wasCenter);
+      applySlotStyle(centerE1,  wasClicked);
+      applySlotStyle(clickedE1, wasCenter);
       // Re-init scroll buttons after swap so the new center card is wired up
-      initCardScroll(center);
-      initCardScroll(clicked);
+      initCardScroll(centerE1);
+      initCardScroll(clickedE1);
     });
   }
 
@@ -146,14 +146,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const socialOk = consent.social === true;
 
     document.querySelectorAll('[data-social-card]').forEach((card) => {
-      const source = (card.getAttribute('data-source') || '').toLowerCase().trim();
-
-      if (source === 'instagram') {
-        // Always ungated — no matter what the cookie says
-        card.classList.remove('needs-consent');
-        return;
-      }
-      // linkedin and any other external source
+      const src = (card.getAttribute('data-source') || '').toLowerCase().trim();
+      if (src ==='instagram') { card.classList.remove('needs-consent'); return; }
       card.classList.toggle('needs-consent', !socialOk);
     });
   };
@@ -173,27 +167,27 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── Scroll-down button inside cards ───────────────────────────────────────
   // Hides the button when scroller reaches the bottom
   // (the "Show original post" link becomes the bottom CTA instead).
-  function initCardScroll(card) {
-    const scroller = card.querySelector('[data-tt-scroll]');
-    const btnDown  = card.querySelector('[data-tt-down]');
+  function initCardScroll(slotOrcard) {
+    const scroller = slotOrcard.querySelector('[data-tt-scroll]');
+    const btnDown  = slotOrcard.querySelector('[data-tt-down]');
     if (!scroller || !btnDown) return;
 
     // Remove old listener before adding new one (safe to call after swap)
-    const newBtn = btnDown.cloneNode(true);
-    btnDown.parentNode.replaceChild(newBtn, btnDown);
+    const fresh = btnDown.cloneNode(true);
+    btnDown.replaceWith(fresh);
 
     const refresh = () => {
       const max   = scroller.scrollHeight - scroller.clientHeight;
       const atEnd = max <= 2 || scroller.scrollTop >= max - 2;
-      newBtn.style.display = atEnd ? 'none' : 'grid';
+      fresh.style.display = atEnd ? 'none' : 'grid';
     };
-    newBtn.addEventListener('click', () => {
+    fresh.addEventListener('click', () => {
       scroller.scrollBy({ top: Math.round(scroller.clientHeight * 0.8), behavior: 'smooth' });
     });
     scroller.addEventListener('scroll', refresh, { passive: true });
     refresh();
   }
-  document.querySelectorAll('[data-social-card]').forEach(initCardScroll);
+  document.querySelectorAll('[data-slot]').forEach(initCardScroll);
 
 
   // ── Single [data-tt] forEach ─────────────────────────────────────────────
@@ -261,22 +255,21 @@ document.addEventListener('DOMContentLoaded', () => {
         // Negate tx and ty so rig moves OPPOSITE to cursor direction
         const rotY  = -(tx * 12);  // cursor right → negative rotateY → cards drift left
         const rotX  =  (ty *  8);  // cursor down  → positive rotateX → cards drift up
-        const moveX = -(tx * 22);  // reinforces parallax: rig shifts opposite to cursor
-        const moveY =  (ty * 14);
+        const moveX = -(tx * 20);  // reinforces parallax: rig shifts opposite to cursor
+        const moveY =  (ty * 13);
 
-        rig.style.setProperty('--tt-mx', `${moveX}px`);
-        rig.style.setProperty('--tt-my', `${moveY}px`);
-        rig.style.setProperty('--tt-rx', `${rotX}deg`);
-        rig.style.setProperty('--tt-ry', `${rotY}deg`);
+        rig.style.transform =
+          `translate3d(${moveX}px,${moveY}px,0px) ` +
+          `rotateX(${rotX}deg) ` +
+          `rotateY(${rotY}deg)`;
       };
 
-      stage.addEventListener('mousemove', (e) => {
+      const onMove = (e) => {
         const r = stage.getBoundingClientRect();
-        // Normalise: 0 at centre, range -1..+1
         tx = clamp((e.clientX - r.left) / r.width  * 2 - 1, -1, 1);
         ty = clamp((e.clientY - r.top)  / r.height * 2 - 1, -1, 1);
         if (!raf) raf = requestAnimationFrame(() => { raf = null; paintRig(); });
-      });
+      };
 
       // On mouseenter: immediately sync tx/ty to current cursor position
       // so there's no "snap" from a stale position when re-entering.
@@ -286,6 +279,8 @@ document.addEventListener('DOMContentLoaded', () => {
         ty = clamp((e.clientY - r.top)  / r.height * 2 - 1, -1, 1);
         paintRig();
       });
+
+      stage.addEventListener('mousemove', onMove);
 
       // mouseleave: keep last tx/ty — do NOT reset to zero.
       // The stage holds the last parallax state until the mouse re-enters.
@@ -319,11 +314,11 @@ document.addEventListener('DOMContentLoaded', () => {
       )) return;
 
       // Priority 3: click on a non-center slot card → swap to center
-      const card = e.target.closest('[data-slot]');
-      if (!card) return;
-      const slot = card.getAttribute('data-slot');
-      if (!slot || slot === 'center') return;
-      swapSlots(stage, slot);
+      const slot = e.target.closest('[data-slot]');
+      if (!slot) return;
+      const slotName = slot.getAttribute('data-slot');
+      if (!slotName || slotName === 'center') return;
+      swapSlots(stage, slotName);
 
     }, true); // capture phase
 
