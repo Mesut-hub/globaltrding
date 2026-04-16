@@ -233,7 +233,7 @@ $src = fn($it, string $default): string =>
                         <div class="tt-consent__text">I agree to the transmission of my personal data to {{ $s0==='instagram'?'Instagram':'LinkedIn' }} in order to be shown content provided by {{ $s0==='instagram'?'Instagram':'LinkedIn' }}. I have read the <a href="{{ $pr0 }}" target="_blank" rel="noopener">privacy policy</a>.</div>
                         <a href="#" class="tt-consent__btn" data-social-accept>Accept</a>
                     </div></div>
-                    <div class="tt-card__content">
+                    <div>
                         <div class="tt-card__media">
                             @if($i0)<img src="{{ $i0 }}" alt="" class="tt-card__img">@endif
                             <div class="tt-card__badge {{ $s0==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s0==='instagram' ? 'IG' : 'in' }}</div>
@@ -263,7 +263,7 @@ $src = fn($it, string $default): string =>
                         <div class="tt-consent__text">I agree to the transmission of my personal data to {{ $s1==='instagram'?'Instagram':'LinkedIn' }} in order to be shown content provided by {{ $s1==='instagram'?'Instagram':'LinkedIn' }}. I have read the <a href="{{ $pr1 }}" target="_blank" rel="noopener">privacy policy</a>.</div>
                         <a href="#" class="tt-consent__btn" data-social-accept>Accept</a>
                     </div></div>
-                    <div class="tt-card__content">
+                    <div>
                         <div class="tt-card__media">
                             @if($i1)<img src="{{ $i1 }}" alt="" class="tt-card__img">@endif
                             <div class="tt-card__badge {{ $s1==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s1==='instagram' ? 'IG' : 'in' }}</div>
@@ -293,7 +293,7 @@ $src = fn($it, string $default): string =>
                         <div class="tt-consent__text">I agree to the transmission of my personal data to LinkedIn in order to be shown content provided by LinkedIn. I have read the <a href="{{ $pr2 }}" target="_blank" rel="noopener">privacy policy</a>.</div>
                         <a href="#" class="tt-consent__btn" data-social-accept>Accept</a>
                     </div></div>
-                    <div class="tt-card__content">
+                    <div>
                         {{-- Media: only when image provided; badge floats in corner otherwise --}}
                         @if($i2)
                             <div class="tt-card__media">
@@ -330,7 +330,7 @@ $src = fn($it, string $default): string =>
                         <div class="tt-consent__text">I agree to the transmission of my personal data to LinkedIn in order to be shown content provided by LinkedIn. I have read the <a href="{{ $pr3 }}" target="_blank" rel="noopener">privacy policy</a>.</div>
                         <a href="#" class="tt-consent__btn" data-social-accept>Accept</a>
                     </div></div>
-                    <div class="tt-card__content">
+                    <div>
                         <div class="tt-card__media">
                             @if($i3)<img src="{{ $i3 }}" alt="" class="tt-card__img">@endif
                             <div class="tt-card__badge {{ $s3==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s3==='instagram' ? 'IG' : 'in' }}</div>
@@ -356,11 +356,13 @@ $src = fn($it, string $default): string =>
             @endphp
             <div class="tt-slot tt-slot--rightBottom" data-slot="rightBottom">
                 <article class="tt-card" data-social-card data-tt-card data-source="{{ $s4 }}">
-                    <div class="tt-card__consent"><div class="tt-consent__box">
-                        <div class="tt-consent__text">I agree to the transmission of my personal data to LinkedIn in order to be shown content provided by LinkedIn. I have read the <a href="{{ $pr4 }}" target="_blank" rel="noopener">privacy policy</a>.</div>
-                        <a href="#" class="tt-consent__btn" data-social-accept>Accept</a>
-                    </div></div>
-                    <div class="tt-card__content">
+                    <div class="tt-card__consent">
+                        <div class="tt-consent__box">
+                            <div class="tt-consent__text">I agree to the transmission of my personal data to LinkedIn in order to be shown content provided by LinkedIn. I have read the <a href="{{ $pr4 }}" target="_blank" rel="noopener">privacy policy</a>.</div>
+                            <a href="#" class="tt-consent__btn" data-social-accept>Accept</a>
+                            </div>
+                        </div>
+                    <div>
                         <div class="tt-card__media">
                             @if($i4)<img src="{{ $i4 }}" alt="" class="tt-card__img">@endif
                             <div class="tt-card__badge {{ $s4==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s4==='instagram' ? 'IG' : 'in' }}</div>
