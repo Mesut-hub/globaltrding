@@ -2,7 +2,7 @@ function fmt(slug, v) {
   if (v === null || v === undefined) return null;
 
   // FX pairs: 4 decimals
-  if (slug === 'usd-try' || slug === 'eur-try' || slug === 'gbp-try') {
+  if (slug === 'usd-try' || slug === 'eur-try' || slug === 'gbp-try' || slug === 'gold-gram-try' || slug === 'brent-usd') {
     return Number(v).toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 4 });
   }
 

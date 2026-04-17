@@ -69,7 +69,7 @@ $overlayBottom = (float)($data['overlay_bottom'] ?? 0.55);
 
 {{-- MARKET BELT --}}
 @elseif ($type === 'market_belt')
-@php $beltSlugs = 'usd-try,eur-try,gbp-try'; $dataUrl = "/{$locale}/market/data?instruments=".urlencode($beltSlugs); @endphp
+@php $beltSlugs = 'usd-try,eur-try,gbp-try,Gold (g),Brent'; $dataUrl = "/{$locale}/market/data?instruments=".urlencode($beltSlugs); @endphp
 <section class="border-b border-slate-200 bg-white">
     <div class="mx-auto max-w-7xl px-4 py-3">
         <div class="flex flex-wrap items-center gap-2" data-market-belt data-market-url="{{ $dataUrl }}">

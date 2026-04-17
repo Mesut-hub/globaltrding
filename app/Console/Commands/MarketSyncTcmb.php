@@ -14,6 +14,7 @@ class MarketSyncTcmb extends Command
 
     public function handle(TcmbTodayXmlClient $tcmb): int
     {
+        $this->warn('Using TCMB today.xml fallback. Recommended: use market:sync-evds for production/belt.');
         $this->info('Fetching TCMB today.xml ...');
 
         $xml = $tcmb->fetch();
@@ -27,6 +28,8 @@ class MarketSyncTcmb extends Command
             'usd-try' => 'USD',
             'eur-try' => 'EUR',
             'gbp-try' => 'GBP',
+            'gold-gram-try' => 'gold',
+            'brent-usd' => 'brent',
         ];
 
         foreach ($map as $slug => $code) {

@@ -10,7 +10,7 @@ use Illuminate\Console\Command;
 
 class MarketSyncEvds extends Command
 {
-    protected $signature = 'market:sync-evds {--days=365} {--force : Re-sync even if points exist}';
+    protected $signature = 'market:sync-evds {--days=365} {--force : Re-sync even if points exist} {--debug : Print EVDS request debug (safe)}';
     protected $description = 'Sync Market instruments data from TCMB EVDS into market_points';
 
     public function handle(EvdsClient $evds): int
@@ -53,7 +53,7 @@ class MarketSyncEvds extends Command
             }
 
             try {
-                $payload = $evds->fetchSeries($series, $startStr, $endStr);
+                $payload = $evds->fetchSeries($series, $startStr, $endStr, (bool) $this->option('debug'));
 
                 // EVDS canonical: { "items": [ { "Tarih": "...", "TP_DK_USD_A": "..." }, ... ] }
                 $items = $payload['items'] ?? $payload['Items'] ?? null;
