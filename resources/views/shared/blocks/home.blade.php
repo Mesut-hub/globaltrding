@@ -214,6 +214,8 @@ $src = fn($it, string $default): string =>
     {{-- Scene: perspective lives here ONLY --}}
     <div class="tt-stage__scene">
         <div class="tt-rig">
+            {{-- Stage labels --}}
+    <div class="tt-stage__headline">#We Provide the Future</div>
 
             {{-- ══════════════════════════════════════════════════════════
                  CARD MACRO
@@ -234,10 +236,18 @@ $src = fn($it, string $default): string =>
                         <a href="#" class="tt-consent__btn" data-social-accept>Accept</a>
                     </div></div>
                     <div>
-                        <div class="tt-card__media">
-                            @if($i0)<img src="{{ $i0 }}" alt="" class="tt-card__img">@endif
-                            <div class="tt-card__badge {{ $s0==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s0==='instagram' ? 'IG' : 'in' }}</div>
-                        </div>
+                        <div class="tt-card__badge {{ $s0==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s0==='instagram' ? 'IG' : 'in' }}</div>
+                        @if($s0 === 'instagram')
+                            <div class="tt-card__media">
+                                @if($i0)<img src="{{ $i0 }}" alt="" class="tt-card__img">@endif
+                            </div>
+                        @else
+                            <div class="tt-card__content">
+                                <div class="tt-card__media">
+                                    @if($i0)<img src="{{ $i0 }}" alt="" class="tt-card__img">@endif
+                                </div>
+                            </div>
+                        @endif
                         <div class="tt-card__body">
                             <div class="tt-card__meta"><span class="tt-card__profile">{{ $pf0 }}</span><span class="tt-card__time">{{ $tm0 }}</span></div>
                             <div class="tt-card__scroll" data-tt-scroll>
@@ -264,10 +274,18 @@ $src = fn($it, string $default): string =>
                         <a href="#" class="tt-consent__btn" data-social-accept>Accept</a>
                     </div></div>
                     <div>
-                        <div class="tt-card__media">
-                            @if($i1)<img src="{{ $i1 }}" alt="" class="tt-card__img">@endif
-                            <div class="tt-card__badge {{ $s1==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s1==='instagram' ? 'IG' : 'in' }}</div>
-                        </div>
+                        <div class="tt-card__badge {{ $s1==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s1==='instagram' ? 'IG' : 'in' }}</div>
+                        @if($s1 === 'instagram')
+                            <div class="tt-card__media">
+                                @if($i1)<img src="{{ $i1 }}" alt="" class="tt-card__img">@endif
+                            </div>
+                        @else
+                            <div class="tt-card__content">
+                                <div class="tt-card__media">
+                                    @if($i1)<img src="{{ $i1 }}" alt="" class="tt-card__img">@endif
+                                </div>
+                            </div>
+                        @endif
                         <div class="tt-card__body">
                             <div class="tt-card__meta"><span class="tt-card__profile">{{ $pf1 }}</span><span class="tt-card__time">{{ $tm1 }}</span></div>
                             <div class="tt-card__scroll" data-tt-scroll>
@@ -289,19 +307,24 @@ $src = fn($it, string $default): string =>
             @endphp
             <div class="tt-slot tt-slot--center" data-slot="center">
                 <article class="tt-card" data-social-card data-tt-card data-source="{{$s2}}">
-                    <div class="tt-card__consent"><div class="tt-consent__box">
-                        <div class="tt-consent__text">I agree to the transmission of my personal data to LinkedIn in order to be shown content provided by LinkedIn. I have read the <a href="{{ $pr2 }}" target="_blank" rel="noopener">privacy policy</a>.</div>
-                        <a href="#" class="tt-consent__btn" data-social-accept>Accept</a>
-                    </div></div>
+                    <div class="tt-card__consent">
+                        <div class="tt-consent__box">
+                            <div class="tt-consent__text">I agree to the transmission of my personal data to LinkedIn in order to be shown content provided by LinkedIn. I have read the <a href="{{ $pr2 }}" target="_blank" rel="noopener">privacy policy</a>.</div>
+                            <a href="#" class="tt-consent__btn" data-social-accept>Accept</a>
+                        </div>
+                    </div>
                     <div>
-                        {{-- Media: only when image provided; badge floats in corner otherwise --}}
-                        @if($i2)
+                        <div class="tt-card__badge {{ $s2==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s2==='instagram' ? 'IG' : 'in' }}</div>
+                        @if($s2 === 'instagram')
                             <div class="tt-card__media">
                                 <img src="{{ $i2 }}" alt="" class="tt-card__img">
-                                <div class="tt-card__badge {{ $s2==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s2==='instagram' ? 'IG' : 'in' }}</div>
                             </div>
                         @else
-                            <div class="tt-card__badge tt-card__badge--li" style="position:absolute;top:8px;right:8px;z-index:3">in</div>
+                            <div class="tt-card__content">
+                                <div class="tt-card__media">
+                                    <img src="{{ $i2 }}" alt="" class="tt-card__img">
+                                </div>
+                            </div>
                         @endif
                         {{-- body--lg: flex:1 fills remaining card height --}}
                         <div class="tt-card__body tt-card__body--lg">
@@ -331,10 +354,18 @@ $src = fn($it, string $default): string =>
                         <a href="#" class="tt-consent__btn" data-social-accept>Accept</a>
                     </div></div>
                     <div>
-                        <div class="tt-card__media">
-                            @if($i3)<img src="{{ $i3 }}" alt="" class="tt-card__img">@endif
-                            <div class="tt-card__badge {{ $s3==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s3==='instagram' ? 'IG' : 'in' }}</div>
-                        </div>
+                        <div class="tt-card__badge {{ $s3==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s3==='instagram' ? 'IG' : 'in' }}</div>
+                        @if($s3 ==='instagram')
+                            <div class="tt-card__media">
+                                @if($i3)<img src="{{ $i3 }}" alt="" class="tt-card__img">@endif
+                            </div>
+                        @else
+                            <div class="tt-card__content">
+                                <div class="tt-card__media">
+                                    @if($i3)<img src="{{ $i3 }}" alt="" class="tt-card__img">@endif
+                                </div>
+                            </div>
+                        @endif
                         <div class="tt-card__body">
                             <div class="tt-card__meta"><span class="tt-card__profile">{{ $pf3 }}</span><span class="tt-card__time">{{ $tm3 }}</span></div>
                             <div class="tt-card__scroll" data-tt-scroll>
@@ -363,10 +394,20 @@ $src = fn($it, string $default): string =>
                             </div>
                         </div>
                     <div>
-                        <div class="tt-card__media">
-                            @if($i4)<img src="{{ $i4 }}" alt="" class="tt-card__img">@endif
-                            <div class="tt-card__badge {{ $s4==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s4==='instagram' ? 'IG' : 'in' }}</div>
-                        </div>
+                        <div class="tt-card__badge {{ $s4==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s4==='instagram' ? 'IG' : 'in' }}</div>
+                        @if($s4 === 'instagram')
+                            <div class="tt-card__media">
+                                @if($i4)<img src="{{ $i4 }}" alt="" class="tt-card__img">@endif
+                                <div class="tt-card__badge {{ $s4==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s4==='instagram' ? 'IG' : 'in' }}</div>
+                            </div>
+                        @else
+                            <div class="tt-card__content">
+                                <div class="tt-card__media">
+                                    @if($i4)<img src="{{ $i4 }}" alt="" class="tt-card__img">@endif
+                                    <div class="tt-card__badge {{ $s4==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s4==='instagram' ? 'IG' : 'in' }}</div>
+                                </div>
+                            </div>
+                        @endif
                         <div class="tt-card__body">
                             <div class="tt-card__meta"><span class="tt-card__profile">{{ $pf4 }}</span><span class="tt-card__time">{{ $tm4 }}</span></div>
                             <div class="tt-card__scroll" data-tt-scroll>
@@ -386,7 +427,7 @@ $src = fn($it, string $default): string =>
     <div class="tt-nav">
         <div class="tt-nav__bg"></div>
         <div class="tt-nav__inner">
-            <div class="tt-nav__title">{{ $sectionTitle }}</div>
+            <div class="tt-nav__title">{{ $sectionTitle ?: 'Trending Topics' }}</div>
             <div class="tt-nav__labels">
                 <span class="tt-nav__label is-active">#Trending</span>
             </div>

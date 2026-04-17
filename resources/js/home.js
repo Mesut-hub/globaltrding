@@ -76,36 +76,52 @@ document.addEventListener('DOMContentLoaded', () => {
   // JS writes each card's full transform as an inline style string on load,
   // giving CSS transition a numeric "from" value to animate from on swap.
   const SLOT_CONFIG = {
-    leftTop:    { tx: -300, ty: -220, tz: -240, rx: 0, scale: 0.672 },
-    leftBottom: { tx: -380, ty:  205, tz: -280, rx: 0, scale: 0.672 },
-    center:     { tx:    0, ty: -150, tz:    0, rx: 0, scale: 1 },
-    rightTop:   { tx:  340, ty: -170, tz: -180, rx: 4, scale: 0.672 },
-    rightBottom:{ tx:  370, ty:  225, tz: -220, rx: 4, scale: 0.672 },
+    leftTop:    { tx: -300, ty: -100, tz: -240, rx: 0, scale: 0.672, driftX: 10, driftY: 8,  driftZ: 10 },
+    leftBottom: { tx: -350, ty:  305, tz: -280, rx: 0, scale: 0.672, driftX: 8,  driftY: 7,  driftZ: 8 },
+    center:     { tx:    0, ty: -40, tz:    0, rx: 5, scale: 1,     driftX: 34, driftY: 26, driftZ: 34 },
+    rightTop:   { tx:  310, ty: -70, tz: -180, rx: 0, scale: 0.672, driftX: 11, driftY: 8,  driftZ: 11 },
+    rightBottom:{ tx:  350, ty:  325, tz: -220, rx: 0, scale: 0.672, driftX: 9,  driftY: 7,  driftZ: 9 },
   };
+
+  /*driftX: 10, driftY: 8,  driftZ: 10 },
+    leftBottom:  { tx: -380, ty:  205, tz: -280, rx: 0, scale: 0.672, driftX: 8,  driftY: 7,  driftZ: 8  },
+    center:      { tx:    0, ty: -150, tz:    0, rx: 5, scale: 1,     driftX: 34, driftY: 26, driftZ: 34 },
+    rightTop:    { tx:  340, ty: -170, tz: -180, rx: 0, scale: 0.672, driftX: 11, driftY: 8,  driftZ: 11 },
+    rightBottom: { tx:  370, ty:  225, tz: -220, rx: 0, scale: 0.672, driftX: 9,  driftY: 7,  driftZ: 9  }, */
 
   // Parallax depth multiplier per slot.
   // Center (tz=0, closest) = 1.0 → moves the most.
   // Deep side slots (tz=-240 to -280) = 0.40-0.55 → move less.
   // This creates the depth/parallax illusion without any Z-rotation.
   const ZMUL = {
-    leftTop: 0.45, leftBottom: 0.40, center: 2.0, rightTop: 0.55, rightBottom: 0.50,
+    leftTop: 0.12,
+    leftBottom: 0.08,
+    center: 1.15,
+    rightTop: 0.14,
+    rightBottom: 0.10,
   };
  
   // Maximum XY drift amplitude in px (at |tx|=1, |ty|=1).
   // Large enough to see clearly, not so large cards leave the stage.
-  const AMP_X = 52;
-  const AMP_Y = 38;
+  const AMP_X = 23;
+  const AMP_Y = 12;
   const ALL_SLOTS = Object.keys(SLOT_CONFIG);
 
   // Build the full CSS transform string for a given slot name.
-  function buildTransform(slotName, tx_cursor, ty_cursor) {
+    function buildTransform(slotName, tx_cursor = 0, ty_cursor = 0) {
     const c = SLOT_CONFIG[slotName];
-    const zm = ZMUL[slotName] || 0.5;
-    const dx = tx_cursor * AMP_X * zm * -1;   // BASF direction: invert
-    const dy = ty_cursor * AMP_Y * zm * -1;
+    if (!c) return '';
+
+    // opposite-to-cursor motion
+    const dx = -(tx_cursor * c.driftX);
+    const dy = -(ty_cursor * c.driftY);
+
+    // center card gets much stronger Z reaction, side cards stay subtle
+    const dz = -((Math.abs(tx_cursor) + Math.abs(ty_cursor)) * 0.5 * c.driftZ);
+
     return (
       `translate3d(-50%,50%,0px) ` +
-      `translate3d(${c.tx}px,${c.ty}px,${c.tz}px) ` +
+      `translate3d(${c.tx + dx}px,${c.ty + dy}px,${c.tz + dz}px) ` +
       (c.rx ? `rotateX(${c.rx}deg) ` : '') +
       `scale(${c.scale})`
     );
@@ -113,40 +129,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Apply a slot's full visual state as inline styles.
   // Inline style beats class rule → CSS transition can interpolate between values.
-  function applySlotStyle(slot, slotName) {
+    function applySlotStyle(slot, slotName, tx_cursor = 0, ty_cursor = 0) {
     const c = SLOT_CONFIG[slotName];
     if (!c) return;
+
     ALL_SLOTS.forEach(s => slot.classList.remove(`tt-slot--${s}`));
     slot.classList.add(`tt-slot--${slotName}`);
     slot.setAttribute('data-slot', slotName);
-    slot.style.transform = buildTransform(slotName);
-    slot.style.zIndex    = c.z;
-    slot.style.opacity   = c.op;
-    slot.style.cursor  = slotName === 'center' ? 'default' : 'pointer';
-    // NOTE: cursor is NOT written here; CSS class handles it so hover still works.
+
+    slot.style.transform = buildTransform(slotName, tx_cursor, ty_cursor);
+    slot.style.cursor = slotName === 'center' ? 'default' : 'pointer';
   }
 
   // Seed inline transforms on all cards so the first swap has a "from" value.
-  function initSlotStyles(stage) {
+    function initSlotStyles(stage, tx_cursor = 0, ty_cursor = 0) {
     stage.querySelectorAll('[data-slot]').forEach(el => {
       const slot = el.getAttribute('data-slot');
-      if (slot && SLOT_CONFIG[slot]) applySlotStyle(el, slot);
+      if (slot && SLOT_CONFIG[slot]) {
+        applySlotStyle(el, slot, tx_cursor, ty_cursor);
+      }
     });
   }
 
   // Swap a surrounding card into the center and vice versa.
   // rAF ensures the browser reads the current inline transform before we
   // write the destination value — guaranteeing the transition fires.
-  function swapSlots(stage, clickedSlotName) {
+    function swapSlots(stage, clickedSlotName, tx_cursor = 0, ty_cursor = 0) {
     const centerE1  = stage.querySelector('[data-slot="center"]');
     const clickedE1 = stage.querySelector(`[data-slot="${clickedSlotName}"]`);
     if (!centerE1 || !clickedE1) return;
+
     const wasCenter  = centerE1.getAttribute('data-slot');
     const wasClicked = clickedE1.getAttribute('data-slot');
+
     requestAnimationFrame(() => {
-      applySlotStyle(centerE1,  wasClicked);
-      applySlotStyle(clickedE1, wasCenter);
-      // Re-init scroll buttons after swap so the new center card is wired up
+      applySlotStyle(centerE1, wasClicked, tx_cursor, ty_cursor);
+      applySlotStyle(clickedE1, wasCenter, tx_cursor, ty_cursor);
       initCardScroll(centerE1);
       initCardScroll(clickedE1);
     });
@@ -218,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!rig) return;
 
     // Seed all inline transforms immediately
-    initSlotStyles(stage);
+    initSlotStyles(stage, 0, 0);
 
     // ── Confirm dialog ─────────────────────────────────────────────────────
     let pendingUrl = null;
@@ -270,15 +288,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const paintRig = () => {
         // Negate tx and ty so rig moves OPPOSITE to cursor direction
-        const rotY  = -(tx * 12);  // cursor right → negative rotateY → cards drift left
-        const rotX  =  (ty *  8);  // cursor down  → positive rotateX → cards drift up
-        const moveX = -(tx * 20);  // reinforces parallax: rig shifts opposite to cursor
-        const moveY =  (ty * 13);
+        const rotY  = -(tx * 1.35);  // cursor right → negative rotateY → cards drift left
+        const rotX  =  (ty *  1.15);  // cursor down  → positive rotateX → cards drift up
+        const moveX = -(tx * 70);  // reinforces parallax: rig shifts opposite to cursor
+        const moveY =  (ty * 70 * -1);
 
         rig.style.transform =
           `translate3d(${moveX}px,${moveY}px,0px) ` +
           `rotateX(${rotX}deg) ` +
           `rotateY(${rotY}deg)`;
+
+        // important: slot-level drift difference
+        stage.querySelectorAll('.tt-slot').forEach((slotEl) => {
+          const slotName = slotEl.getAttribute('data-slot');
+          if (!slotName) return;
+          slotEl.style.transform = buildTransform(slotName, tx, ty);
+        });
       };
 
       const onMove = (e) => {
@@ -312,32 +337,70 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Unified click handler (capture phase) ──────────────────────────────
     // Capture phase runs before any child handler, so transformed-card
     // hit-boxes are resolved against the stage coordinate space correctly.
-    stage.addEventListener('click', (e) => {
+        stage.addEventListener('click', (e) => {
 
-      // Priority 1: "Show original post" link → open confirm overlay
-      const origLink = e.target.closest('[data-tt-original]');
-      if (origLink) {
-        e.preventDefault();
-        e.stopPropagation();
-        const url = origLink.getAttribute('data-url') || origLink.getAttribute('href');
-        if (url && url !== '#') openConfirm(url);
-        return; // do NOT trigger swap
+      // Priority 0: confirm dialog must always work normally
+      if (e.target.closest('[data-tt-confirm-cancel]') || e.target.closest('[data-tt-confirm-leave]')) {
+        return;
       }
 
-      // Priority 2: other interactive elements → pass through normally
-      if (e.target.closest(
-        'a, button, input, textarea, select, ' +
-        '[data-social-accept], [data-tt-down], [data-tt-confirm]'
-      )) return;
+      // Priority 1: "Show original post" link
+      const origLink = e.target.closest('[data-tt-original]');
+      if (origLink) {
+        const ownerSlot = origLink.closest('[data-slot]');
+        const ownerSlotName = ownerSlot?.getAttribute('data-slot');
+
+        // Only center card may open confirm dialog
+        if (ownerSlotName === 'center') {
+          e.preventDefault();
+          e.stopPropagation();
+          const url = origLink.getAttribute('data-url') || origLink.getAttribute('href');
+          if (url && url !== '#') openConfirm(url);
+          return;
+        }
+
+        // Surrounding card: swap only
+        e.preventDefault();
+        e.stopPropagation();
+        if (ownerSlotName && ownerSlotName !== 'center') {
+          swapSlots(stage, ownerSlotName, typeof tx !== 'undefined' ? tx : 0, typeof ty !== 'undefined' ? ty : 0);
+        }
+        return;
+      }
+
+      // Priority 2: Accept / privacy policy / other inner controls
+      const interactiveEl = e.target.closest(
+        'a, button, input, textarea, select, [data-social-accept], [data-tt-down]'
+      );
+
+      if (interactiveEl) {
+        const ownerSlot = interactiveEl.closest('[data-slot]');
+        const ownerSlotName = ownerSlot?.getAttribute('data-slot');
+
+        // Center card: allow normal behavior
+        if (ownerSlotName === 'center') {
+          return;
+        }
+
+        // Outside cards: swap only
+        e.preventDefault();
+        e.stopPropagation();
+        if (ownerSlotName && ownerSlotName !== 'center') {
+          swapSlots(stage, ownerSlotName, typeof tx !== 'undefined' ? tx : 0, typeof ty !== 'undefined' ? ty : 0);
+        }
+        return;
+      }
 
       // Priority 3: click on a non-center slot card → swap to center
       const slot = e.target.closest('[data-slot]');
       if (!slot) return;
+
       const slotName = slot.getAttribute('data-slot');
       if (!slotName || slotName === 'center') return;
-      swapSlots(stage, slotName);
 
-    }, true); // capture phase
+      swapSlots(stage, slotName, typeof tx !== 'undefined' ? tx : 0, typeof ty !== 'undefined' ? ty : 0);
+
+    }, true);
 
   }); // end [data-tt] forEach
 
