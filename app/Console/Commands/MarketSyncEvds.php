@@ -103,8 +103,9 @@ class MarketSyncEvds extends Command
 
                 $this->info('  - upserted ' . count($upsert) . ' points.');
             } catch (\Throwable $e) {
-                // Print the real error
                 $this->error('  - FAILED: ' . $e->getMessage());
+                $this->line('    base_url=' . config('services.evds.base_url'));
+                $this->line('    series=' . $series);
             }
         }
 

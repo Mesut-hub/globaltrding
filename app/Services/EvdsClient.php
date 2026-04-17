@@ -2,21 +2,29 @@
 
 namespace App\Services;
 
+use Carbon\Carbon;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
 class EvdsClient
 {
-    public function http(string $baseUrl): PendingRequest
+    public function http(): PendingRequest
     {
-        $baseUrl = rtrim($baseUrl, '/') . '/';
+        $baseUrl = rtrim((string) config('services.evds.base_url'), '/') . '/';
+
+        $key = (string) config('services.evds.key');
+        if ($key === '') {
+            // still allow object creation; fetchSeries() will throw a nicer error
+            $key = '';
+        }
 
         return Http::baseUrl($baseUrl)
             ->timeout(30)
             ->withHeaders([
                 'Accept' => 'application/json',
-                'X-Requested-With' => 'XMLHttpRequest',
+                // IMPORTANT: EVDS expects the API key in header (not ?key=)
+                'key' => $key,
             ]);
     }
 
@@ -26,109 +34,56 @@ class EvdsClient
     }
 
     /**
-     * Try several EVDS endpoint shapes.
-     * Returns decoded JSON array.
+     * Fetch EVDS series data.
+     *
+     * EVDS expects "parameters embedded in the path", e.g.:
+     *   /series=TP.DK.USD.S.YTL&startDate=10-04-2026&endDate=17-04-2026&type=json
+     *
+     * IMPORTANT:
+     * - API key is sent via header: key: YOUR_KEY
+     * - Dates should be dd-mm-YYYY (EVDS guide).
      */
-    public function fetchSeries(string $series, string $startDate, string $endDate, bool $debug = false): array
+    public function fetchSeries(string $series, string $startDate, string $endDate): array
     {
         $key = (string) config('services.evds.key');
         if ($key === '') {
             throw new RuntimeException('EVDS_API_KEY is missing in .env');
         }
 
-        $configuredBase = (string) config('services.evds.base_url');
-        $fallbackBase = 'https://evds2.tcmb.gov.tr/service/evds/';
+        // Convert incoming Y-m-d -> d-m-Y (EVDS guide format)
+        $start = Carbon::parse($startDate)->format('d-m-Y');
+        $end = Carbon::parse($endDate)->format('d-m-Y');
 
-        // Endpoints to try (base + relative path)
-        // NOTE: We intentionally try "/api/" because some EVDS3 setups expose JSON there.
-        $candidates = [
-            [$configuredBase, 'api/'],
-            [$configuredBase, 'service/evds/'],
-            [$configuredBase, ''],
-            [$fallbackBase,  ''], // fallback to evds2 if evds3 serves SPA html
-        ];
+        $path = 'series=' . rawurlencode($series)
+            . '&startDate=' . rawurlencode($start)
+            . '&endDate=' . rawurlencode($end)
+            . '&type=json';
 
-        $params = [
-            'series' => $series,
-            'startDate' => $startDate,
-            'endDate' => $endDate,
-            'type' => 'json',
-            'key' => $key,
-        ];
+        $response = $this->http()->get($path);
 
-        $lastError = null;
-
-        foreach ($candidates as [$baseUrl, $path]) {
-            // Query-string style
-            $urlForLog = rtrim($baseUrl, '/') . '/' . ltrim($path, '/');
-            if ($debug) {
-                $safe = $params;
-                $safe['key'] = '***';
-                fwrite(STDERR, "[EVDS DEBUG] TRY GET {$urlForLog} ?" . http_build_query($safe) . PHP_EOL);
-            }
-
-            $res = $this->http($baseUrl)->get($path, $params);
-
-            $json = $this->tryParseJsonResponse($res, $debug);
-            if ($json !== null) return $json;
-
-            // Path style (legacy)
-            $pathStyle = 'series=' . rawurlencode($series)
-                . '&startDate=' . rawurlencode($startDate)
-                . '&endDate=' . rawurlencode($endDate)
-                . '&type=json'
-                . '&key=' . rawurlencode($key);
-
-            $urlForLog2 = rtrim($baseUrl, '/') . '/' . ltrim($path, '/') . $pathStyle;
-            if ($debug) {
-                // redact key in log
-                $urlForLog2Safe = preg_replace('/key=[^&]+/', 'key=***', $urlForLog2);
-                fwrite(STDERR, "[EVDS DEBUG] TRY GET {$urlForLog2Safe}" . PHP_EOL);
-            }
-
-            $res2 = $this->http($baseUrl)->get(rtrim($path, '/') . '/' . $pathStyle);
-
-            $json2 = $this->tryParseJsonResponse($res2, $debug);
-            if ($json2 !== null) return $json2;
-
-            $lastError = "Base={$baseUrl} Path={$path} Status={$res->status()} CT={$res->header('content-type')}";
-        }
-
-        throw new RuntimeException(
-            "EVDS did not return JSON from any endpoint. Last: {$lastError}. " .
-            "Tip: run `php artisan market:sync-evds --days=7 --force --debug` and paste the debug output."
-        );
-    }
-
-    private function tryParseJsonResponse($response, bool $debug): ?array
-    {
-        $contentType = (string) $response->header('content-type');
         $body = (string) $response->body();
+        $contentType = (string) $response->header('content-type');
 
-        // Detect SPA HTML quickly
+        // Helpful failure if they return HTML (SPA)
         if (str_contains($body, '<!DOCTYPE html>') || str_contains($body, '<html')) {
-            if ($debug) {
-                fwrite(STDERR, "[EVDS DEBUG] Response looks like HTML (SPA). CT={$contentType} HEAD=" . mb_substr($body, 0, 120) . PHP_EOL);
-            }
-            return null;
+            throw new RuntimeException(
+                "EVDS returned HTML instead of JSON. This usually means auth/endpoint mismatch.\n" .
+                "Status={$response->status()} Content-Type={$contentType}. Body head: " . mb_substr($body, 0, 200)
+            );
         }
 
-        $looksJson = str_contains(strtolower($contentType), 'application/json')
-            || (strlen($body) > 0 && ($body[0] === '{' || $body[0] === '['));
-
-        if (! $looksJson) {
-            if ($debug) {
-                fwrite(STDERR, "[EVDS DEBUG] Not JSON. CT={$contentType} HEAD=" . mb_substr($body, 0, 120) . PHP_EOL);
-            }
-            return null;
+        if (! str_contains(strtolower($contentType), 'application/json')) {
+            throw new RuntimeException(
+                "EVDS did not return JSON. Status={$response->status()} Content-Type={$contentType}. Body head: " .
+                mb_substr($body, 0, 200)
+            );
         }
 
         $json = $response->json();
         if (! is_array($json)) {
-            if ($debug) {
-                fwrite(STDERR, "[EVDS DEBUG] JSON parse failed. HEAD=" . mb_substr($body, 0, 120) . PHP_EOL);
-            }
-            return null;
+            throw new RuntimeException(
+                "EVDS JSON parse failed. Status={$response->status()}. Body head: " . mb_substr($body, 0, 200)
+            );
         }
 
         return $json;
