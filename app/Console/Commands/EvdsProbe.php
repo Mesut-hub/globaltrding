@@ -8,7 +8,7 @@ use Illuminate\Console\Command;
 class EvdsProbe extends Command
 {
     protected $signature = 'evds:probe
-        {series=TP.DK.USD.S.YTL}
+        {series=TP.DK.USD.A.EF.YTL}
         {--start=}
         {--end=}
         {--debug}';

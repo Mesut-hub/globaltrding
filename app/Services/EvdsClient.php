@@ -12,19 +12,13 @@ class EvdsClient
     public function http(): PendingRequest
     {
         $baseUrl = rtrim((string) config('services.evds.base_url'), '/') . '/';
-
         $key = (string) config('services.evds.key');
-        if ($key === '') {
-            // still allow object creation; fetchSeries() will throw a nicer error
-            $key = '';
-        }
 
         return Http::baseUrl($baseUrl)
-            ->timeout(30)
+            ->timeout(60)
             ->withHeaders([
                 'Accept' => 'application/json',
-                // IMPORTANT: EVDS expects the API key in header (not ?key=)
-                'key' => $key,
+                'key' => $key, // EVDS requires key in header
             ]);
     }
 
@@ -34,14 +28,9 @@ class EvdsClient
     }
 
     /**
-     * Fetch EVDS series data.
-     *
-     * EVDS expects "parameters embedded in the path", e.g.:
-     *   /series=TP.DK.USD.S.YTL&startDate=10-04-2026&endDate=17-04-2026&type=json
-     *
-     * IMPORTANT:
-     * - API key is sent via header: key: YOUR_KEY
-     * - Dates should be dd-mm-YYYY (EVDS guide).
+     * EVDS3 format:
+     * https://evds3.tcmb.gov.tr/igmevdsms-dis/series=TP.DK.USD.S.YTL&startDate=01-01-2024&endDate=31-12-2024&type=json
+     * Header: key: API_KEY
      */
     public function fetchSeries(string $series, string $startDate, string $endDate): array
     {
@@ -50,39 +39,24 @@ class EvdsClient
             throw new RuntimeException('EVDS_API_KEY is missing in .env');
         }
 
-        // Convert incoming Y-m-d -> d-m-Y (EVDS guide format)
+        // EVDS expects DD-MM-YYYY
         $start = Carbon::parse($startDate)->format('d-m-Y');
         $end = Carbon::parse($endDate)->format('d-m-Y');
 
+        // IMPORTANT: parameters are in the PATH (not query string)
         $path = 'series=' . rawurlencode($series)
             . '&startDate=' . rawurlencode($start)
             . '&endDate=' . rawurlencode($end)
             . '&type=json';
 
         $response = $this->http()->get($path);
-
-        $body = (string) $response->body();
-        $contentType = (string) $response->header('content-type');
-
-        // Helpful failure if they return HTML (SPA)
-        if (str_contains($body, '<!DOCTYPE html>') || str_contains($body, '<html')) {
-            throw new RuntimeException(
-                "EVDS returned HTML instead of JSON. This usually means auth/endpoint mismatch.\n" .
-                "Status={$response->status()} Content-Type={$contentType}. Body head: " . mb_substr($body, 0, 200)
-            );
-        }
-
-        if (! str_contains(strtolower($contentType), 'application/json')) {
-            throw new RuntimeException(
-                "EVDS did not return JSON. Status={$response->status()} Content-Type={$contentType}. Body head: " .
-                mb_substr($body, 0, 200)
-            );
-        }
+        $response->throw();
 
         $json = $response->json();
         if (! is_array($json)) {
+            $body = (string) $response->body();
             throw new RuntimeException(
-                "EVDS JSON parse failed. Status={$response->status()}. Body head: " . mb_substr($body, 0, 200)
+                "EVDS JSON parse failed. Status={$response->status()}. Body head: " . mb_substr($body, 0, 250)
             );
         }
 
