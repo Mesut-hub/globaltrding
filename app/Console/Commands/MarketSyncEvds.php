@@ -15,10 +15,10 @@ class MarketSyncEvds extends Command
 
     public function handle(EvdsClient $evds): int
     {
-        if (! $evds->hasKey()) {
+        /*if (! $evds->hasKey()) {
             $this->warn('EVDS_API_KEY is empty. Skipping sync.');
             return self::SUCCESS;
-        }
+        }*/
 
         $days = max(1, (int) $this->option('days'));
 
