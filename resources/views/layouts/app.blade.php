@@ -211,7 +211,7 @@
         $hasHero = $hasHero ?? false;
     @endphp
 
-    <main class="{{ $hasHero ? '' : 'main-offset' }}">
+    <main class="site-main">
         @yield('content')
     </main>
 

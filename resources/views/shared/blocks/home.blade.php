@@ -69,7 +69,7 @@ $overlayBottom = (float)($data['overlay_bottom'] ?? 0.55);
 
 {{-- MARKET BELT --}}
 @elseif ($type === 'market_belt')
-@php $beltSlugs = 'usd-try,eur-try,gbp-try,Gold (g),Brent'; $dataUrl = "/{$locale}/market/data?instruments=".urlencode($beltSlugs); @endphp
+@php $beltSlugs = 'usd-try,eur-try,gbp-try,gold-gram-try,brent-usd'; $dataUrl = "/{$locale}/market/data?instruments=".urlencode($beltSlugs); @endphp
 <section class="border-b border-slate-200 bg-white">
     <div class="mx-auto max-w-7xl px-4 py-3">
         <div class="flex flex-wrap items-center gap-2" data-market-belt data-market-url="{{ $dataUrl }}">
@@ -98,8 +98,6 @@ $industries   = \App\Models\Industry::query()->where('is_published',true)->order
         <h2 class="text-2xl font-semibold tracking-tight">{{ $sectionTitle }}</h2>
         <div class="flex items-center gap-3">
             <a href="{{ $viewAllUrl }}" class="text-sm text-slate-600 hover:underline">View all →</a>
-            <button type="button" class="ind-btn" data-ind="prev" aria-label="Previous">‹</button>
-            <button type="button" class="ind-btn" data-ind="next" aria-label="Next">›</button>
         </div>
     </div>
     <div class="mt-6 overflow-hidden">
@@ -119,6 +117,10 @@ $industries   = \App\Models\Industry::query()->where('is_published',true)->order
                     </div>
                 </a>
             @endforeach
+            @if (count($industries) > 4)
+                <button type="button" class="ind-btn" data-ind="prev" aria-label="Previous">‹</button>
+                <button type="button" class="ind-btn" data-ind="next" aria-label="Next">›</button>
+            @endif
         </div>
     </div>
 </section>
@@ -126,7 +128,7 @@ $industries   = \App\Models\Industry::query()->where('is_published',true)->order
 {{-- CTA --}}
 @elseif ($type === 'cta')
 @php $title=$t($data['title']??[]); $text=$t($data['text']??[]); $btnLabel=$t($data['button_label']??[]); $btnUrl=$urlWithLocale($data['button_url']??'#'); @endphp
-<section class="mx-auto max-w-7xl px-4 pb-12">
+<section class="mx-auto max-w-7xl px-4 pb-12 py-12">
     <div class="rounded-2xl border border-slate-200 bg-slate-50 p-8 sm:p-10">
         <div class="grid gap-8 lg:grid-cols-12 lg:items-center">
             <div class="lg:col-span-8">
@@ -142,17 +144,28 @@ $industries   = \App\Models\Industry::query()->where('is_published',true)->order
 
 {{-- CARDS GRID --}}
 @elseif ($type === 'cards')
-@php $title=$t($data['title']??[]); $items=$data['items']??[]; @endphp
-<section class="mx-auto max-w-7xl px-4 py-12">
-    @if ($title)<h2 class="text-2xl font-semibold tracking-tight">{{ $title }}</h2>@endif
-    <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+@php $title=$t($data['title']??[]); $items=$data['items']??[]; 
+$viewAllUrl   = $urlWithLocale($data['view_all_url'] ?? '/{locale}/industries');
+@endphp
+<section class="mx-auto max-w-7xl px-4 py-12" data-industry-slider>
+    <div class="flex items-end justify-between gap-4">
+        @if ($title)<h2 class="text-2xl font-semibold tracking-tight">{{ $title }}</h2>@endif
+    <div class="flex items-center gap-3">
+            <a href="{{ $viewAllUrl }}" class="text-sm text-slate-600 hover:underline">View all →</a>
+            
+        </div>
+    </div>
+    <div class="mt-6 overflow-hidden">
+        
+        <div class="flex gap-4 overflow-x-auto overflow-x-hidden snap-x snap-mandatory scroll-smooth pb-2" data-ind="track">
+            
         @foreach ($items as $item)
             @php
             $iTitle=$t($item['title']??[]); $iText=$t($item['text']??[]);
             $iUrl=$urlWithLocale($item['url']??'#');
             $iImg=($item['image_path']??null) ? \Illuminate\Support\Facades\Storage::disk('public')->url($item['image_path']) : null;
             @endphp
-            <a href="{{ $iUrl }}" class="group rounded-xl border border-slate-200 bg-white overflow-hidden hover:shadow-sm transition">
+            <a href="{{ $iUrl }}" class="snap-start shrink-0 w-[85%] sm:w-[45%] lg:w-[32%] rounded-xl border border-slate-200 bg-white overflow-hidden hover:shadow-sm transition">
                 <div class="aspect-[16/9] bg-slate-100 overflow-hidden">
                     @if ($iImg)<img src="{{ $iImg }}" alt="{{ $iTitle }}" class="h-full w-full object-cover group-hover:scale-[1.015] transition"/>@endif
                 </div>
@@ -163,6 +176,11 @@ $industries   = \App\Models\Industry::query()->where('is_published',true)->order
                 </div>
             </a>
         @endforeach
+        @if (count($items) > 3)
+            <button type="button" class="ind-btn ind-btn--prev" data-ind="prev" aria-label="Previous">‹</button>
+            <button type="button" class="ind-btn ind-btn--next" data-ind="next" aria-label="Next">›</button>
+        @endif
+        </div>
     </div>
 </section>
 

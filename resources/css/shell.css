@@ -3,15 +3,19 @@
 :root{
   --header-height: 100px;
   --header-top-offset: 42px;
-  --page-top-padding: calc(var(--header-height) + var(--header-top-offset) + 46px);
+  --header-clearance: calc(var(--header-height) + var(--header-top-offset));
+  --page-top-padding: calc(var(--header-clearance) + 46px);
 }
 
-.main-offset{
-  padding-top: 0px;
+/* default: every page starts below the fixed header */
+.site-main{
+  padding-top: var(--header-clearance);
 }
 
-.main-offset2{
-  padding-top: 200px;
+/* if the first block is a hero, remove the main padding */
+.site-main:has(> [data-hero]:first-child),
+.site-main:has(> .hero-shell:first-child){
+  padding-top: 0;
 }
 
 /* Header container */
