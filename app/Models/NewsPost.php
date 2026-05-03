@@ -18,6 +18,9 @@ class NewsPost extends Model
         'published_at',
         'is_published',
         'is_featured',
+        'cover_image_path',
+        'cover_video_path',
+        'cover_poster_path',
     ];
 
     protected $casts = [

@@ -263,7 +263,7 @@ class PageForm
                                         TextInput::make('title')
                                             ->label('Title')
                                             ->required()
-                                            ->visible(fn ($get) => $get('type') === 'image'),
+                                            ->visible(fn($get) => in_array($get('type'), ['image','panel'])),
 
                                         Textarea::make('lead')
                                             ->label('Lead text')
@@ -278,6 +278,64 @@ class PageForm
                                         TextInput::make('cta_url')
                                             ->label('CTA URL')
                                             ->visible(fn ($get) => $get('type') === 'image'),
+                                        Textarea::make('panel_excerpt')
+                                            ->label('Excerpt (panel)')
+                                            ->rows(2)
+                                            ->visible(fn ($get) => $get('type') === 'panel'),
+
+                                        Textarea::make('panel_body')
+                                            ->label('Body text (panel)')
+                                            ->rows(4)
+                                            ->visible(fn ($get) => $get('type') === 'panel'),
+
+                                        Toggle::make('show_chart')
+                                            ->label('Show sparkline chart')
+                                            ->default(false)
+                                            ->visible(fn ($get) => $get('type') === 'panel'),
+
+                                        Repeater::make('chart_points')
+                                            ->label('Chart points (5–12)')
+                                            ->minItems(5)
+                                            ->maxItems(12)
+                                            ->defaultItems(6)
+                                            ->schema([
+                                                TextInput::make('value')->numeric()->required(),
+                                            ])
+                                            ->visible(fn ($get) => $get('type') === 'panel' && (bool) $get('show_chart'))
+                                            ->columns(3),
+
+                                        Select::make('chart_scale')
+                                            ->label('Scale')
+                                            ->options(['linear' => 'Linear', 'log' => 'Log'])
+                                            ->default('linear')
+                                            ->visible(fn ($get) => $get('type') === 'panel' && (bool) $get('show_chart')),
+
+                                        Select::make('chart_mode')
+                                            ->label('Mode')
+                                            ->options(['absolute' => 'Absolute', 'percent' => 'Percent (0–100)'])
+                                            ->default('absolute')
+                                            ->visible(fn ($get) => $get('type') === 'panel' && (bool) $get('show_chart')),
+
+                                        Select::make('chart_range')
+                                            ->label('Range (label only for now)')
+                                            ->options(['daily' => 'Daily', 'weekly' => 'Weekly', 'monthly' => 'Monthly'])
+                                            ->default('daily')
+                                            ->visible(fn ($get) => $get('type') === 'panel' && (bool) $get('show_chart')),
+
+                                        Toggle::make('chart_auto_minmax')
+                                            ->label('Auto min/max')
+                                            ->default(true)
+                                            ->visible(fn ($get) => $get('type') === 'panel' && (bool) $get('show_chart')),
+
+                                        TextInput::make('chart_min')
+                                            ->label('Min (fixed)')
+                                            ->numeric()
+                                            ->visible(fn ($get) => $get('type') === 'panel' && (bool) $get('show_chart') && ! (bool) $get('chart_auto_minmax')),
+
+                                        TextInput::make('chart_max')
+                                            ->label('Max (fixed)')
+                                            ->numeric()
+                                            ->visible(fn ($get) => $get('type') === 'panel' && (bool) $get('show_chart') && ! (bool) $get('chart_auto_minmax')),
                                     ])
                                     ->columns(2),
                             ]),
@@ -362,6 +420,66 @@ class PageForm
                             ->schema([
                                 TextInput::make('label')->required()->default('Learn more'),
                                 TextInput::make('url')->required(),
+                            ]),
+                        Block::make('mediaText')
+                            ->label('Media + Text (2 columns)')
+                            ->schema([
+                                Select::make('media_side')
+                                    ->label('Media side')
+                                    ->options(['left' => 'Left', 'right' => 'Right'])
+                                    ->default('left')
+                                    ->required(),
+
+                                Select::make('media_type')
+                                    ->label('Media type')
+                                    ->options(['image' => 'Image', 'video' => 'Video'])
+                                    ->default('image')
+                                    ->required(),
+
+                                Select::make('media_width')
+                                    ->label('Column ratio')
+                                    ->options([
+                                        '30-70' => '30% media / 70% text',
+                                        '40-60' => '40% media / 60% text',
+                                        '50-50' => '50% / 50%',
+                                        '60-40' => '60% media / 40% text',
+                                        '70-30' => '70% media / 30% text',
+                                    ])
+                                    ->default('50-50')
+                                    ->required(),
+
+                                TextInput::make('media_max_h')
+                                    ->label('Media max height (px, optional)')
+                                    ->numeric()
+                                    ->helperText('Example: 520'),
+
+                                FileUpload::make('image')
+                                    ->label('Image')
+                                    ->disk('public')
+                                    ->directory('pages/media-text')
+                                    ->image()
+                                    ->visible(fn ($get) => $get('media_type') === 'image'),
+
+                                FileUpload::make('video')
+                                    ->label('Video (mp4/webm)')
+                                    ->disk('public')
+                                    ->directory('pages/media-text')
+                                    ->acceptedFileTypes(['video/mp4', 'video/webm'])
+                                    ->visible(fn ($get) => $get('media_type') === 'video'),
+
+                                FileUpload::make('poster')
+                                    ->label('Video poster (optional)')
+                                    ->disk('public')
+                                    ->directory('pages/media-text')
+                                    ->image()
+                                    ->visible(fn ($get) => $get('media_type') === 'video'),
+
+                                TextInput::make('title')->required(),
+                                Textarea::make('excerpt')->rows(3),
+                                Textarea::make('body_html')->label('Body (HTML)')->rows(8)->helperText('Paste HTML content.'),
+
+                                TextInput::make('cta_label'),
+                                TextInput::make('cta_url'),
                             ]),
                     ]),
 

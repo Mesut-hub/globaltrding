@@ -11,6 +11,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
+use Filament\Forms\Components\ColorPicker;
 
 class HomeSectionForm
 {
@@ -28,6 +29,7 @@ class HomeSectionForm
                     'trending' => 'Trending topics',
                     'sustainability' => 'Sustainability',
                     'people' => 'People',
+                    'featured_news' => 'Featured News',
                 ]),
 
             Toggle::make('is_active')
@@ -160,6 +162,153 @@ class HomeSectionForm
 
                             TextInput::make('button_url')->required(),
                         ]),
+                    Block::make('insightsGrid')
+                            ->label('Insights Grid')
+                            ->schema([
+                                TextInput::make('heading')
+                                    ->label('Heading')
+                                    ->default('Company insights')
+                                    ->required(),
+
+                                Select::make('accent')
+                                    ->label('Accent / Panel color')
+                                    ->options([
+                                        'blue' => 'Blue',
+                                        'slate' => 'Slate',
+                                        'dark' => 'Dark',
+                                    ])
+                                    ->default('blue')
+                                    ->required(),
+
+                                ColorPicker::make('panel_text_color')
+                                    ->label('Panel text color (optional)')
+                                    ->default('#ffffff'),
+
+                                ColorPicker::make('row2_link_color')
+                                    ->label('Row 2 link color (optional)')
+                                    ->default('#0ea5e9'),
+
+                                // Top row: 2 tiles
+                                \Filament\Schemas\Components\Grid::make(2)
+                                    ->schema([
+                                        FileUpload::make('top_left_image')
+                                            ->label('Top-left image')
+                                            ->disk('public')
+                                            ->directory('pages/insights')
+                                            ->image()
+                                            ->required(),
+
+                                        \Filament\Schemas\Components\Grid::make(1)
+                                            ->schema([
+                                                TextInput::make('top_right_kicker')->label('Top-right kicker')->default('Future-proof insulation'),
+                                                TextInput::make('top_right_title')->label('Top-right title')->required(),
+                                                Textarea::make('top_right_text')->label('Top-right text')->rows(5),
+                                                TextInput::make('top_right_cta_label')->label('Top-right CTA label')->default('Find out more'),
+                                                TextInput::make('top_right_cta_url')->label('Top-right CTA URL'),
+                                            ]),
+                                    ]),
+
+                                // Bottom row: 3 tiles (2 images + 1 panel)
+                                \Filament\Forms\Components\Repeater::make('bottom_tiles')
+                                    ->label('Bottom row tiles (exactly 3)')
+                                    ->helperText('Create exactly 3 tiles: Image, Image, Panel.')
+                                    ->minItems(3)
+                                    ->maxItems(3)
+                                    ->schema([
+                                        Select::make('type')
+                                            ->options(['image' => 'Image tile', 'panel' => 'Color panel tile'])
+                                            ->required(),
+
+                                        FileUpload::make('image')
+                                            ->disk('public')
+                                            ->directory('pages/insights')
+                                            ->image()
+                                            ->visible(fn ($get) => $get('type') === 'image')
+                                            ->required(fn ($get) => $get('type') === 'image'),
+
+                                        TextInput::make('kicker')
+                                            ->label('Kicker')
+                                            ->visible(fn ($get) => $get('type') === 'image'),
+
+                                        TextInput::make('title')
+                                            ->label('Title')
+                                            ->required()
+                                            ->visible(fn ($get) => $get('type') === 'image'),
+
+                                        Textarea::make('lead')
+                                            ->label('Lead text')
+                                            ->rows(3)
+                                            ->visible(fn ($get) => $get('type') === 'image'),
+
+                                        TextInput::make('cta_label')
+                                            ->label('CTA label')
+                                            ->default('Find out more')
+                                            ->visible(fn ($get) => $get('type') === 'image'),
+                                        
+                                        TextInput::make('cta_url')
+                                            ->label('CTA URL')
+                                            ->visible(fn ($get) => $get('type') === 'image'),
+                                        Textarea::make('panel_excerpt')
+                                            ->label('Excerpt (panel)')
+                                            ->rows(2)
+                                            ->visible(fn ($get) => $get('type') === 'panel'),
+
+                                        Textarea::make('panel_body')
+                                            ->label('Body text (panel)')
+                                            ->rows(4)
+                                            ->visible(fn ($get) => $get('type') === 'panel'),
+
+                                        Toggle::make('show_chart')
+                                            ->label('Show sparkline chart')
+                                            ->default(false)
+                                            ->visible(fn ($get) => $get('type') === 'panel'),
+
+                                        \Filament\Forms\Components\Repeater::make('chart_points')
+                                            ->label('Chart points (5–12)')
+                                            ->minItems(5)
+                                            ->maxItems(12)
+                                            ->defaultItems(6)
+                                            ->schema([
+                                                TextInput::make('value')->numeric()->required(),
+                                            ])
+                                            ->visible(fn ($get) => $get('type') === 'panel' && (bool) $get('show_chart'))
+                                            ->columns(3),
+
+                                        Select::make('chart_scale')
+                                            ->label('Scale')
+                                            ->options(['linear' => 'Linear', 'log' => 'Log'])
+                                            ->default('linear')
+                                            ->visible(fn ($get) => $get('type') === 'panel' && (bool) $get('show_chart')),
+
+                                        Select::make('chart_mode')
+                                            ->label('Mode')
+                                            ->options(['absolute' => 'Absolute', 'percent' => 'Percent (0–100)'])
+                                            ->default('absolute')
+                                            ->visible(fn ($get) => $get('type') === 'panel' && (bool) $get('show_chart')),
+
+                                        Select::make('chart_range')
+                                            ->label('Range (label only for now)')
+                                            ->options(['daily' => 'Daily', 'weekly' => 'Weekly', 'monthly' => 'Monthly'])
+                                            ->default('daily')
+                                            ->visible(fn ($get) => $get('type') === 'panel' && (bool) $get('show_chart')),
+
+                                        Toggle::make('chart_auto_minmax')
+                                            ->label('Auto min/max')
+                                            ->default(true)
+                                            ->visible(fn ($get) => $get('type') === 'panel' && (bool) $get('show_chart')),
+
+                                        TextInput::make('chart_min')
+                                            ->label('Min (fixed)')
+                                            ->numeric()
+                                            ->visible(fn ($get) => $get('type') === 'panel' && (bool) $get('show_chart') && ! (bool) $get('chart_auto_minmax')),
+
+                                        TextInput::make('chart_max')
+                                            ->label('Max (fixed)')
+                                            ->numeric()
+                                            ->visible(fn ($get) => $get('type') === 'panel' && (bool) $get('show_chart') && ! (bool) $get('chart_auto_minmax')),
+                                    ])
+                                    ->columns(2),
+                            ]),
 
                     // Cards grid (insights, people, sustainability can all use this)
                     Block::make('cards')
@@ -259,6 +408,16 @@ class HomeSectionForm
                                 ->collapsed(false)
                                 ->itemLabel(fn (array $state): ?string => $state['source'] ?? 'card'),
                          ]),
+
+                    Block::make('featuredNews')
+                        ->label('Featured News')
+                        ->schema([
+                            TextInput::make('title')->label('Section title')->default('Featured News')->required(),
+                            Textarea::make('lead')->label('Section lead (optional)')->rows(2),
+                            TextInput::make('limit')->label('Max posts')->numeric()->default(3)->minValue(1)->maxValue(12),
+                            Toggle::make('show_view_all')->label('Show "View all" link')->default(true),
+                            TextInput::make('view_all_label')->label('"View all" label')->default('View all →'),
+                        ]),
                  ]),
          ]);
      }

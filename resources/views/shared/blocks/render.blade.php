@@ -220,11 +220,33 @@
                 @endphp
 
                 @if ($t === 'panel')
+                    @php
+                        $tx = $tile['panel_excerpt'] ?? '';
+                        $body = $tile['panel_body'] ?? '';
+                        $showChart = (bool)($tile['show_chart'] ?? false);
+                        $pts = is_array($tile['chart_points'] ?? null) ? $tile['chart_points'] : [];
+                        $scale = $tile['chart_scale'] ?? 'linear';
+                        $mode = $tile['chart_mode'] ?? 'absolute';
+                        $auto = (bool)($tile['chart_auto_minmax'] ?? true);
+                        $minFixed = $tile['chart_min'] ?? null;
+                        $maxFixed = $tile['chart_max'] ?? null;
+                    @endphp
                     <div class="gt-insights__tile gt-insights__tile--panel2 {{ $panelClass }}" style="color: {{ $panelTextColor }};">
-                        <div class="gt-insights__title">{{ $tt }}</div>
-                        @if ($lead)
-                            <div class="gt-insights__text">{{ $tx }}</div>
+                        @if($showChart)
+                            <div class="mb-3 opacity-90">
+                            @include('shared.blocks.partials.sparkline', [
+                                'points' => $pts,
+                                'scale' => $scale,
+                                'mode' => $mode,
+                                'auto' => $auto,
+                                'minFixed' => $minFixed,
+                                'maxFixed' => $maxFixed,
+                            ])
+                            </div>
                         @endif
+                        @if($tt)<div class="gt-insights__title">{{ $tt }}</div>@endif
+                        @if ($tx || $lead)<div class="gt-insights__text">{{ $tx }}</div>@endif
+                        @if($body)<div class="gt-insights__text">{{ $body }}</div>@endif
                         @if ($cl && $cu)
                             <a href="{{ $cu }}" class="gt-insights__cta">{{ $cl }}</a>
                         @endif
@@ -462,6 +484,63 @@
                 </div>
             @endforeach
         </div>
+    </section>
+
+@elseif ($type === 'mediaText')
+    @php
+        $side = $data['media_side'] ?? 'left';
+        $mediaType = $data['media_type'] ?? 'image';
+        $ratio = $data['media_width'] ?? '50-50';
+        $maxH = is_numeric($data['media_max_h'] ?? null) ? (int)$data['media_max_h'] : null;
+
+        $imgUrl = !empty($data['image']) ? Storage::disk('public')->url($data['image']) : null;
+        $vidUrl = !empty($data['video']) ? Storage::disk('public')->url($data['video']) : null;
+        $posterUrl = !empty($data['poster']) ? Storage::disk('public')->url($data['poster']) : null;
+
+        $title = $data['title'] ?? '';
+        $excerpt = $data['excerpt'] ?? '';
+        $html = $data['body_html'] ?? '';
+        $ctaLabel = $data['cta_label'] ?? null;
+        $ctaUrl = $data['cta_url'] ?? null;
+
+        // Ratio to Tailwind spans (12-col grid)
+        [$mediaClass, $textClass] = match($ratio) {
+            '30-70' => ['md:col-span-5',  'md:col-span-11'],
+            '40-60' => ['md:col-span-7',  'md:col-span-9' ],
+            '60-40' => ['md:col-span-9',  'md:col-span-7' ],
+            '70-30' => ['md:col-span-11', 'md:col-span-5' ],
+            default => ['md:col-span-8',  'md:col-span-8' ],  // 50-50
+        };
+
+        $mediaStyle = $maxH ? "max-height:{$maxH}px; height:{$maxH}px;" : '';
+    @endphp
+
+    <section class="grid md:grid-cols-16 gap-6 py-16 items-center">
+        @if ($side === 'left')
+            <div class="{{ $mediaClass }}">
+                @include('shared.blocks.partials.media', ['mediaType' => $mediaType, 'imgUrl' => $imgUrl, 'vidUrl' => $vidUrl, 'posterUrl' => $posterUrl, 'mediaStyle' => $mediaStyle])
+            </div>
+        @endif
+
+        <div class="{{ $textClass }}">
+            <h3 class="text-xl md:text-2xl font-semibold tracking-tight">{{ $title }}</h3>
+            @if ($excerpt)<p class="mt-2 text-slate-600">{{ $excerpt }}</p>@endif
+            @if ($html)<div class="mt-3 prose prose-slate max-w-none">{!! $html !!}</div>@endif
+            @if ($ctaLabel && $ctaUrl)
+                <div class="mt-5">
+                    <a href="{{ $ctaUrl }}"
+                       class="inline-flex items-center rounded-md bg-slate-900 px-4 py-2 text-white hover:bg-slate-800">
+                        {{ $ctaLabel }}
+                    </a>
+                </div>
+            @endif
+        </div>
+
+        @if ($side === 'right')
+            <div class="{{ $mediaClass }}">
+                @include('shared.blocks.partials.media', ['mediaType' => $mediaType, 'imgUrl' => $imgUrl, 'vidUrl' => $vidUrl, 'posterUrl' => $posterUrl, 'mediaStyle' => $mediaStyle])
+            </div>
+        @endif
     </section>
 @endif
 

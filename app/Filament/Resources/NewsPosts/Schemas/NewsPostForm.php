@@ -6,6 +6,9 @@ use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -56,6 +59,29 @@ class NewsPostForm
                             ->default(false)
                             ->required(),
                     ]),
+
+                Grid::make(2)
+                    ->schema([
+                        FileUpload::make('cover_image_path')
+                            ->label('Cover image (optional)')
+                            ->disk('public')
+                            ->directory('news/covers')
+                            ->image(),
+
+                        FileUpload::make('cover_video_path')
+                            ->label('Cover video (optional)')
+                            ->disk('public')
+                            ->directory('news/covers')
+                            ->acceptedFileTypes(['video/mp4', 'video/webm']),
+
+                        FileUpload::make('cover_poster_path')
+                            ->label('Video poster (optional)')
+                            ->disk('public')
+                            ->directory('news/covers')
+                            ->image()
+                            ->helperText('Used as poster for the cover video.'),
+                    ])
+                    ->columns(2),
 
                 Tabs::make('Translations')
                     ->persistTabInQueryString()
