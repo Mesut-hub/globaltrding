@@ -17,6 +17,7 @@ class CollaborationRequestForm
                 TextInput::make('full_name')->disabled(),
                 TextInput::make('email')->disabled(),
                 TextInput::make('company')->disabled(),
+                TextInput::make('vat_number')->disabled(),
                 TextInput::make('phone')->disabled(),
                 TextInput::make('country')->disabled(),
 

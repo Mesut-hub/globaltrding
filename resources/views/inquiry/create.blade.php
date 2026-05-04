@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
-@section('meta_title', 'Collaboration - Globaltrding')
+@section('meta_title', 'Inquiry - Globaltrding')
 
 @section('content')
     <section class="mx-auto max-w-3xl px-4 py-12">
-        <h1 class="text-4xl font-semibold tracking-tight">Collaboration</h1>
+        <h1 class="text-4xl font-semibold tracking-tight">Inquiry</h1>
         <p class="mt-3 text-slate-600">
-            Please fill in the form. Our team will review your request.
+            Please provide your company details and inquiry message. Our team will respond.
         </p>
 
         @if (session('success'))
@@ -15,7 +15,7 @@
             </div>
         @endif
 
-        <form method="POST" action="/{{ app()->getLocale() }}/collaboration" class="mt-8 space-y-4">
+        <form method="POST" action="/{{ app()->getLocale() }}/inquiry" class="mt-8 space-y-4">
             @csrf
 
             <div>
@@ -33,38 +33,29 @@
             </div>
 
             <div>
-                <label class="text-sm font-medium">Company</label>
+                <label class="text-sm font-medium">Company *</label>
                 <input name="company" value="{{ old('company') }}"
                        class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" required>
                 @error('company') <div class="text-sm text-red-600 mt-1">{{ $message }}</div> @enderror
             </div>
 
             <div>
-                <label class="text-sm font-medium">Company VAT number *</label>
-                <input name="vat_number" value="{{ old('vat_number') }}"
+                <label class="text-sm font-medium">Phone *</label>
+                <input name="phone" value="{{ old('phone') }}"
                        class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" required>
-                @error('vat_number') <div class="text-sm text-red-600 mt-1">{{ $message }}</div> @enderror
-            </div>
-
-            <div class="grid gap-4 sm:grid-cols-2">
-                <div>
-                    <label class="text-sm font-medium">Phone</label>
-                    <input name="phone" value="{{ old('phone') }}"
-                           class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" required>
-                    @error('phone') <div class="text-sm text-red-600 mt-1">{{ $message }}</div> @enderror
-                </div>
-
-                <div>
-                    <label class="text-sm font-medium">Country</label>
-                    <input name="country" value="{{ old('country') }}"
-                           class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" required>
-                    @error('country') <div class="text-sm text-red-600 mt-1">{{ $message }}</div> @enderror
-                </div>
+                @error('phone') <div class="text-sm text-red-600 mt-1">{{ $message }}</div> @enderror
             </div>
 
             <div>
-                <label class="text-sm font-medium">Message</label>
-                <textarea name="message" rows="6"
+                <label class="text-sm font-medium">Subject *</label>
+                <input name="subject" value="{{ old('subject') }}"
+                       class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" required>
+                @error('subject') <div class="text-sm text-red-600 mt-1">{{ $message }}</div> @enderror
+            </div>
+
+            <div>
+                <label class="text-sm font-medium">Message *</label>
+                <textarea name="message" rows="7"
                           class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" required>{{ old('message') }}</textarea>
                 @error('message') <div class="text-sm text-red-600 mt-1">{{ $message }}</div> @enderror
             </div>

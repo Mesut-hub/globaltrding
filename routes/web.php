@@ -9,6 +9,7 @@ use App\Http\Controllers\MarketController;
 use App\Http\Controllers\IndustryController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\InquiryController;
 use Illuminate\Support\Facades\Response;
 use App\Models\Product;
 use App\Models\Industry;
@@ -110,6 +111,9 @@ Route::prefix('{locale}')
 
         Route::get('/collaboration', [CollaborationController::class, 'create'])->name('collaboration.create');
         Route::post('/collaboration', [CollaborationController::class, 'store'])->name('collaboration.store');
+
+        Route::get('/inquiry', [InquiryController::class, 'create'])->name('inquiry.create');
+        Route::post('/inquiry', [InquiryController::class, 'store'])->name('inquiry.store');
 
         Route::get('/market', [MarketController::class, 'index'])->name('market.index');
         Route::get('/market/data', [MarketController::class, 'data'])->name('market.data');

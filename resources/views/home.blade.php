@@ -22,7 +22,4 @@
             @include('shared.blocks.home', ['block' => $block])
         @endforeach
     @endforeach
-
-    {{-- Latest News stays dynamic from NewsPosts --}}
-    @include('home.partials.latest-news', ['news' => $news, 'locale' => $locale])
 @endsection

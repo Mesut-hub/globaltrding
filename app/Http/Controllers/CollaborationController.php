@@ -19,10 +19,11 @@ class CollaborationController extends Controller
         $data = $request->validate([
             'full_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
-            'company' => ['nullable', 'string', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:50'],
-            'country' => ['nullable', 'string', 'max:100'],
-            'message' => ['nullable', 'string', 'max:5000'],
+            'company' => ['required', 'string', 'max:255'],
+            'vat_number'  => ['required', 'string', 'max:64'],
+            'phone' => ['required', 'string', 'max:50'],
+            'country' => ['required', 'string', 'max:100'],
+            'message' => ['required', 'string', 'max:5000'],
         ]);
 
         $collab = CollaborationRequest::create([
