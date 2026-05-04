@@ -109,8 +109,9 @@ Route::prefix('{locale}')
         Route::get('/products', [ProductController::class, 'index'])->name('products.index');
         Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
 
-        Route::get('/collaboration', [CollaborationController::class, 'create'])->name('collaboration.create');
-        Route::post('/collaboration', [CollaborationController::class, 'store'])->name('collaboration.store');
+        Route::get('/collaboration', [CollaborationController::class, 'index'])->name('collaboration.index');
+        Route::get('/collaboration/apply', [CollaborationController::class, 'create'])->name('collaboration.create');
+        Route::post('/collaboration/apply', [CollaborationController::class, 'store'])->name('collaboration.store');
 
         Route::get('/inquiry', [InquiryController::class, 'create'])->name('inquiry.create');
         Route::post('/inquiry', [InquiryController::class, 'store'])->name('inquiry.store');

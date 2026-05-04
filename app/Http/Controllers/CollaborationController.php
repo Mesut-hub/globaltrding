@@ -9,6 +9,11 @@ use Illuminate\Support\Facades\Mail;
 
 class CollaborationController extends Controller
 {
+    public function index(string $locale)
+    {
+        return view('collaboration.index');
+    }
+
     public function create(string $locale)
     {
         return view('collaboration.create');

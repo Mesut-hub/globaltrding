@@ -15,7 +15,7 @@
             </div>
         @endif
 
-        <form method="POST" action="/{{ app()->getLocale() }}/collaboration" class="mt-8 space-y-4">
+        <form method="POST" action="/{{ app()->getLocale() }}/collaboration/apply" class="mt-8 space-y-4">
             @csrf
 
             <div>
