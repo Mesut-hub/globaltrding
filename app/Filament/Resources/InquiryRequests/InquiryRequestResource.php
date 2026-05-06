@@ -47,6 +47,7 @@ class InquiryRequestResource extends Resource
         return [
             'index' => ListInquiryRequests::route('/'),
             'create' => CreateInquiryRequest::route('/create'),
+            'view' => \App\Filament\Resources\InquiryRequests\Pages\ViewInquiryRequest::route('/{record}'),
             'edit' => EditInquiryRequest::route('/{record}/edit'),
         ];
     }

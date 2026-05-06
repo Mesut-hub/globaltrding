@@ -26,4 +26,9 @@ class InquiryRequest extends Model
     {
         return $this->belongsTo(\App\Models\User::class, 'reviewed_by');
     }
+
+    public function replies()
+    {
+        return $this->hasMany(\App\Models\InquiryReply::class, 'inquiry_request_id');
+    }
 }

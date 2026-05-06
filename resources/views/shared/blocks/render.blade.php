@@ -224,7 +224,36 @@
                         $tx = $tile['panel_excerpt'] ?? '';
                         $body = $tile['panel_body'] ?? '';
                         $showChart = (bool)($tile['show_chart'] ?? false);
+                        $source = $tile['chart_source'] ?? 'manual';
+
+                        $pts = [];
+                        if ($source === 'manual') {
                         $pts = is_array($tile['chart_points'] ?? null) ? $tile['chart_points'] : [];
+                        } elseif ($source === 'url_json') {
+                        $url = (string)($tile['chart_url'] ?? '');
+                        if ($url !== '') {
+                            $pts = app(\App\Services\ChartDataClient::class)->fromUrl($url);
+                        }
+                        } elseif ($source === 'market_instrument') {
+                        $slug = (string)($tile['chart_instrument'] ?? '');
+                        $days = (int)($tile['chart_days'] ?? 14);
+                        $days = max(5, min(120, $days));
+
+                        if ($slug !== '') {
+                            $inst = \App\Models\MarketInstrument::query()->where('slug', $slug)->first();
+                            if ($inst) {
+                            $rows = \App\Models\MarketPoint::query()
+                                ->where('market_instrument_id', $inst->id)
+                                ->orderBy('date', 'desc')
+                                ->limit(12) // keep sparkline small
+                                ->get(['value','date'])
+                                ->reverse()
+                                ->values();
+
+                            $pts = $rows->map(fn($r) => ['value' => (float)$r->value])->all();
+                            }
+                        }
+                        }
                         $scale = $tile['chart_scale'] ?? 'linear';
                         $mode = $tile['chart_mode'] ?? 'absolute';
                         $auto = (bool)($tile['chart_auto_minmax'] ?? true);
@@ -241,6 +270,9 @@
                                 'auto' => $auto,
                                 'minFixed' => $minFixed,
                                 'maxFixed' => $maxFixed,
+                                'showGrid' => true,
+                                'showAxes' => true,
+                                'gridLines' => 3,
                             ])
                             </div>
                         @endif

@@ -293,6 +293,34 @@ class PageForm
                                             ->default(false)
                                             ->visible(fn ($get) => $get('type') === 'panel'),
 
+                                        Select::make('chart_source')
+                                            ->label('Chart data source')
+                                            ->options([
+                                                'manual' => 'Manual points',
+                                                'url_json' => 'URL (JSON)',
+                                                'market_instrument' => 'Market instrument (DB)',
+                                            ])
+                                            ->default('manual')
+                                            ->visible(fn ($get) => $get('type') === 'panel' && (bool) $get('show_chart')),
+
+                                            TextInput::make('chart_url')
+                                            ->label('Chart data URL (JSON)')
+                                            ->helperText('Expected JSON: either [1,2,3] or [{value:1},{value:2}]')
+                                            ->url()
+                                            ->visible(fn ($get) => $get('type') === 'panel' && (bool) $get('show_chart') && $get('chart_source') === 'url_json'),
+
+                                            Select::make('chart_instrument')
+                                            ->label('Market instrument')
+                                            ->options(fn () => \App\Models\MarketInstrument::query()->where('is_active', true)->orderBy('slug')->pluck('slug','slug')->all())
+                                            ->searchable()
+                                            ->visible(fn ($get) => $get('type') === 'panel' && (bool) $get('show_chart') && $get('chart_source') === 'market_instrument'),
+
+                                            TextInput::make('chart_days')
+                                            ->label('Days (5–120)')
+                                            ->numeric()
+                                            ->default(14)
+                                            ->visible(fn ($get) => $get('type') === 'panel' && (bool) $get('show_chart') && $get('chart_source') === 'market_instrument'),
+
                                         Repeater::make('chart_points')
                                             ->label('Chart points (5–12)')
                                             ->minItems(5)
