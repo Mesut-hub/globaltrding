@@ -101,11 +101,11 @@ $posterUrl  = $posterPath ? Storage::disk('public')->url($posterPath) : null;
             </div>
         </div>
         <div class="mt-6 overflow-hidden">
-            <div class="flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-2" data-ind="track">
+            <div class="flex gap-4 overflow-x-auto overflow-x-hidden snap-x snap-mandatory scroll-smooth pb-2" data-ind="track">
                 @foreach ($industries as $ind)
                     @php
-                    $title = data_get($ind->title,$locale) ?: data_get($ind->title,$fallback) ?: $ind->slug;
-                    $img   = $ind->cover_image_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($ind->cover_image_path) : null;
+                        $title = data_get($ind->title,$locale) ?: data_get($ind->title,$fallback) ?: $ind->slug;
+                        $img   = $ind->cover_image_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($ind->cover_image_path) : null;
                     @endphp
                     <a href="/{{ $locale }}/industries/{{ $ind->slug }}" class="snap-start shrink-0 w-[85%] sm:w-[45%] lg:w-[28%] rounded-xl border border-slate-200 bg-white overflow-hidden hover:shadow-sm transition">
                         <div class="aspect-[16/9] bg-slate-100 overflow-hidden">
@@ -117,9 +117,9 @@ $posterUrl  = $posterPath ? Storage::disk('public')->url($posterPath) : null;
                         </div>
                     </a>
                 @endforeach
-                @if (count($industries) > 4)
-                    <button type="button" class="ind-btn" data-ind="prev" aria-label="Previous">‹</button>
-                    <button type="button" class="ind-btn" data-ind="next" aria-label="Next">›</button>
+                @if (count($industries) > 3)
+                    <button type="button" class="ind-btn ind-btn--prev" data-ind="prev" aria-label="Previous">‹</button>
+                <button type="button" class="ind-btn ind-btn--next" data-ind="next" aria-label="Next">›</button>
                 @endif
             </div>
         </div>
@@ -152,24 +152,21 @@ $posterUrl  = $posterPath ? Storage::disk('public')->url($posterPath) : null;
     <section class="mx-auto max-w-7xl px-4 py-12" data-industry-slider>
         <div class="flex items-end justify-between gap-4">
             @if ($title)<h2 class="text-2xl font-semibold tracking-tight">{{ $title }}</h2>@endif
-        <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3">
                 <a href="{{ $viewAllUrl }}" class="text-sm text-slate-600 hover:underline">View all →</a>
-                
             </div>
         </div>
         <div class="mt-6 overflow-hidden">
-            
             <div class="flex gap-4 overflow-x-auto overflow-x-hidden snap-x snap-mandatory scroll-smooth pb-2" data-ind="track">
-                
             @foreach ($items as $item)
                 @php
-                $iTitle=$t($item['title']??[]); $iText=$t($item['text']??[]);
-                $iUrl=$urlWithLocale($item['url']??'#');
-                $iImg=($item['image_path']??null) ? \Illuminate\Support\Facades\Storage::disk('public')->url($item['image_path']) : null;
+                    $iTitle=$t($item['title']??[]); $iText=$t($item['text']??[]);
+                    $iUrl=$urlWithLocale($item['url']??'#');
+                    $iImg=($item['image_path']??null) ? \Illuminate\Support\Facades\Storage::disk('public')->url($item['image_path']) : null;
                 @endphp
                 <a href="{{ $iUrl }}" class="snap-start shrink-0 w-[85%] sm:w-[45%] lg:w-[32%] rounded-xl border border-slate-200 bg-white overflow-hidden hover:shadow-sm transition">
                     <div class="aspect-[16/9] bg-slate-100 overflow-hidden">
-                        @if ($iImg)<img src="{{ $iImg }}" alt="{{ $iTitle }}" class="h-full w-full object-cover group-hover:scale-[1.015] transition"/>@endif
+                        @if ($iImg)<img src="{{ $iImg }}" alt="{{ $iTitle }}" class="h-full w-full object-cover hover:scale-[1.015] transition"/>@endif
                     </div>
                     <div class="p-4">
                         <div class="text-lg font-semibold leading-snug">{{ $iTitle }}</div>
@@ -475,53 +472,53 @@ $posterUrl  = $posterPath ? Storage::disk('public')->url($posterPath) : null;
     @endphp
 
     <section class="border-t border-slate-200">
-    <div class="mx-auto max-w-7xl px-4 py-10">
-        <div class="flex items-end justify-between gap-4">
-        <div>
-            <h2 class="text-2xl font-semibold tracking-tight">{{ $title }}</h2>
-            @if($lead)<p class="mt-2 text-slate-600">{{ $lead }}</p>@endif
-        </div>
-
-        @if($showAll)
-            <a href="/{{ $locale }}/news" class="text-sm text-slate-600 hover:text-slate-900 hover:underline">
-            {{ $viewAllLabel }}
-            </a>
-        @endif
-        </div>
-
-        <div class="mt-6 grid gap-6 md:grid-cols-3">
-        @foreach($posts as $post)
-            @php
-            $pt = data_get($post->title, $locale) ?: data_get($post->title, $fallback) ?: '';
-            $pe = data_get($post->excerpt, $locale) ?: data_get($post->excerpt, $fallback) ?: '';
-            $img = $post->cover_image_path ? Storage::disk('public')->url($post->cover_image_path) : null;
-            $vid = $post->cover_video_path ? Storage::disk('public')->url($post->cover_video_path) : null;
-            $poster = $post->cover_poster_path ? Storage::disk('public')->url($post->cover_poster_path) : null;
-            @endphp
-
-            <a href="/{{ $locale }}/news/{{ $post->slug }}" class="rounded-xl border border-slate-200 bg-white overflow-hidden hover:shadow-sm transition">
-            <div class="aspect-[16/9] bg-slate-100">
-                @if($vid)
-                <video class="w-full h-full object-cover" muted playsinline preload="metadata" @if($poster) poster="{{ $poster }}" @endif>
-                    <source src="{{ $vid }}" type="video/mp4">
-                </video>
-                @elseif($img)
-                <img src="{{ $img }}" alt="" class="w-full h-full object-cover">
-                @endif
+        <div class="mx-auto max-w-7xl px-4 py-10">
+            <div class="flex items-end justify-between gap-4">
+            <div>
+                <h2 class="text-2xl font-semibold tracking-tight">{{ $title }}</h2>
+                @if($lead)<p class="mt-2 text-slate-600">{{ $lead }}</p>@endif
             </div>
 
-            <div class="p-5">
-                <div class="text-lg font-semibold leading-snug">{{ $pt }}</div>
-                @if($pe)<div class="mt-2 text-sm text-slate-600">{{ $pe }}</div>@endif
+            @if($showAll)
+                <a href="/{{ $locale }}/news" class="text-sm text-slate-600 hover:text-slate-900 hover:underline">
+                {{ $viewAllLabel }}
+                </a>
+            @endif
             </div>
-            </a>
-        @endforeach
-        </div>
 
-        @if($posts->isEmpty())
-        <p class="mt-6 text-slate-600">No featured news yet.</p>
-        @endif
-    </div>
+            <div class="mt-6 grid gap-6 md:grid-cols-3">
+                @foreach($posts as $post)
+                    @php
+                    $pt = data_get($post->title, $locale) ?: data_get($post->title, $fallback) ?: '';
+                    $pe = data_get($post->excerpt, $locale) ?: data_get($post->excerpt, $fallback) ?: '';
+                    $img = $post->cover_image_path ? Storage::disk('public')->url($post->cover_image_path) : null;
+                    $vid = $post->cover_video_path ? Storage::disk('public')->url($post->cover_video_path) : null;
+                    $poster = $post->cover_poster_path ? Storage::disk('public')->url($post->cover_poster_path) : null;
+                    @endphp
+
+                    <a href="/{{ $locale }}/news/{{ $post->slug }}" class="rounded-xl border border-slate-200 bg-white overflow-hidden hover:shadow-sm transition">
+                        <div class="aspect-[16/9] bg-slate-100">
+                            @if($vid)
+                                <video class="w-full h-full object-cover" muted playsinline preload="metadata" @if($poster) poster="{{ $poster }}" @endif>
+                                    <source src="{{ $vid }}" type="video/mp4">
+                                </video>
+                            @elseif($img)
+                                <img src="{{ $img }}" alt="" class="w-full h-full object-cover hover:scale-[1.015]">
+                            @endif
+                        </div>
+
+                        <div class="p-5">
+                            <div class="text-lg font-semibold leading-snug">{{ $pt }}</div>
+                            @if($pe)<div class="mt-2 text-sm text-slate-600">{{ $pe }}</div>@endif
+                        </div>
+                    </a>
+                @endforeach
+            </div>
+
+            @if($posts->isEmpty())
+                <p class="mt-6 text-slate-600">No featured news yet.</p>
+            @endif
+        </div>
     </section>
 
 @endif

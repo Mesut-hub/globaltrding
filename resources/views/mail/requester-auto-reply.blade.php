@@ -4,7 +4,7 @@ Thank you for contacting Global Trading for your request.
 Your request details:
   • Reference ID : {{ $reference_id }}
   • Subject      : {{ $subject }}
-  • Message      : {{ $message }}
+  • Message      : {{ $body }}
   • Submitted by : {{ $name }} ({{ $email }})
 
 Your request has been forwarded to the related department for review.

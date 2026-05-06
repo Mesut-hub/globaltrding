@@ -22,7 +22,10 @@ class CollaborationRequestsTable
         return $table
             ->defaultSort('created_at', 'desc')   // (Improvement) newest first
             ->columns([
-                TextColumn::make('full_name')->searchable(),
+                TextColumn::make('full_name')
+                    ->searchable()
+                    ->searchable()
+                    ->url(fn ($record) => \App\Filament\Resources\CollaborationRequests\CollaborationRequestResource::getUrl('view', ['record' => $record])),
                 TextColumn::make('email')->label('Email address')->searchable(),
                 TextColumn::make('company')->searchable(),
                 TextColumn::make('phone')->searchable(),

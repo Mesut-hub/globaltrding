@@ -26,6 +26,42 @@ class Industry extends Model
         'is_published' => 'boolean',
     ];
 
+    public function setTitleAttribute($value): void
+    {
+        // Accept array (Filament), JSON string, or plain string
+        if (is_string($value)) {
+            $trim = trim($value);
+            if ($trim !== '' && ($trim[0] === '{' || $trim[0] === '[')) {
+                $decoded = json_decode($trim, true);
+                $value = is_array($decoded) ? $decoded : ['en' => $value];
+            } else {
+                $value = ['en' => $value];
+            }
+        }
+
+        $this->attributes['title'] = json_encode($value ?: [], JSON_UNESCAPED_UNICODE);
+    }
+
+    public function setExcerptAttribute($value): void
+    {
+        if ($value === null) {
+            $this->attributes['excerpt'] = null;
+            return;
+        }
+
+        if (is_string($value)) {
+            $trim = trim($value);
+            if ($trim !== '' && ($trim[0] === '{' || $trim[0] === '[')) {
+                $decoded = json_decode($trim, true);
+                $value = is_array($decoded) ? $decoded : ['en' => $value];
+            } else {
+                $value = ['en' => $value];
+            }
+        }
+
+        $this->attributes['excerpt'] = json_encode($value ?: [], JSON_UNESCAPED_UNICODE);
+    }
+
     public function searchableAs(): string
     {
         return 'industries';

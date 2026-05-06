@@ -26,7 +26,10 @@ class InquiryRequestsTable
         return $table
             ->defaultSort('created_at', 'desc')
             ->columns([
-                TextColumn::make('full_name')->searchable(),
+                TextColumn::make('full_name')
+                    ->searchable()
+                    ->url(fn ($record) => \App\Filament\Resources\InquiryRequests\InquiryRequestResource::getUrl('view', ['record' => $record]))
+                    ->openUrlInNewTab(false),
                 TextColumn::make('email')->label('Email address')->searchable(),
                 TextColumn::make('company')->searchable(),
                 TextColumn::make('phone')->searchable(),

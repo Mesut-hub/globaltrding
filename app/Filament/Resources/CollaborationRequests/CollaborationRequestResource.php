@@ -47,6 +47,7 @@ class CollaborationRequestResource extends Resource
         return [
             'index' => ListCollaborationRequests::route('/'),
             'create' => CreateCollaborationRequest::route('/create'),
+            'view' => \App\Filament\Resources\CollaborationRequests\Pages\ViewCollaborationRequest::route('/{record}'),
             'edit' => EditCollaborationRequest::route('/{record}/edit'),
         ];
     }
