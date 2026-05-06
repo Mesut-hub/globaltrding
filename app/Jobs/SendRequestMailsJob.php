@@ -19,7 +19,7 @@ class SendRequestMailsJob implements ShouldQueue
         public string $department,      // inquiry|collaboration
         public array $adminPayload,      // field/value pairs
         public string $requesterEmail,
-        public array $autoReplyVars      // reference_id, subject, message, name, email, products_url
+        public array $autoReplyVars      // reference_id, subject, body, name, email, products_url
     ) {}
 
     public function handle(): void

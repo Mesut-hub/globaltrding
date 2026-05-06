@@ -47,7 +47,7 @@ class InquiryController extends Controller
             [
                 'reference_id' => $inquiry->id,
                 'subject' => (string) $inquiry->subject,
-                'message' => (string) $inquiry->message,
+                'body' => (string) $inquiry->message,
                 'name' => (string) $inquiry->full_name,
                 'email' => (string) $inquiry->email,
                 'products_url' => $productsUrl,
