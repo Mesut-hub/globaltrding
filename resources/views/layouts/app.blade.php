@@ -9,6 +9,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     @php
+        $menuTree = app(\App\Services\MenuService::class)->tree();
+        $locale = app()->getLocale();
+        $fallback = config('locales.default', 'en');
+
+        $tLabel = function ($arr) use ($locale, $fallback) {
+            if (!is_array($arr)) return (string)($arr ?? '');
+            return (string)($arr[$locale] ?? $arr[$fallback] ?? (count($arr) ? reset($arr) : ''));
+        };
+
+        $resolveUrl = function ($item) use ($locale) {
+            // If page_id set, use /{locale}/pages/{slug}
+            if (!empty($item['page_id'])) {
+                $page = \App\Models\Page::find($item['page_id']);
+                if ($page) return "/{$locale}/pages/{$page->slug}";
+            }
+            $u = (string)($item['url'] ?? '#');
+            return str_replace('{locale}', $locale, $u !== '' ? $u : '#');
+        };
+    
         // Base URL for canonical/OG. In production, set APP_URL=https://globaltrding.com
         $appUrl = rtrim((string) config('app.url'), '/');
 
