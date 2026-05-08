@@ -10,7 +10,7 @@
 
     @php
         $locale = app()->getLocale();
-        $navPayload = app(\App\Services\NavService::class)->payload($locale);
+        $navPayload = app(\App\Services\NavService::class)->payload();
     @endphp
 
     <script type="application/json" id="gt-nav-data">
@@ -186,11 +186,6 @@
                         </li>
                     @endforeach
                 </ul>
-
-                {{-- Provide overlay JSON payload to JS --}}
-                <script type="application/json" id="gt-nav-data">
-                {!! json_encode($navPayload, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) !!}
-                </script>
             </nav>
 
             {{-- Right: icons + logo box --}}

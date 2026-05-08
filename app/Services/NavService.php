@@ -31,6 +31,7 @@ class NavService
                             'action' => $l->action, // supports Product Finder
                             'desc' => $l->desc ?? null,
                             'preview_image' => $l->preview_image ?? null,
+                            'is_finder' => (bool) ($l->is_finder ?? false),
                         ];
                     })->values()->all(),
                 ];

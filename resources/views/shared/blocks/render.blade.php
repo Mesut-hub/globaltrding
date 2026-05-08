@@ -1,627 +1,130 @@
 @php
-    $type = $block['type'] ?? null;
-    $data = $block['data'] ?? [];
     $locale = app()->getLocale();
     $fallback = config('locales.default', 'en');
+
+    $t = function ($arr) use ($locale, $fallback) {
+        if (!is_array($arr)) return (string)($arr ?? '');
+        return (string)($arr[$locale] ?? $arr[$fallback] ?? (count($arr) ? reset($arr) : ''));
+    };
+
+    $settings = class_exists(\App\Models\SiteSetting::class)
+        ? \App\Models\SiteSetting::getCached()
+        : [];
+
+    $linkedin = $settings['linkedin_url'] ?? null;
+    $instagram = $settings['instagram_url'] ?? null;
+    $x = $settings['x_url'] ?? null;
+    $youtube = $settings['youtube_url'] ?? null;
+
+    $companyPages = \App\Models\Page::query()->where('is_published', true)->where('show_in_company', true)->orderBy('slug')->get();
+    $productPages = \App\Models\Page::query()->where('is_published', true)->where('show_in_products', true)->orderBy('slug')->get();
+    $infoPages    = \App\Models\Page::query()->where('is_published', true)->where('show_in_information', true)->orderBy('slug')->get();
+    $servicePages = \App\Models\Page::query()->where('is_published', true)->where('show_in_service', true)->orderBy('slug')->get();
+
+    $pageUrl = fn ($slug) => "/{$locale}/pages/{$slug}";
+    $year = date('Y');
+
+    $iconLinkClass = 'inline-flex items-center justify-center w-10 h-10 rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 hover:text-slate-800 transition';
 @endphp
 
-@if ($type === 'hero')
-    @php
-        $height = $data['height'] ?? 'screen'; // screen|xl|lg
-        $pos = $data['content_position'] ?? 'left'; // left|center|right
-        $align = $data['content_align'] ?? 'left'; // left|center|right
-
-        $overlayColor = $data['overlay_color'] ?? '#000000';
-        $overlayOpacity = is_numeric($data['overlay_opacity'] ?? null) ? (float) $data['overlay_opacity'] : 0.45;
-        $overlayOpacity = max(0, min(1, $overlayOpacity));
-
-        $videoPath = $data['video'] ?? null;
-        $videoUrl = $videoPath ? \Illuminate\Support\Facades\Storage::disk('public')->url($videoPath) : null;
-
-        $thumbs = is_array($data['thumbs'] ?? null) ? $data['thumbs'] : [];
-
-        $images = $data['images'] ?? [];
-        $imageUrls = collect(is_array($images) ? $images : [])
-            ->map(fn ($p) => $p ? \Illuminate\Support\Facades\Storage::disk('public')->url($p) : null)
-            ->filter()
-            ->values()
-            ->all();
-
-        $slides = $data['slides'] ?? [];
-        $slides = is_array($slides) ? $slides : [];
-
-        $autoplay = (bool) ($data['autoplay'] ?? true);
-        $interval = (int) ($data['interval_ms'] ?? 4500);
-        $pauseOnHover = (bool) ($data['pause_on_hover'] ?? true);
-
-        $heightClass = match($height) {
-            'xl' => 'gt-hero--xl',
-            'lg' => 'gt-hero--lg',
-            default => 'gt-hero--screen',
-        };
-
-        $contentPosClass = match($pos) {
-            'center' => 'gt-hero__content--center',
-            'right' => 'gt-hero__content--right',
-            default => 'gt-hero__content--left',
-        };
-
-        $textAlignClass = match($align) {
-            'center' => 'text-center',
-            'right' => 'text-right',
-            default => 'text-left',
-        };
-        $titleSize = $data['title_size'] ?? 'xl';
-        $leadSize = $data['lead_size'] ?? 'md';
-        $maxW = is_numeric($data['content_max_width'] ?? null) ? (int) $data['content_max_width'] : 760;
-        $offX = is_numeric($data['content_offset_x'] ?? null) ? (int) $data['content_offset_x'] : 140;
-        $offY = is_numeric($data['content_offset_y'] ?? null) ? (int) $data['content_offset_y'] : -90;
-
-        $titleClass = match($titleSize) {
-            'md' => 'gt-hero__title--md',
-            'lg' => 'gt-hero__title--lg',
-            default => 'gt-hero__title--xl',
-        };
-        $leadClass = match($leadSize) {
-            'sm' => 'gt-hero__lead--sm',
-            'lg' => 'gt-hero__lead--lg',
-            default => 'gt-hero__lead--md',
-        };
-    @endphp
-
-    <section class="gt-hero {{ $heightClass }}"
-             data-hero
-             data-hero-autoplay="{{ $autoplay ? '1' : '0' }}"
-             data-hero-interval="{{ $interval }}"
-             data-hero-pause-hover="{{ $pauseOnHover ? '1' : '0' }}">
-        <div class="gt-hero__media">
-            @if ($videoUrl)
-                <video class="gt-hero__video" autoplay muted loop playsinline>
-                    <source src="{{ $videoUrl }}">
-                </video>
-            @elseif (count($imageUrls))
-                <div class="gt-hero__slider" data-hero-slider>
-                    @foreach ($imageUrls as $i => $u)
-                        <div class="gt-hero__slide {{ $i === 0 ? 'is-active' : '' }}" data-hero-slide="{{ $i }}">
-                            <img src="{{ $u }}" alt="" class="gt-hero__img">
-                        </div>
-                    @endforeach
-
-                    @if (count($imageUrls) > 1)
-                        <button type="button" class="gt-hero__nav gt-hero__nav--prev" data-hero-prev aria-label="Previous">‹</button>
-                        <button type="button" class="gt-hero__nav gt-hero__nav--next" data-hero-next aria-label="Next">›</button>
-                    @endif
-                </div>
-            @else
-                <div class="gt-hero__placeholder"></div>
-            @endif
-
-            <div class="gt-hero__overlay" style="background: {{ $overlayColor }}; opacity: {{ $overlayOpacity }};"></div>
-
-            {{-- content --}}
-            @php
-                // initial slide content
-                $s0 = $slides[0] ?? [];
-                $kicker = $s0['kicker'] ?? '';
-                $title = $s0['title'] ?? '';
-                $lead = $s0['lead'] ?? '';
-                $ctaLabel = $s0['cta_label'] ?? null;
-                $ctaUrl = $s0['cta_url'] ?? null;
-            @endphp
-
-            <div class="gt-hero__content {{ $contentPosClass }} {{ $textAlignClass }}"
-                 style="max-width: {{ $maxW }}px; transform: translate({{ $offX }}px, {{ $offY }}px);"
-                 data-hero-content
-                 data-hero-slides='@json($slides, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)'>
-                @if ($kicker)
-                    <div class="gt-hero__kicker" data-hero-kicker>{{ $kicker }}</div>
-                @else
-                    <div class="gt-hero__kicker hidden" data-hero-kicker></div>
-                @endif
-
-                <h1 class="gt-hero__title {{ $titleClass }}" data-hero-title>{{ $title }}</h1>
-
-                @if ($lead)
-                    <p class="gt-hero__lead {{ $leadClass }} {{ $lead ? '' : 'hidden' }}" data-hero-lead>{{ $lead }}</p>
-                @else
-                    <p class="gt-hero__lead hidden" data-hero-lead></p>
-                @endif
-
-                <div class="gt-hero__cta" data-hero-cta-wrap>
-                    @if ($ctaLabel && $ctaUrl)
-                        <a href="{{ $ctaUrl }}" class="gt-btn gt-btn--primary" data-hero-cta>{{ $ctaLabel }}</a>
-                    @else
-                        <a href="#" class="gt-btn gt-btn--primary hidden" data-hero-cta></a>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </section>
-
-@elseif ($type === 'sectionHeading')
-    @php
-        $title = $data['title'] ?? '';
-        $lead = $data['lead'] ?? '';
-    @endphp
-
-    <section>
-        <h2 class="text-2xl md:text-3xl font-semibold tracking-tight">{{ $title }}</h2>
-        @if ($lead)
-            <p class="mt-3 text-slate-600 max-w-3xl">{{ $lead }}</p>
-        @endif
-    </section>
-
-@elseif ($type === 'insightsGrid')
-    @php
-        $heading = $data['heading'] ?? 'Company insights';
-        $accent = $data['accent'] ?? 'blue';
-
-        $panelClass = match($accent) {
-            'dark' => 'bg-slate-900 text-white',
-            'slate' => 'bg-slate-700 text-white',
-            default => 'bg-sky-600 text-white',
-        };
-
-        $topImgPath = $data['top_left_image'] ?? null;
-        $topImgUrl = $topImgPath ? \Illuminate\Support\Facades\Storage::disk('public')->url($topImgPath) : null;
-
-        $kicker = $data['top_right_kicker'] ?? '';
-        $title = $data['top_right_title'] ?? '';
-        $text = $data['top_right_text'] ?? '';
-        $ctaLabel = $data['top_right_cta_label'] ?? '';
-        $ctaUrl = $data['top_right_cta_url'] ?? '';
-
-        $bottom = is_array($data['bottom_tiles'] ?? null) ? $data['bottom_tiles'] : [];
-
-        $panelTextColor = $data['panel_text_color'] ?? '#ffffff';
-        $row2LinkColor = $data['row2_link_color'] ?? '#0ea5e9';
-    @endphp
-
-    <section class="gt-insights">
-        <h2 class="gt-insights__heading">{{ $heading }}</h2>
-
-        {{-- Row 1 --}}
-        <div class="gt-insights__row gt-insights__row--top">
-            <div class="gt-insights__tile gt-insights__tile--image1">
-                @if ($topImgUrl)
-                    <img src="{{ $topImgUrl }}" alt="" class="gt-insights__img">
-                @endif
-            </div>
-
-            <div class="gt-insights__tile gt-insights__tile--panel1 {{ $panelClass }}" style="color: {{ $panelTextColor }};">
-                @if ($kicker)
-                    <div class="gt-insights__kicker">{{ $kicker }}</div>
-                @endif
-                <div class="gt-insights__title">{{ $title }}</div>
-                @if ($text)
-                    <div class="gt-insights__text">{{ $text }}</div>
-                @endif
-                @if ($ctaLabel && $ctaUrl)
-                    <a href="{{ $ctaUrl }}" class="gt-insights__cta">{{ $ctaLabel }}</a>
-                @endif
-            </div>
+<footer class="mt-16 bg-slate-50 border-t border-slate-200">
+    {{-- Row 1: Social --}}
+    <div class="mx-auto max-w-7xl px-4 py-6 flex items-center justify-between gap-6">
+        <div class="text-sm font-semibold text-slate-900 tracking-tight">
+            {{ __('Global Trading') }}
         </div>
 
-        {{-- Row 2 --}}
-        <div class="gt-insights__row gt-insights__row--bottom">
-            @foreach ($bottom as $tile)
-                @php
-                    $t = $tile['type'] ?? 'image';
-
-                    $imgPath = $tile['image'] ?? null;
-                    $imgUrl = $imgPath ? \Illuminate\Support\Facades\Storage::disk('public')->url($imgPath) : null;
-
-                    // image tile
-                    $k = $tile['kicker'] ?? '';
-                    $tt = $tile['title'] ?? '';
-                    $lead = $tile['lead'] ?? '';
-                    $cl = $tile['cta_label'] ?? '';
-                    $cu = $tile['cta_url'] ?? '';
-                @endphp
-
-                @if ($t === 'panel')
-                    @php
-                        $tx = $tile['panel_excerpt'] ?? '';
-                        $body = $tile['panel_body'] ?? '';
-                        $showChart = (bool)($tile['show_chart'] ?? false);
-                        $source = $tile['chart_source'] ?? 'manual';
-
-                        $pts = [];
-                        if ($source === 'manual') {
-                        $pts = is_array($tile['chart_points'] ?? null) ? $tile['chart_points'] : [];
-                        } elseif ($source === 'url_json') {
-                        $url = (string)($tile['chart_url'] ?? '');
-                        if ($url !== '') {
-                            $pts = app(\App\Services\ChartDataClient::class)->fromUrl($url);
-                        }
-                        } elseif ($source === 'market_instrument') {
-                        $slug = (string)($tile['chart_instrument'] ?? '');
-                        $days = (int)($tile['chart_days'] ?? 14);
-                        $days = max(5, min(120, $days));
-
-                        if ($slug !== '') {
-                            $inst = \App\Models\MarketInstrument::query()->where('slug', $slug)->first();
-                            if ($inst) {
-                            $rows = \App\Models\MarketPoint::query()
-                                ->where('market_instrument_id', $inst->id)
-                                ->orderBy('date', 'desc')
-                                ->limit(12) // keep sparkline small
-                                ->get(['value','date'])
-                                ->reverse()
-                                ->values();
-
-                            $pts = $rows->map(fn($r) => ['value' => (float)$r->value])->all();
-                            }
-                        }
-                        }
-                        $scale = $tile['chart_scale'] ?? 'linear';
-                        $mode = $tile['chart_mode'] ?? 'absolute';
-                        $auto = (bool)($tile['chart_auto_minmax'] ?? true);
-                        $minFixed = $tile['chart_min'] ?? null;
-                        $maxFixed = $tile['chart_max'] ?? null;
-                    @endphp
-                    <div class="gt-insights__tile gt-insights__tile--panel2 {{ $panelClass }}" style="color: {{ $panelTextColor }};">
-                        @if($showChart)
-                            <div class="mb-3 opacity-90">
-                            @include('shared.blocks.partials.sparkline', [
-                                'points' => $pts,
-                                'scale' => $scale,
-                                'mode' => $mode,
-                                'auto' => $auto,
-                                'minFixed' => $minFixed,
-                                'maxFixed' => $maxFixed,
-                                'showGrid' => true,
-                                'showAxes' => true,
-                                'gridLines' => 3,
-                            ])
-                            </div>
-                        @endif
-                        @if($tt)<div class="gt-insights__title">{{ $tt }}</div>@endif
-                        @if ($tx || $lead)<div class="gt-insights__text">{{ $tx }}</div>@endif
-                        @if($body)<div class="gt-insights__text">{{ $body }}</div>@endif
-                        @if ($cl && $cu)
-                            <a href="{{ $cu }}" class="gt-insights__cta">{{ $cl }}</a>
-                        @endif
-                    </div>
-                @else
-                    <div class="gt-insights__tile gt-insights__tile--image gt-insights__tile--image2">
-                        <div class="gt-insights__media">
-                            @if ($imgUrl)
-                                <img src="{{ $imgUrl }}" alt="" class="gt-insights__img">
-                            @endif
-                        </div>
-                        <div class="gt-insights__below">
-                            @if ($k)
-                                <div class="gt-insights__belowKicker">{{ $k }}</div>
-                            @endif
-
-                            <div class="gt-insights__belowTitle">{{ $tt }}</div>
-
-                            @if ($lead)
-                                <div class="gt-insights__belowText">{{ $lead }}</div>
-                            @endif
-
-                            @if ($cl && $cu)
-                                <a href="{{ $cu }}" class="gt-insights__belowCta" style="color: {{ $row2LinkColor }};">
-                                    {{ $cl }}
-                                </a>
-                            @endif
-                        </div>
-                    </div>
-                @endif
-            @endforeach
-        </div>
-    </section>
-
-@elseif ($type === 'cardsCarousel')
-    @php
-        $bg = $data['bg'] ?? 'white';
-        $title = $data['title'] ?? '';
-        $lead = $data['lead'] ?? '';
-        $items = is_array($data['items'] ?? null) ? $data['items'] : [];
-
-        $titleSize = $data['title_size'] ?? 'lg';
-        $textSize = $data['text_size'] ?? 'md';
-
-        $autoplay = (bool) ($data['autoplay'] ?? false);
-        $autoplayMs = (int) ($data['autoplay_ms'] ?? 4500);
-        $pauseHover = (bool) ($data['pause_on_hover'] ?? true);
-
-        $wrapClass = match($bg) {
-            'dark' => 'bg-slate-900 text-white border-white/10',
-            'slate' => 'bg-slate-50 text-slate-900 border-slate-200',
-            default => 'bg-white text-slate-900 border-slate-200',
-        };
-
-        $titleClass = $titleSize === 'md' ? 'text-xl md:text-2xl' : 'text-2xl md:text-3xl';
-        $textClass = $textSize === 'sm' ? 'text-sm' : 'text-base';
-
-        $id = 'cc_' . substr(md5(json_encode($data)), 0, 8);
-    @endphp
-
-    <section class="mt-8 rounded-2xl border {{ $wrapClass }} p-6 md:p-10"
-             data-carousel
-             data-carousel-autoplay="{{ $autoplay ? '1' : '0' }}"
-             data-carousel-interval="{{ max(1500, $autoplayMs) }}"
-             data-carousel-pause-hover="{{ $pauseHover ? '1' : '0' }}">
-        @if ($title)
-            <h3 class="font-semibold tracking-tight {{ $titleClass }}">{{ $title }}</h3>
-        @endif
-        @if ($lead)
-            <p class="mt-2 opacity-90 max-w-3xl {{ $textClass }}">{{ $lead }}</p>
-        @endif
-
-        <div class="mt-6 relative">
-            <button type="button" class="gt-car__nav gt-car__nav--prev" data-carousel-prev aria-label="Previous">‹</button>
-            <button type="button" class="gt-car__nav gt-car__nav--next" data-carousel-next aria-label="Next">›</button>
-
-            <div class="gt-car__track" data-carousel-track>
-                @foreach ($items as $it)
-                    @php
-                        $img = $it['image'] ?? null;
-                        $imgUrl = $img ? \Illuminate\Support\Facades\Storage::disk('public')->url($img) : null;
-                        $t = $it['title'] ?? '';
-                        $txt = $it['text'] ?? '';
-                        $url = $it['url'] ?? null;
-                    @endphp
-
-                    <a class="gt-car__card {{ $bg === 'dark' ? 'gt-car__card--dark' : '' }}"
-                       href="{{ $url ?: '#' }}"
-                       {{ $url ? '' : 'tabindex=-1 aria-disabled=true' }}>
-                        @if ($imgUrl)
-                            <img src="{{ $imgUrl }}" alt="" class="gt-car__img">
-                        @endif
-                        <div class="gt-car__body">
-                            <div class="gt-car__title">{{ $t }}</div>
-                            @if ($txt)
-                                <div class="gt-car__text">{{ $txt }}</div>
-                            @endif
-                        </div>
-                    </a>
-                @endforeach
-            </div>
-        </div>
-    </section>
-
-@elseif ($type === 'split')
-    @php
-        $side = $data['image_side'] ?? 'left';
-        $imgPath = $data['image'] ?? null;
-        $imgUrl = $imgPath ? \Illuminate\Support\Facades\Storage::disk('public')->url($imgPath) : null;
-        $title = $data['title'] ?? '';
-        $html = $data['html'] ?? '';
-        $ctaLabel = $data['cta_label'] ?? null;
-        $ctaUrl = $data['cta_url'] ?? null;
-    @endphp
-
-    <section class="grid md:grid-cols-2 gap-6 items-center">
-        @if ($side === 'left')
-            <div>
-                @if ($imgUrl)
-                    <img src="{{ $imgUrl }}" alt="" class="w-full rounded-2xl border border-slate-200" />
-                @endif
-            </div>
-        @endif
-
-        <div>
-            <h3 class="text-xl md:text-2xl font-semibold tracking-tight">{{ $title }}</h3>
-            <div class="mt-3 prose prose-slate max-w-none">
-                {!! $html !!}
-            </div>
-
-            @if ($ctaLabel && $ctaUrl)
-                <div class="mt-5">
-                    <a href="{{ $ctaUrl }}" class="inline-flex rounded-md bg-slate-900 px-4 py-2 text-white hover:bg-slate-800">
-                        {{ $ctaLabel }}
-                    </a>
-                </div>
-            @endif
-        </div>
-
-        @if ($side === 'right')
-            <div>
-                @if ($imgUrl)
-                    <img src="{{ $imgUrl }}" alt="" class="w-full rounded-2xl border border-slate-200" />
-                @endif
-            </div>
-        @endif
-    </section>
-
-@elseif ($type === 'cards')
-    @php
-        $title = $data['title'] ?? '';
-        $lead = $data['lead'] ?? '';
-        $items = $data['items'] ?? [];
-    @endphp
-
-    <section>
-        @if ($title)
-            <h3 class="text-xl md:text-2xl font-semibold tracking-tight">{{ $title }}</h3>
-        @endif
-        @if ($lead)
-            <p class="mt-2 text-slate-600 max-w-3xl">{{ $lead }}</p>
-        @endif
-
-        <div class="mt-6 grid md:grid-cols-3 gap-4">
-            @foreach ($items as $it)
-                @php
-                    $imgPath = $it['image'] ?? null;
-                    $imgUrl = $imgPath ? \Illuminate\Support\Facades\Storage::disk('public')->url($imgPath) : null;
-                    $t = $it['title'] ?? '';
-                    $text = $it['text'] ?? '';
-                    $url = $it['url'] ?? null;
-                @endphp
-
-                <a href="{{ $url ?: '#' }}"
-                   class="block rounded-2xl border border-slate-200 bg-white p-5 hover:bg-slate-50 {{ $url ? '' : 'pointer-events-none' }}">
-                    @if ($imgUrl)
-                        <img src="{{ $imgUrl }}" alt="" class="mb-4 h-36 w-full object-cover rounded-xl border border-slate-100" />
-                    @endif
-                    <div class="font-semibold">{{ $t }}</div>
-                    @if ($text)
-                        <div class="mt-2 text-sm text-slate-600">{{ $text }}</div>
-                    @endif
+        <div class="flex items-center gap-3">
+            @if ($linkedin)
+                <a class="{{ $iconLinkClass }}" href="{{ $linkedin }}" target="_blank" rel="noopener" aria-label="LinkedIn">
+                    <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5zM0.5 8.5H4.5V23.5H0.5V8.5zM8.5 8.5H12.3V10.55H12.35C12.88 9.55 14.18 8.5 16.1 8.5C20.2 8.5 21 11.1 21 14.5V23.5H17V15.6C17 13.7 17 11.3 14.5 11.3C12 11.3 11.6 13.2 11.6 15.5V23.5H7.6V8.5H8.5z"/></svg>
                 </a>
-            @endforeach
-        </div>
-    </section>
+            @endif
 
-@elseif ($type === 'metrics')
-    @php
-        $bg = $data['bg'] ?? 'slate';
-        $title = $data['title'] ?? '';
-        $items = is_array($data['items'] ?? null) ? $data['items'] : [];
-        $animate = (bool) ($data['animate'] ?? true);
+            @if ($instagram)
+                <a class="{{ $iconLinkClass }}" href="{{ $instagram }}" target="_blank" rel="noopener" aria-label="Instagram">
+                    <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2zm0 2A3.75 3.75 0 0 0 4 7.75v8.5A3.75 3.75 0 0 0 7.75 20h8.5A3.75 3.75 0 0 0 20 16.25v-8.5A3.75 3.75 0 0 0 16.25 4h-8.5zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm6.4-2.15a1.2 1.2 0 1 1-2.4 0 1.2 1.2 0 0 1 2.4 0z"/></svg>
+                </a>
+            @endif
 
-        $wrapClass = match($bg) {
-            'dark' => 'bg-slate-900 text-white border-white/10',
-            'white' => 'bg-white text-slate-900 border-slate-200',
-            default => 'bg-slate-50 text-slate-900 border-slate-200',
-        };
+            @if ($x)
+                <a class="{{ $iconLinkClass }}" href="{{ $x }}" target="_blank" rel="noopener" aria-label="X">
+                    <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path d="M18.9 2H22l-6.8 7.8L23.5 22h-6.6l-5.2-6.8L5.9 22H2.8l7.3-8.4L0.5 2h6.7l4.7 6.1L18.9 2zm-1.1 18h1.7L6.3 3.9H4.4L17.8 20z"/></svg>
+                </a>
+            @endif
 
-        $n = max(1, count($items));
-
-        // auto-size: fewer items => bigger numbers, more items => smaller
-        $valueClass = $n <= 3 ? 'gt-m__val--xl' : ($n === 4 ? 'gt-m__val--lg' : 'gt-m__val--md');
-    @endphp
-
-    <section class="mt-8 rounded-2xl border {{ $wrapClass }} p-6 md:p-10">
-        @if ($title)
-            <h3 class="text-xl font-semibold tracking-tight">{{ $title }}</h3>
-        @endif
-
-        <div class="mt-5 grid gap-4"
-             style="grid-template-columns: repeat({{ min($n, 4) }}, minmax(0, 1fr));">
-            @foreach ($items as $it)
-                @php
-                    $raw = (string) ($it['value'] ?? '');
-                    $label = (string) ($it['label'] ?? '');
-
-                    // extract numeric part for animation, keep suffix (e.g. "12,000+")
-                    $num = preg_replace('/[^0-9.]/', '', $raw);
-                    $suffix = trim(str_replace($num, '', $raw));
-                    $numVal = is_numeric($num) ? (float) $num : null;
-                @endphp
-
-                <div class="rounded-xl border {{ $bg === 'dark' ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white' }} p-4">
-                    <div class="gt-m__value {{ $valueClass }}"
-                         @if ($animate && $numVal !== null)
-                             data-countup="{{ $numVal }}"
-                             data-countup-suffix="{{ e($suffix) }}"
-                         @endif
-                    >
-                        {{ $raw }}
-                    </div>
-                    <div class="mt-1 text-sm opacity-80">{{ $label }}</div>
-                </div>
-            @endforeach
-        </div>
-    </section>
-
-@elseif ($type === 'mediaText')
-    @php
-        $side = $data['media_side'] ?? 'left';
-        $mediaType = $data['media_type'] ?? 'image';
-        $ratio = $data['media_width'] ?? '50-50';
-        $maxH = is_numeric($data['media_max_h'] ?? null) ? (int)$data['media_max_h'] : null;
-
-        $imgUrl = !empty($data['image']) ? Storage::disk('public')->url($data['image']) : null;
-        $vidUrl = !empty($data['video']) ? Storage::disk('public')->url($data['video']) : null;
-        $posterUrl = !empty($data['poster']) ? Storage::disk('public')->url($data['poster']) : null;
-
-        $title = $data['title'] ?? '';
-        $excerpt = $data['excerpt'] ?? '';
-        $html = $data['body_html'] ?? '';
-        $ctaLabel = $data['cta_label'] ?? null;
-        $ctaUrl = $data['cta_url'] ?? null;
-
-        // Ratio to Tailwind spans (12-col grid)
-        [$mediaClass, $textClass] = match($ratio) {
-            '30-70' => ['md:col-span-5',  'md:col-span-11'],
-            '40-60' => ['md:col-span-7',  'md:col-span-9' ],
-            '60-40' => ['md:col-span-9',  'md:col-span-7' ],
-            '70-30' => ['md:col-span-11', 'md:col-span-5' ],
-            default => ['md:col-span-8',  'md:col-span-8' ],  // 50-50
-        };
-
-        $mediaStyle = $maxH ? "max-height:{$maxH}px; height:{$maxH}px;" : '';
-    @endphp
-
-    <section class="grid md:grid-cols-16 gap-6 py-16 items-center">
-        @if ($side === 'left')
-            <div class="{{ $mediaClass }}">
-                @include('shared.blocks.partials.media', ['mediaType' => $mediaType, 'imgUrl' => $imgUrl, 'vidUrl' => $vidUrl, 'posterUrl' => $posterUrl, 'mediaStyle' => $mediaStyle])
-            </div>
-        @endif
-
-        <div class="{{ $textClass }}">
-            <h3 class="text-xl md:text-2xl font-semibold tracking-tight">{{ $title }}</h3>
-            @if ($excerpt)<p class="mt-2 text-slate-600">{{ $excerpt }}</p>@endif
-            @if ($html)<div class="mt-3 prose prose-slate max-w-none">{!! $html !!}</div>@endif
-            @if ($ctaLabel && $ctaUrl)
-                <div class="mt-5">
-                    <a href="{{ $ctaUrl }}"
-                       class="inline-flex items-center rounded-md bg-slate-900 px-4 py-2 text-white hover:bg-slate-800">
-                        {{ $ctaLabel }}
-                    </a>
-                </div>
+            @if ($youtube)
+                <a class="{{ $iconLinkClass }}" href="{{ $youtube }}" target="_blank" rel="noopener" aria-label="YouTube">
+                    <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path d="M21.6 7.2s-.2-1.6-.9-2.3c-.9-.9-1.9-.9-2.4-1C14.7 3.5 12 3.5 12 3.5h0s-2.7 0-6.3.4c-.5.1-1.5.1-2.4 1C2.6 5.6 2.4 7.2 2.4 7.2S2 9.1 2 11v2c0 1.9.4 3.8.4 3.8s.2 1.6.9 2.3c.9.9 2.1.9 2.6 1 1.9.2 6.1.4 6.1.4s2.7 0 6.3-.4c.5-.1 1.5-.1 2.4-1 .7-.7.9-2.3.9-2.3s.4-1.9.4-3.8v-2c0-1.9-.4-3.8-.4-3.8zM10 15.5v-7l6 3.5-6 3.5z"/></svg>
+                </a>
             @endif
         </div>
-
-        @if ($side === 'right')
-            <div class="{{ $mediaClass }}">
-                @include('shared.blocks.partials.media', ['mediaType' => $mediaType, 'imgUrl' => $imgUrl, 'vidUrl' => $vidUrl, 'posterUrl' => $posterUrl, 'mediaStyle' => $mediaStyle])
-            </div>
-        @endif
-    </section>
-@endif
-
-@if ($type === 'richText')
-    <div class="prose max-w-none">
-        {!! $data['html'] ?? '' !!}
     </div>
 
-@elseif ($type === 'image')
-    @php
-        $path = $data['path'] ?? null;
-        $url = $path ? \Illuminate\Support\Facades\Storage::disk('public')->url($path) : null;
-        $caption = $data['caption'] ?? '';
-    @endphp
+    {{-- Row 2: Columns --}}
+    <div class="border-t border-slate-200">
+        <div class="mx-auto max-w-7xl px-4 py-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
+            <div>
+                <div class="text-sm font-semibold text-slate-900">{{ __('Global Trading') }}</div>
+                <p class="mt-3 text-sm text-slate-600 leading-relaxed max-w-sm">
+                    {{ __('We create value in industry with trusted sourcing, fast response times, and multilingual customer support.') }}
+                </p>
+            </div>
 
-    @if ($url)
-        <figure class="rounded-2xl overflow-hidden border border-slate-200 bg-slate-50">
-            <img src="{{ $url }}" alt="" class="w-full h-auto object-cover" />
-            @if ($caption)
-                <figcaption class="px-4 py-3 text-sm text-slate-600">{{ $caption }}</figcaption>
-            @endif
-        </figure>
-    @endif
+            <div>
+                <div class="text-sm font-semibold text-slate-900">{{ __('Company') }}</div>
+                <ul class="mt-4 space-y-2 text-sm">
+                    @foreach($companyPages as $p)
+                        <li><a class="text-slate-600 hover:text-slate-900 hover:underline" href="{{ $pageUrl($p->slug) }}">{{ $t($p->title) ?: $p->slug }}</a></li>
+                    @endforeach
+                </ul>
+            </div>
 
-@elseif ($type === 'video')
-    @php
-        $path = $data['path'] ?? null;
-        $url = $path ? \Illuminate\Support\Facades\Storage::disk('public')->url($path) : null;
-        $caption = $data['caption'] ?? '';
-    @endphp
+            <div>
+                <div class="text-sm font-semibold text-slate-900">{{ __('Products') }}</div>
+                <ul class="mt-4 space-y-2 text-sm">
+                    <li><a class="text-slate-600 hover:text-slate-900 hover:underline" href="/{{ $locale }}/products">{{ __('Product Finder') }}</a></li>
+                    <li><a class="text-slate-600 hover:text-slate-900 hover:underline" href="/{{ $locale }}/industries">{{ __('Industries') }}</a></li>
+                    @foreach($productPages as $p)
+                        <li><a class="text-slate-600 hover:text-slate-900 hover:underline" href="{{ $pageUrl($p->slug) }}">{{ $t($p->title) ?: $p->slug }}</a></li>
+                    @endforeach
+                </ul>
+            </div>
 
-    @if ($url)
-        <div class="rounded-2xl overflow-hidden border border-slate-200 bg-black">
-            <video controls class="w-full h-auto">
-                <source src="{{ $url }}" />
-            </video>
+            <div>
+                <div class="text-sm font-semibold text-slate-900">{{ __('Information') }}</div>
+                <ul class="mt-4 space-y-2 text-sm">
+                    <li><a class="text-slate-600 hover:text-slate-900 hover:underline" href="/{{ $locale }}/news">{{ __('Latest News') }}</a></li>
+                    <li><a class="text-slate-600 hover:text-slate-900 hover:underline" href="/{{ $locale }}/market">{{ __('Market') }}</a></li>
+                    @foreach($infoPages as $p)
+                        <li><a class="text-slate-600 hover:text-slate-900 hover:underline" href="{{ $pageUrl($p->slug) }}">{{ $t($p->title) ?: $p->slug }}</a></li>
+                    @endforeach
+                </ul>
+            </div>
+
+            <div>
+                <div class="text-sm font-semibold text-slate-900">{{ __('Service') }}</div>
+                <ul class="mt-4 space-y-2 text-sm">
+                    @foreach($servicePages as $p)
+                        <li><a class="text-slate-600 hover:text-slate-900 hover:underline" href="{{ $pageUrl($p->slug) }}">{{ $t($p->title) ?: $p->slug }}</a></li>
+                    @endforeach
+                </ul>
+            </div>
         </div>
-        @if ($caption)
-            <div class="mt-2 text-sm text-slate-600">{{ $caption }}</div>
-        @endif
-    @endif
+    </div>
 
-@elseif ($type === 'cta')
-    @php
-        $label = $data['label'] ?? 'Discover more';
-        $url = $data['url'] ?? '#';
-    @endphp
+    {{-- Row 3: Legal --}}
+    <div class="border-t border-slate-200">
+        <div class="mx-auto max-w-7xl px-4 py-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="text-xs text-slate-500">© {{ $year }} Global Trading</div>
 
-    <a href="{{ $url }}" class="inline-flex rounded-md bg-slate-900 px-4 py-2 text-white hover:bg-slate-800">
-        {{ $label }}
-    </a>
-@endif
+            <div class="flex flex-wrap gap-x-4 gap-y-2 text-xs">
+                <a class="text-slate-600 hover:text-slate-900 hover:underline" href="{{ $pageUrl('disclaimer') }}">{{ __('Disclaimer') }}</a>
+                <a class="text-slate-600 hover:text-slate-900 hover:underline" href="{{ $pageUrl('credits') }}">{{ __('Credits') }}</a>
+                <a class="text-slate-600 hover:text-slate-900 hover:underline" href="{{ $pageUrl('privacy-policy') }}">{{ __('Privacy Policy') }}</a>
+                <a class="text-slate-600 hover:text-slate-900 hover:underline" href="{{ $pageUrl('responsible-disclosure-statement') }}">{{ __('Responsible Disclosure') }}</a>
+                <a class="text-slate-600 hover:text-slate-900 hover:underline" href="{{ $pageUrl('contact') }}">{{ __('Contact') }}</a>
+            </div>
+        </div>
+    </div>
+</footer>

@@ -43,9 +43,10 @@ class PageForm
                             ->label('Published')
                             ->default(true)
                             ->required(),
-                        Toggle::make('show_in_footer')
-                            ->label('Show in footer')
-                            ->default(false),
+                        Toggle::make('show_in_company')->label('Show in Company column')->default(false),
+                        Toggle::make('show_in_products')->label('Show in Products column')->default(false),
+                        Toggle::make('show_in_information')->label('Show in Information column')->default(false),
+                        Toggle::make('show_in_service')->label('Show in Service column')->default(false),
                     ]),
 
                 Builder::make('blocks')

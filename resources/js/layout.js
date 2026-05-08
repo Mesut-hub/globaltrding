@@ -599,7 +599,14 @@ document.addEventListener('DOMContentLoaded', () => {
             title: pick(l.label),
             url: resolveUrl(l),
             desc: l.desc || '',
-            previewImage: l.preview_image || '',
+            previewImage: (function () {
+              const raw = (l.preview_image || l.previewImage || '').trim();
+              if (!raw) return '';
+              if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
+              if (raw.startsWith('/')) return raw;
+              // if admin enters only file name like "who-we-are.jpg"
+              return `/images/overlay/${raw.replace(/^images\/overlay\//, '')}`;
+            })(),
             isFinder: !!l.is_finder || l.action === 'finder',
             target: l.target || '_self',
           })),
@@ -626,7 +633,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!item) return;
 
       elDesc.textContent = item.desc || '';
-      elPreview.innerHTML = item.previewImage ? `<img src="${item.previewImage}" alt="">` : '';
+      const img = item.previewImage || item.preview_image || '';
+      elPreview.innerHTML = img ? `<img src="${img}" alt="">` : '';
     }
 
     function renderLeft() {
