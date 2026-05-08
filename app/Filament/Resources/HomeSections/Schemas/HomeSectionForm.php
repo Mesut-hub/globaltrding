@@ -24,7 +24,7 @@ class HomeSectionForm
                 ->options([
                     'hero' => 'Hero',
                     'market_belt' => 'Market belt',
-                    'industries' => 'Industries (slider)',
+                    'industries' => 'Industries slider',
                     'insights' => 'Company insights',
                     'trending' => 'Trending topics',
                     'sustainability' => 'Sustainability',
@@ -137,7 +137,7 @@ class HomeSectionForm
 
                             TextInput::make('view_all_url')
                                 ->label('View all industries URL')
-                                ->default('/{locale}/industries'),
+                                ->default('/{locale}'),
                         ]),
 
                     // Simple CTA block
@@ -318,6 +318,9 @@ class HomeSectionForm
                                 ->label('Section title (en,tr,ar,fr)')
                                 ->keyLabel('Locale')
                                 ->valueLabel('Title'),
+                            TextInput::make('view_all_url')
+                                ->label('View all industries URL')
+                                ->default('/{locale}'),
 
                             \Filament\Forms\Components\Repeater::make('items')
                                 ->schema([

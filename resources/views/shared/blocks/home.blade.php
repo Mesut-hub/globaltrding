@@ -90,7 +90,7 @@ $posterUrl  = $posterPath ? Storage::disk('public')->url($posterPath) : null;
 @elseif ($type === 'industries_slider')
     @php
         $sectionTitle = $t($data['title'] ?? ['en'=>'Industries']);
-        $viewAllUrl   = $urlWithLocale($data['view_all_url'] ?? '/{locale}/industries');
+        $viewAllUrl   = $urlWithLocale($data['view_all_url'] ?? '/{locale}');
         $industries   = \App\Models\Industry::query()->where('is_published',true)->orderBy('sort_order')->limit(12)->get();
     @endphp
     <section class="mx-auto max-w-7xl px-4 py-12" data-industry-slider>
@@ -147,7 +147,7 @@ $posterUrl  = $posterPath ? Storage::disk('public')->url($posterPath) : null;
 {{-- CARDS GRID --}}
 @elseif ($type === 'cards')
     @php $title=$t($data['title']??[]); $items=$data['items']??[]; 
-        $viewAllUrl   = $urlWithLocale($data['view_all_url'] ?? '/{locale}/industries');
+        $viewAllUrl   = $urlWithLocale($data['view_all_url'] ?? '/{locale}');
     @endphp
     <section class="mx-auto max-w-7xl px-4 py-12" data-industry-slider>
         <div class="flex items-end justify-between gap-4">

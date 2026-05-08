@@ -512,7 +512,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const locale = document.documentElement.lang || 'en';
 
     // NOTE: update these URLs/images whenever you create pages
-    const NAV_DATA = {
+    /*const NAV_DATA = {
       "who-we-are": {
         title: "Who we are",
         showSearch: false,
@@ -561,8 +561,54 @@ document.addEventListener('DOMContentLoaded', () => {
           { title: "Students", url: `/${locale}/pages/careers-students`, desc: "For students.", previewImage: "/images/overlay/careers.jpg" },
         ],
       },
-    };
+    };*/
 
+    const NAV_DATA = (function () {
+      const el = document.getElementById('gt-nav-data');
+      if (!el) return {};
+      let groups = [];
+      try { groups = JSON.parse(el.textContent || '[]'); } catch { groups = []; }
+
+      const locale = document.documentElement.lang || 'en';
+      const fallback = 'en';
+
+      const pick = (obj) => {
+        if (!obj) return '';
+        if (typeof obj === 'string') return obj;
+        if (typeof obj !== 'object') return '';
+        return obj[locale] || obj[fallback] || Object.values(obj)[0] || '';
+      };
+
+      const resolveUrl = (it) => {
+        if (it.page_slug) return `/${locale}/pages/${it.page_slug}`;
+        const u = it.url || '#';
+        return u.replace('{locale}', locale);
+      };
+
+      const out = {};
+      (groups || []).forEach((g) => {
+        const key = g.key;
+        if (!key) return;
+
+        out[key] = {
+          title: pick(g.label),
+          showSearch: key === 'products', // keep same behavior
+          searchUrl: `/${locale}/products`,
+          defaultIndex: 0,
+          items: (g.links || []).map((l) => ({
+            title: pick(l.label),
+            url: resolveUrl(l),
+            desc: l.desc || '',
+            previewImage: l.preview_image || '',
+            isFinder: !!l.is_finder || l.action === 'finder',
+            target: l.target || '_self',
+          })),
+        };
+      });
+
+      return out;
+    })();
+    
     let state = {
       key: null,
       idx: 0,
@@ -662,7 +708,10 @@ document.addEventListener('DOMContentLoaded', () => {
         row.addEventListener('click', () => {
           const idx = Number(row.getAttribute('data-idx') || '0');
           const item = NAV_DATA[state.key]?.items?.[idx];
-          if (item?.url) window.location.href = item.url;
+          if (item?.url) {
+            if (item.target === '_blank') window.open(item.url, '_blank', 'noopener');
+            else window.location.href = item.url;
+          }
         });
       });
 
@@ -697,6 +746,25 @@ document.addEventListener('DOMContentLoaded', () => {
       lockScroll(false);
       state.key = null;
       state.idx = 0;
+    }
+
+    function readNavData() {
+      const el = document.getElementById('gt-nav-data');
+      if (!el) return [];
+      try { return JSON.parse(el.textContent || '[]'); } catch { return []; }
+    }
+
+    function pickLabel(obj, locale, fallback) {
+      if (!obj) return '';
+      if (typeof obj === 'string') return obj;
+      if (typeof obj !== 'object') return '';
+      return obj[locale] || obj[fallback] || Object.values(obj)[0] || '';
+    }
+
+    function resolveNavUrl(item, locale) {
+      if (item.page_slug) return `/${locale}/pages/${item.page_slug}`;
+      const u = item.url || '#';
+      return u.replace('{locale}', locale);
     }
 
     // Bind header links
