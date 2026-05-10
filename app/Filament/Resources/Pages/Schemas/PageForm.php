@@ -510,6 +510,59 @@ class PageForm
                                 TextInput::make('cta_label'),
                                 TextInput::make('cta_url'),
                             ]),
+
+                        Block::make('twoColumns')
+                            ->label('2 Columns')
+                            ->schema([
+                                TextInput::make('heading')->label('Section heading'),
+                                Repeater::make('columns')
+                                    ->label('Columns')
+                                    ->minItems(2)
+                                    ->maxItems(2)
+                                    ->defaultItems(2)
+                                    ->schema([
+                                        TextInput::make('title')->required(),
+                                        Textarea::make('text')->rows(4),
+                                        TextInput::make('cta_label')->label('CTA label'),
+                                        TextInput::make('cta_url')->label('CTA URL'),
+                                    ])
+                                    ->columns(2),
+                            ]),
+
+                        Block::make('threeColumns')
+                            ->label('3 Columns')
+                            ->schema([
+                                TextInput::make('heading')->label('Section heading'),
+                                Repeater::make('columns')
+                                    ->label('Columns')
+                                    ->minItems(3)
+                                    ->maxItems(3)
+                                    ->defaultItems(3)
+                                    ->schema([
+                                        TextInput::make('title')->required(),
+                                        Textarea::make('text')->rows(4),
+                                        TextInput::make('cta_label')->label('CTA label'),
+                                        TextInput::make('cta_url')->label('CTA URL'),
+                                    ])
+                                    ->columns(2),
+                            ]),
+
+                        Block::make('dropdownRow')
+                            ->label('Dropdown Row')
+                            ->schema([
+                                TextInput::make('heading')->label('Section heading'),
+                                Repeater::make('items')
+                                    ->label('Rows')
+                                    ->minItems(1)
+                                    ->defaultItems(3)
+                                    ->schema([
+                                        TextInput::make('title')->required(),
+                                        Textarea::make('content')->rows(4),
+                                        TextInput::make('cta_label')->label('CTA label'),
+                                        TextInput::make('cta_url')->label('CTA URL'),
+                                    ])
+                                    ->columns(2),
+                            ]),
                     ]),
 
                 Tabs::make('Translations')

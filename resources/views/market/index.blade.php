@@ -17,15 +17,16 @@
 @section('meta_title', $selectedName . ' - Market')
 
 @section('content')
-    <section class="mx-auto max-w-7xl px-4 py-12"
+    <section class="market-page mx-auto max-w-7xl px-4 py-12"
              data-market-root
              data-locale="{{ $locale }}"
+             data-selected="{{ $selectedSlug }}"
              data-belt-slugs="{{ $instruments->pluck('slug')->implode(',') }}">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-                <h1 class="text-4xl font-semibold tracking-tight">Market</h1>
-                <p class="mt-2 text-slate-600">
-                    Select an instrument and time period to view changes.
+                <h1 class="text-4xl font-semibold tracking-tight">Market Intelligence</h1>
+                <p class="mt-2 max-w-3xl text-slate-600">
+                    Live instrument tracking with responsive enterprise charting and quick comparison.
                 </p>
             </div>
 
@@ -34,7 +35,7 @@
 
         <div class="mt-8 grid gap-4 lg:grid-cols-12">
             <div class="lg:col-span-4">
-                <div class="rounded-xl border border-slate-200 bg-white p-4">
+                <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                     <label class="text-sm font-medium text-slate-700">Instrument</label>
 
                     <select id="instrumentSelect" class="mt-2 w-full rounded-md border border-slate-300 px-3 py-2">
@@ -79,6 +80,11 @@
                         Data source: TCMB EVDS (will populate after sync).
                     </div>
 
+                    <div class="mt-4 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
+                        <div class="text-[11px] uppercase tracking-wide text-slate-500">Status</div>
+                        <div id="marketStatus" class="mt-1 text-sm font-medium text-slate-700">Live feed ready</div>
+                    </div>
+
                     <div class="mt-4 rounded-lg border border-slate-100 overflow-hidden" id="latestTable">
                         <div class="bg-slate-50 px-3 py-2 text-xs font-medium text-slate-600">Latest values</div>
                         <div class="divide-y divide-slate-100">
@@ -106,7 +112,7 @@
             </div>
 
             <div class="lg:col-span-8">
-                <div class="rounded-xl border border-slate-200 bg-white p-4">
+                <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                     <div class="flex items-center justify-between gap-4">
                         <div>
                             <div class="text-sm text-slate-500" id="rangeText">—</div>
@@ -119,8 +125,23 @@
                         </div>
                     </div>
 
-                    <div class="mt-5">
-                        <canvas id="marketChart" height="120"></canvas>
+                    <div class="mt-4 grid gap-3 sm:grid-cols-3">
+                        <div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                            <div class="text-[11px] uppercase tracking-wide text-slate-500">High</div>
+                            <div id="statHigh" class="text-sm font-semibold text-slate-900">—</div>
+                        </div>
+                        <div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                            <div class="text-[11px] uppercase tracking-wide text-slate-500">Low</div>
+                            <div id="statLow" class="text-sm font-semibold text-slate-900">—</div>
+                        </div>
+                        <div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                            <div class="text-[11px] uppercase tracking-wide text-slate-500">Change</div>
+                            <div id="statChange" class="text-sm font-semibold text-slate-900">—</div>
+                        </div>
+                    </div>
+
+                    <div class="market-chart-shell mt-5">
+                        <canvas id="marketChart"></canvas>
                     </div>
 
                     <div id="emptyHint" class="mt-4 hidden rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900 text-sm">

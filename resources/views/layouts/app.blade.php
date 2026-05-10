@@ -11,6 +11,8 @@
     @php
         $locale = app()->getLocale();
         $navPayload = app(\App\Services\NavService::class)->payload();
+        $siteSettings = class_exists(\App\Models\SiteSetting::class) ? \App\Models\SiteSetting::getCached() : [];
+        $headerLogoPath = $siteSettings['header_logo_path'] ?? '/images/logo.png';
     @endphp
 
     <script type="application/json" id="gt-nav-data">
@@ -154,7 +156,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="@stack('body_class') class="min-h-screen bg-white text-slate-900 antialiased">
+<body class="min-h-screen bg-white text-slate-900 antialiased @stack('body_class')">
     {{-- Top bar / header placeholder --}}
     @php $locale = app()->getLocale(); @endphp
     <header id="siteHeader" class="site-header">
@@ -224,8 +226,12 @@
                             onclick="document.documentElement.classList.toggle('text-lg')">†</button>
                 </div>
 
-                <a href="/{{ $locale }}/" class="header-logo-box" aria-label="Logo link">
-                    <div class="logo-title">GLOBALTRDING</div>
+                <a href="/{{ $locale }}/" class="header-logo-box" aria-label="Globaltrding home">
+                    <img
+                        src="{{ str_starts_with($headerLogoPath, 'http://') || str_starts_with($headerLogoPath, 'https://') ? $headerLogoPath : asset(ltrim($headerLogoPath, '/')) }}"
+                        alt="Globaltrding logo"
+                        class="header-logo-image"
+                    />
                     <div class="logo-subtitle">We create value in industry</div>
                 </a>
             </div>
@@ -283,11 +289,18 @@
                 <div class="nav-overlay__list" id="navOverlayList"></div>
             </aside>
 
-            <section class="nav-overlay__right">
-                <div class="nav-overlay__panel">
-                    <div class="nav-overlay__desc" id="navOverlayDesc"></div>
-                    <div class="nav-overlay__preview" id="navOverlayPreview"></div>
+            <div class="nav-overlay__mid" aria-hidden="true">
+                <div class="nav-overlay__thumbTrack" id="navOverlayThumbTrack">
+                    <div class="nav-overlay__thumb" id="navOverlayThumb"></div>
                 </div>
+            </div>
+
+            <section class="nav-overlay__center">
+                <div class="nav-overlay__desc" id="navOverlayDesc"></div>
+            </section>
+
+            <section class="nav-overlay__right">
+                <div class="nav-overlay__preview" id="navOverlayPreview"></div>
             </section>
         </div>
     </div>

@@ -13,6 +13,7 @@ use BackedEnum;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -113,6 +114,20 @@ class NavLinkResource extends Resource
                 ->label(__('Action (optional)'))
                 ->helperText(__('Special overlay action key, e.g. finder or search. Leave empty for normal links.'))
                 ->nullable(),
+
+            Textarea::make('desc')
+                ->label(__('Overlay description'))
+                ->rows(3)
+                ->nullable(),
+
+            TextInput::make('preview_image')
+                ->label(__('Overlay preview image'))
+                ->helperText(__('Absolute URL or public path, e.g. /images/overlay/example.jpg'))
+                ->nullable(),
+
+            Toggle::make('is_finder')
+                ->label(__('Product finder row'))
+                ->default(false),
 
             Select::make('target')
                 ->label(__('Target'))

@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!root) return;
 
   const locale = root.getAttribute('data-locale') || 'en';
-  const defaultPeriod = '3m';
+  const defaultPeriod = new URLSearchParams(window.location.search).get('period') || '3m';
 
   const instrumentSelect = document.getElementById('instrumentSelect');
   const periodButtons = document.querySelectorAll('.periodBtn');
@@ -29,6 +29,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const rangeText = document.getElementById('rangeText');
   const titleText = document.getElementById('titleText');
   const latestText = document.getElementById('latestText');
+  const statHigh = document.getElementById('statHigh');
+  const statLow = document.getElementById('statLow');
+  const statChange = document.getElementById('statChange');
+  const marketStatus = document.getElementById('marketStatus');
   const emptyHint = document.getElementById('emptyHint');
 
   const latestTable = document.getElementById('latestTable');
@@ -85,8 +89,25 @@ document.addEventListener('DOMContentLoaded', () => {
       if (toDate?.value) params.set('to', toDate.value);
     }
 
+    const urlState = new URLSearchParams();
+    urlState.set('instrument', instrument);
+    urlState.set('period', currentPeriod);
+    if (currentPeriod === 'custom') {
+      if (fromDate?.value) urlState.set('from', fromDate.value);
+      if (toDate?.value) urlState.set('to', toDate.value);
+    }
+    window.history.replaceState({}, '', `/${locale}/market?${urlState.toString()}`);
+
+    marketStatus.textContent = 'Updating chart…';
     const url = `/${locale}/market/data?${params.toString()}`;
-    const json = await fetchJson(url);
+    let json;
+    try {
+      json = await fetchJson(url);
+    } catch (e) {
+      marketStatus.textContent = 'Unable to load chart data';
+      emptyHint.classList.remove('hidden');
+      return;
+    }
 
     const points = json.points || [];
     const labels = points.map((p) => p.date);
@@ -100,7 +121,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const lastVal = values.length ? values[values.length - 1] : null;
     latestText.textContent = fmt(lastVal);
 
+    const numericValues = values.filter((v) => typeof v === 'number' && !Number.isNaN(v));
+    const high = numericValues.length ? Math.max(...numericValues) : null;
+    const low = numericValues.length ? Math.min(...numericValues) : null;
+    const first = numericValues.length ? numericValues[0] : null;
+    const change = first !== null && lastVal !== null ? lastVal - first : null;
+
+    statHigh.textContent = fmt(high);
+    statLow.textContent = fmt(low);
+    if (change === null) {
+      statChange.textContent = '—';
+      statChange.classList.remove('text-emerald-600', 'text-rose-600');
+      statChange.classList.add('text-slate-900');
+    } else {
+      const sign = change > 0 ? '+' : '';
+      statChange.textContent = `${sign}${fmt(change)}`;
+      statChange.classList.toggle('text-emerald-600', change > 0);
+      statChange.classList.toggle('text-rose-600', change < 0);
+      statChange.classList.toggle('text-slate-900', change === 0);
+    }
+
     emptyHint.classList.toggle('hidden', values.length > 0);
+    marketStatus.textContent = values.length ? 'Live feed ready' : 'No data for selected range';
 
     const ctx = document.getElementById('marketChart');
     if (!chart) {
@@ -114,17 +156,21 @@ document.addEventListener('DOMContentLoaded', () => {
               data: values,
               borderWidth: 2,
               pointRadius: 0,
+              borderColor: '#0f766e',
+              backgroundColor: 'rgba(15,118,110,0.08)',
+              fill: true,
               tension: 0.25,
             },
           ],
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false,
           plugins: { legend: { display: false } },
-          interaction: { mode: 'index', intersect: false },
+          interaction: { mode: 'index', intersect: false, axis: 'x' },
           scales: {
-            x: { ticks: { maxTicksLimit: 6 } },
-            y: { beginAtZero: false },
+            x: { ticks: { maxTicksLimit: 6 }, grid: { color: 'rgba(15,23,42,0.06)' } },
+            y: { beginAtZero: false, grid: { color: 'rgba(15,23,42,0.06)' } },
           },
         },
       });
@@ -150,5 +196,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setActivePeriodBtn();
   loadLatestTable();
+  if (!['1m', '3m', '1y', 'custom'].includes(currentPeriod)) currentPeriod = '3m';
   loadChart();
 });

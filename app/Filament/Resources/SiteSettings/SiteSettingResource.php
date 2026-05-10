@@ -37,14 +37,15 @@ class SiteSettingResource extends Resource
                     'instagram_url' => 'Instagram URL',
                     'x_url' => 'X/Twitter URL',
                     'youtube_url' => 'YouTube URL',
+                    'header_logo_path' => 'Header logo path or URL',
+                    'footer_logo_path' => 'Footer logo path or URL',
                 ])
                 ->required()
                 ->unique(ignoreRecord: true),
 
             TextInput::make('value')
                 ->label(__('Value'))
-                ->helperText(__('Full URL including https://'))
-                ->url()
+                ->helperText(__('Use full URL or public asset path, e.g. /images/logo.png'))
                 ->nullable(),
         ])->columns(1);
     }
