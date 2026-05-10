@@ -97,4 +97,3 @@ class MarketTest extends TestCase
         $response->assertJsonPath('eur-try.slug', 'eur-try');
     }
 }
-

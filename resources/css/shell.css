@@ -871,7 +871,7 @@ body.nav-overlay-open #siteHeader .header-logo-box{
 .nav-overlay{
   position: fixed;
   inset: 0;
-  z-index: 5000;
+  z-index: 3500;
   background: rgba(6,12,20,0.86);
   backdrop-filter: blur(10px);
   color: #fff;
