@@ -105,8 +105,8 @@
 /* Blue logo box */
 .site-header .header-logo-box{
   width: 360px;
-  background: #10a6df;
-  color: #fff;
+  background: linear-gradient(145deg, #f4f7fb 0%, #9ea8b6 38%, #eef2f8 60%, #7f8897 100%);
+
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -114,8 +114,10 @@
   min-height: var(--header-height);
   transition: all 0.35s ease;
   text-decoration: none;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.65), 0 8px 22px rgba(0,0,0,.25);
 }
 .site-header .logo-title{
+  color: #fff;
   font-size: 28px;
   font-weight: 800;
   line-height: 1.1;
@@ -124,6 +126,8 @@
 .site-header .logo-subtitle{
   font-size: 15px;
   margin-top: 6px;
+  color: #1f2937;
+  text-shadow: 0 1px 0 rgba(255,255,255,.35);
   opacity: 0.95;
 }
 
@@ -892,8 +896,8 @@ body.nav-overlay-open #siteHeader .header-icons {
   margin: 0 auto;
   padding-top: 120px; /* space under your header */
   display:grid;
-  grid-template-columns: 340px 1fr;
-  gap: 30px;
+  grid-template-columns: 340px 24px minmax(260px, 1fr) 340px;
+  gap: 34px;
   align-items: start;
 }
 
@@ -942,46 +946,36 @@ body.nav-overlay-open #siteHeader .header-icons {
 }
 
 /* products search */
-.nav-overlay__search{
-  display:flex;
-  align-items: stretch;
-  gap: 8px;
-  margin: 12px 0 10px;
-}
-.nav-overlay__search input{
-  flex: 1;
-  height: 40px;
-  border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.18);
-  background: rgba(255,255,255,0.08);
-  color:#fff;
-  padding: 0 12px;
-  outline: none;
-}
-.nav-overlay__search input::placeholder{ color: rgba(255,255,255,0.65); }
-.nav-overlay__search button{
-  width: 48px;
-  border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.18);
-  background: rgba(255,255,255,0.10);
-  color:#fff;
-  cursor:pointer;
-}
-
-/* middle scroll line */
 .nav-overlay__mid{
   display:flex;
   justify-content:center;
-  padding-top: 16px;
+  padding-top: 0;
+  margin-top: 80px;
+}
+.nav-overlay__thumbTrack{
+  width: 2px;
+  height: calc(100vh - 260px);
+  background: rgba(255,255,255,0.2);
+  position: relative;
+  border-radius: 999px;
+}
+.nav-overlay__thumb{
+  position: absolute;
+  left: -2px;
+  width: 6px;
+  min-height: 42px;
+  border-radius: 999px;
+  background: #10a6df;
+  top: 0;
+  transition: top .15s ease;
+}
+
+.nav-overlay__center{
   margin-top: 80px;
 }
 
 /* right preview */
 .nav-overlay__right{
-  padding-top: 10px;
-  display:flex;
-  flex-direction:column;
-  gap: 20px;
   margin-top: 80px;
 }
 
@@ -999,20 +993,19 @@ body.nav-overlay-open #siteHeader .header-icons {
 }
 
 .nav-overlay__desc{
-  max-width: 640px;
+  max-width: 560px;
   font-size: 18px;
   line-height: 1.55;
   opacity: 0.92;
 }
 
 .nav-overlay__preview{
-  width: 320px;
+  width: 340px;
   max-width: 100%;
   border-radius: 16px;
   overflow:hidden;
   border: 1px solid rgba(255,255,255,0.14);
   background: rgba(255,255,255,0.06);
-  margin-top: 80px;
 }
 
 .nav-overlay__preview img{
@@ -1026,6 +1019,13 @@ body.nav-overlay-open #siteHeader .header-icons {
   .nav-overlay__content{
     grid-template-columns: 1fr;
     padding-top: 90px;
+  }
+  .nav-overlay__center,
+  .nav-overlay__right{
+    margin-top: 24px;
+  }
+  .nav-overlay__thumbTrack{
+    height: 200px;
   }
   .nav-overlay__mid{ display:none; }
   .nav-overlay__preview{ width: 100%; }
@@ -1094,4 +1094,102 @@ body.nav-overlay-open #siteHeader .header-icons {
 /* optional: thin underline separators like BASF */
 .nav-overlay__item{
   padding: 14px 0;
+}
+
+.market-chart-shell{
+  position: relative;
+  height: 420px;
+}
+
+@media (max-width: 768px){
+  .market-chart-shell{ height: 300px; }
+}
+
+.gt-cols{
+  padding: 10px 0;
+}
+
+.gt-cols__heading{
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.gt-cols__grid{
+  display: grid;
+  gap: 16px;
+}
+
+.gt-cols__grid--2{
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.gt-cols__grid--3{
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.gt-cols__item{
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 18px;
+  background: #fff;
+}
+
+.gt-cols__title{
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.gt-cols__text{
+  margin-top: 8px;
+  color: #475569;
+  line-height: 1.55;
+}
+
+.gt-cols__cta{
+  margin-top: 10px;
+  display: inline-flex;
+  color: #0f172a;
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+.gt-dd__rows{
+  display: grid;
+  gap: 10px;
+}
+
+.gt-dd__item{
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 2px 14px;
+  background: #fff;
+}
+
+.gt-dd__summary{
+  cursor: pointer;
+  font-weight: 700;
+  padding: 12px 0;
+}
+
+.gt-dd__body{
+  padding: 0 0 12px;
+}
+
+.gt-dd__text{
+  color: #475569;
+  margin-bottom: 8px;
+}
+
+.footer-brand-logo{
+  width: min(220px, 100%);
+  margin-bottom: 12px;
+  filter: drop-shadow(0 2px 0 rgba(255,255,255,.55)) drop-shadow(0 8px 16px rgba(15,23,42,.25));
+}
+
+@media (max-width: 950px){
+  .gt-cols__grid--2,
+  .gt-cols__grid--3{
+    grid-template-columns: 1fr;
+  }
 }

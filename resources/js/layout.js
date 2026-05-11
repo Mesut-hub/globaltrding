@@ -503,13 +503,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const elDesc = document.getElementById('navOverlayDesc');
     const elPreview = document.getElementById('navOverlayPreview');
 
-    const searchWrap = document.getElementById('navOverlaySearchWrap');
+    /*const searchWrap = document.getElementById('navOverlaySearchWrap');
     const searchInput = document.getElementById('navOverlaySearchInput');
-    const searchBtn = document.getElementById('navOverlaySearchBtn');
+    const searchBtn = document.getElementById('navOverlaySearchBtn');*/
+    const thumbTrack = document.getElementById('navOverlayThumbTrack');
+    const thumb = document.getElementById('navOverlayThumb');
 
     if (!overlay || !elTitle || !elList || !elDesc || !elPreview) return;
 
     const locale = document.documentElement.lang || 'en';
+    const NAV_SCROLL_THUMB_MIN_H = 42;
 
     // NOTE: update these URLs/images whenever you create pages
     /*const NAV_DATA = {
@@ -579,10 +582,18 @@ document.addEventListener('DOMContentLoaded', () => {
         return obj[locale] || obj[fallback] || Object.values(obj)[0] || '';
       };
 
+      const sanitizeUrl = (url) => {
+        const v = String(url || '').trim();
+        if (!v) return '#';
+        if (v.startsWith('/')) return v;
+        if (/^https?:\/\//i.test(v)) return v;
+        return '#';
+      };
+
       const resolveUrl = (it) => {
         if (it.page_slug) return `/${locale}/pages/${it.page_slug}`;
         const u = it.url || '#';
-        return u.replace('{locale}', locale);
+        return sanitizeUrl(u.replace('{locale}', locale));
       };
 
       const out = {};
@@ -620,10 +631,54 @@ document.addEventListener('DOMContentLoaded', () => {
       key: null,
       idx: 0,
     };
+    let thumbResizeBound = false;
 
     function lockScroll(lock) {
       document.documentElement.classList.toggle('overflow-hidden', lock);
       document.body.classList.toggle('overflow-hidden', lock);
+    }
+
+    function clearChildren(el) {
+      while (el.firstChild) el.removeChild(el.firstChild);
+    }
+
+    function setThumbFromScroll() {
+      if (!thumbTrack || !thumb || !elList) return;
+      const listHeight = elList.clientHeight;
+      const scrollHeight = elList.scrollHeight;
+      const trackHeight = thumbTrack.clientHeight;
+      if (!listHeight || !scrollHeight || !trackHeight) return;
+
+      if (scrollHeight <= listHeight + 1) {
+        thumb.style.height = `${trackHeight}px`;
+        thumb.style.top = '0px';
+        return;
+      }
+
+      const ratio = listHeight / scrollHeight;
+      const thumbHeight = Math.max(NAV_SCROLL_THUMB_MIN_H, Math.round(trackHeight * ratio));
+      const maxTop = trackHeight - thumbHeight;
+      const scrollRatio = elList.scrollTop / Math.max(1, scrollHeight - listHeight);
+      const top = Math.round(maxTop * scrollRatio);
+
+      thumb.style.height = `${thumbHeight}px`;
+      thumb.style.top = `${top}px`;
+    }
+
+    function setActiveRow(nextIdx) {
+      state.idx = Math.max(0, nextIdx);
+      elList.querySelectorAll('.nav-overlay__item').forEach((x, i) => {
+        x.classList.toggle('is-active', i === state.idx);
+      });
+      const current = elList.querySelector(`.nav-overlay__item[data-idx="${state.idx}"]`);
+      current?.scrollIntoView({ block: 'nearest' });
+      renderRight();
+    }
+
+    function goItem(item) {
+      if (!item?.url || item.url === '#') return;
+      if (item.target === '_blank') window.open(item.url, '_blank', 'noopener');
+      else window.location.href = item.url;
     }
 
     function renderRight() {
@@ -634,7 +689,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       elDesc.textContent = item.desc || '';
       const img = item.previewImage || item.preview_image || '';
-      elPreview.innerHTML = img ? `<img src="${img}" alt="">` : '';
+      clearChildren(elPreview);
+      if (img) {
+        const image = document.createElement('img');
+        image.src = img;
+        image.alt = item.title || '';
+        elPreview.appendChild(image);
+      }
     }
 
     function renderLeft() {
@@ -642,8 +703,63 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!data) return;
 
       elTitle.textContent = data.title || 'Menu';
+      clearChildren(elList);
 
-      // Search only for products; placed under title, like BASF
+      (data.items || []).forEach((it, i) => {
+        const rowWrap = document.createElement('div');
+        rowWrap.className = `nav-overlay__row ${it.isFinder ? 'is-finder' : ''}`;
+
+        const item = document.createElement('div');
+        item.className = `nav-overlay__item ${i === state.idx ? 'is-active' : ''}`;
+        item.setAttribute('data-idx', String(i));
+
+        const title = document.createElement('div');
+        title.className = 'nav-overlay__itemTitle';
+        title.textContent = it.title || '';
+
+        const chev = document.createElement('div');
+        chev.className = 'nav-overlay__chev';
+        chev.textContent = '›';
+
+        item.appendChild(title);
+        item.appendChild(chev);
+        rowWrap.appendChild(item);
+
+        if (it.isFinder) {
+          const finder = document.createElement('div');
+          finder.className = 'nav-overlay__finder';
+
+          const finderInput = document.createElement('input');
+          finderInput.type = 'text';
+          finderInput.className = 'nav-overlay__finderInput';
+          finderInput.placeholder = 'What are you looking for?';
+          finderInput.setAttribute('data-nav-find-input', '1');
+
+          const finderBtn = document.createElement('button');
+          finderBtn.type = 'button';
+          finderBtn.className = 'nav-overlay__finderBtn';
+          finderBtn.setAttribute('aria-label', 'Search');
+          finderBtn.setAttribute('data-nav-find-btn', '1');
+          finderBtn.textContent = '⌕';
+
+          const goFinder = () => {
+            const base = data.searchUrl;
+            if (!base) return;
+            const q = (finderInput.value || '').trim();
+            window.location.href = q ? `${base}?q=${encodeURIComponent(q)}` : base;
+          };
+
+          finderBtn.addEventListener('click', goFinder);
+          finderInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') goFinder();
+          });
+
+          finder.appendChild(finderInput);
+          finder.appendChild(finderBtn);
+          rowWrap.appendChild(finder);
+        }
+
+      /*// Search only for products; placed under title, like BASF
       const showSearch = !!data.showSearch;
       searchWrap?.classList.toggle('hidden', !showSearch);
 
@@ -698,14 +814,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!base) return;
         const q = (finderInput?.value || '').trim();
         window.location.href = q ? `${base}?q=${encodeURIComponent(q)}` : base;
-      }
+      }*/
+        const divider = document.createElement('div');
+        divider.className = 'nav-overlay__divider';
+        rowWrap.appendChild(divider);
 
-      finderBtn?.addEventListener('click', goFinder);
+      /*finderBtn?.addEventListener('click', goFinder);
       finderInput?.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') goFinder();
-      });
+      });*/
+        item.addEventListener('mouseenter', () => setActiveRow(i));
+        item.addEventListener('click', () => goItem(NAV_DATA[state.key]?.items?.[i]));
 
-      elList.querySelectorAll('.nav-overlay__item').forEach((row) => {
+      /*elList.querySelectorAll('.nav-overlay__item').forEach((row) => {
         row.addEventListener('mouseenter', () => {
           state.idx = Number(row.getAttribute('data-idx') || '0');
           elList.querySelectorAll('.nav-overlay__item').forEach(x => x.classList.remove('is-active'));
@@ -720,12 +841,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (item.target === '_blank') window.open(item.url, '_blank', 'noopener');
             else window.location.href = item.url;
           }
-        });
+        });*/
+        elList.appendChild(rowWrap);
       });
 
       // Make list scrollable
       elList.classList.add('nav-overlay__list--scroll');
       elList.addEventListener('scroll', setThumbFromScroll, { passive: true });
+      if (!thumbResizeBound) {
+        window.addEventListener('resize', setThumbFromScroll, { passive: true });
+        thumbResizeBound = true;
+      }
       setThumbFromScroll();
     }
 
@@ -744,7 +870,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderLeft();
       renderRight();
 
-      if (data.showSearch) setTimeout(() => searchInput?.focus(), 10);
+      /*if (data.showSearch) setTimeout(() => searchInput?.focus(), 10);*/
     }
 
     function close() {
@@ -756,7 +882,7 @@ document.addEventListener('DOMContentLoaded', () => {
       state.idx = 0;
     }
 
-    function readNavData() {
+    /*function readNavData() {
       const el = document.getElementById('gt-nav-data');
       if (!el) return [];
       try { return JSON.parse(el.textContent || '[]'); } catch { return []; }
@@ -773,7 +899,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (item.page_slug) return `/${locale}/pages/${item.page_slug}`;
       const u = item.url || '#';
       return u.replace('{locale}', locale);
-    }
+    }*/
 
     // Bind header links
     document.querySelectorAll('[data-overlay-key]').forEach((a) => {
@@ -795,8 +921,27 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.key === 'Escape') {
         e.preventDefault();
         close();
+        return;
       }
-    });
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const data = NAV_DATA[state.key];
+        if (!data?.items?.length) return;
+        setActiveRow((state.idx + 1) % data.items.length);
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const data = NAV_DATA[state.key];
+        if (!data?.items?.length) return;
+        setActiveRow((state.idx - 1 + data.items.length) % data.items.length);
+        return;
+      }
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        goItem(NAV_DATA[state.key]?.items?.[state.idx]);
+      }
+    /*});
 
     function goSearch() {
       const data = NAV_DATA[state.key];
@@ -807,7 +952,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     searchBtn?.addEventListener('click', goSearch);
     searchInput?.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') goSearch();
+      if (e.key === 'Enter') goSearch();*/
     });
   })();
 });

@@ -15,6 +15,10 @@
     $instagram = $settings['instagram_url'] ?? null;
     $x = $settings['x_url'] ?? null;
     $youtube = $settings['youtube_url'] ?? null;
+    $footerLogoPath = $settings['footer_logo_path'] ?? ($settings['header_logo_path'] ?? '/images/logo.png');
+    $footerLogoUrl = str_starts_with($footerLogoPath, 'http://') || str_starts_with($footerLogoPath, 'https://')
+        ? $footerLogoPath
+        : asset(ltrim($footerLogoPath, '/'));
 
     $companyPages = \App\Models\Page::query()->where('is_published', true)->where('show_in_company', true)->orderBy('slug')->get();
     $productPages = \App\Models\Page::query()->where('is_published', true)->where('show_in_products', true)->orderBy('slug')->get();
@@ -65,6 +69,7 @@
     <div class="border-t border-slate-200">
         <div class="mx-auto max-w-7xl px-4 py-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
             <div>
+                <img src="{{ $footerLogoUrl }}" alt="Globaltrding logo" class="footer-brand-logo">
                 <div class="text-sm font-semibold text-slate-900">{{ __('Global Trading') }}</div>
                 <p class="mt-3 text-sm text-slate-600 leading-relaxed max-w-sm">
                     {{ __('We create value in industry with trusted sourcing, fast response times, and multilingual customer support.') }}

@@ -574,6 +574,85 @@
             </div>
         @endif
     </section>
+@elseif ($type === 'twoColumns')
+    @php
+        $heading = $data['heading'] ?? null;
+        $columns = is_array($data['columns'] ?? null) ? $data['columns'] : [];
+    @endphp
+    <section class="gt-cols">
+        @if ($heading)<h3 class="gt-cols__heading">{{ $heading }}</h3>@endif
+        <div class="gt-cols__grid gt-cols__grid--2">
+            @foreach ($columns as $col)
+                @php
+                    $title = $col['title'] ?? '';
+                    $text = $col['text'] ?? '';
+                    $ctaLabel = $col['cta_label'] ?? null;
+                    $ctaUrl = $col['cta_url'] ?? null;
+                @endphp
+                <article class="gt-cols__item">
+                    <h4 class="gt-cols__title">{{ $title }}</h4>
+                    @if ($text)<p class="gt-cols__text">{{ $text }}</p>@endif
+                    @if ($ctaLabel && $ctaUrl)
+                        <a href="{{ $ctaUrl }}" class="gt-cols__cta">{{ $ctaLabel }}</a>
+                    @endif
+                </article>
+            @endforeach
+        </div>
+    </section>
+
+@elseif ($type === 'threeColumns')
+    @php
+        $heading = $data['heading'] ?? null;
+        $columns = is_array($data['columns'] ?? null) ? $data['columns'] : [];
+    @endphp
+    <section class="gt-cols">
+        @if ($heading)<h3 class="gt-cols__heading">{{ $heading }}</h3>@endif
+        <div class="gt-cols__grid gt-cols__grid--3">
+            @foreach ($columns as $col)
+                @php
+                    $title = $col['title'] ?? '';
+                    $text = $col['text'] ?? '';
+                    $ctaLabel = $col['cta_label'] ?? null;
+                    $ctaUrl = $col['cta_url'] ?? null;
+                @endphp
+                <article class="gt-cols__item">
+                    <h4 class="gt-cols__title">{{ $title }}</h4>
+                    @if ($text)<p class="gt-cols__text">{{ $text }}</p>@endif
+                    @if ($ctaLabel && $ctaUrl)
+                        <a href="{{ $ctaUrl }}" class="gt-cols__cta">{{ $ctaLabel }}</a>
+                    @endif
+                </article>
+            @endforeach
+        </div>
+    </section>
+
+@elseif ($type === 'dropdownRow')
+    @php
+        $heading = $data['heading'] ?? null;
+        $items = is_array($data['items'] ?? null) ? $data['items'] : [];
+    @endphp
+    <section class="gt-dd">
+        @if ($heading)<h3 class="gt-cols__heading">{{ $heading }}</h3>@endif
+        <div class="gt-dd__rows">
+            @foreach ($items as $item)
+                @php
+                    $title = $item['title'] ?? '';
+                    $content = $item['content'] ?? '';
+                    $ctaLabel = $item['cta_label'] ?? null;
+                    $ctaUrl = $item['cta_url'] ?? null;
+                @endphp
+                <details class="gt-dd__item">
+                    <summary class="gt-dd__summary">{{ $title }}</summary>
+                    <div class="gt-dd__body">
+                        @if ($content)<p class="gt-dd__text">{{ $content }}</p>@endif
+                        @if ($ctaLabel && $ctaUrl)
+                            <a href="{{ $ctaUrl }}" class="gt-cols__cta">{{ $ctaLabel }}</a>
+                        @endif
+                    </div>
+                </details>
+            @endforeach
+        </div>
+    </section>
 @endif
 
 @if ($type === 'richText')
