@@ -227,7 +227,7 @@
                 </div>
 
                 <a href="/{{ $locale }}/" class="header-logo-box" aria-label="Logo link">
-                    <div class="logo-title">GLOBALTRDING</div>
+                    <div class="logo-title">GLOBAL TRDING</div>
                     <div class="logo-subtitle">We create value in industry</div>
                 </a>
             </div>

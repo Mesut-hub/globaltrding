@@ -69,8 +69,13 @@
     <div class="border-t border-slate-200">
         <div class="mx-auto max-w-7xl px-4 py-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
             <div>
-                <img src="{{ $footerLogoUrl }}" alt="Globaltrding logo" class="footer-brand-logo">
-                <div class="text-sm font-semibold text-slate-900">{{ __('Global Trading') }}</div>
+                <div class="flex items-center gap-3">
+                    <img src="{{ $footerLogoUrl }}"
+                        alt="Globaltrding logo"
+                        class="footer-brand-logo"
+                        style="width:44px;height:44px;object-fit:contain;">
+                    <div class="text-sm font-semibold text-slate-900">{{ __('Global Trading') }}</div>
+                </div>
                 <p class="mt-3 text-sm text-slate-600 leading-relaxed max-w-sm">
                     {{ __('We create value in industry with trusted sourcing, fast response times, and multilingual customer support.') }}
                 </p>
