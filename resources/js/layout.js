@@ -847,6 +847,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Make list scrollable
       elList.classList.add('nav-overlay__list--scroll');
+      elList.addEventListener('wheel', (e) => {
+        // If list can scroll, consume the wheel so the page/body doesn't.
+        const canScroll = elList.scrollHeight > elList.clientHeight + 1;
+        if (!canScroll) return;
+
+        // Prevent the event from being treated as body scroll
+        e.preventDefault();
+        elList.scrollTop += e.deltaY;
+      }, { passive: false });
       elList.addEventListener('scroll', setThumbFromScroll, { passive: true });
       if (!thumbResizeBound) {
         window.addEventListener('resize', setThumbFromScroll, { passive: true });

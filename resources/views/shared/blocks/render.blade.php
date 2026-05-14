@@ -574,85 +574,254 @@
             </div>
         @endif
     </section>
-@elseif ($type === 'twoColumns')
-    @php
-        $heading = $data['heading'] ?? null;
-        $columns = is_array($data['columns'] ?? null) ? $data['columns'] : [];
-    @endphp
-    <section class="gt-cols">
-        @if ($heading)<h3 class="gt-cols__heading">{{ $heading }}</h3>@endif
-        <div class="gt-cols__grid gt-cols__grid--2">
-            @foreach ($columns as $col)
-                @php
-                    $title = $col['title'] ?? '';
-                    $text = $col['text'] ?? '';
-                    $ctaLabel = $col['cta_label'] ?? null;
-                    $ctaUrl = $col['cta_url'] ?? null;
-                @endphp
-                <article class="gt-cols__item">
-                    <h4 class="gt-cols__title">{{ $title }}</h4>
-                    @if ($text)<p class="gt-cols__text">{{ $text }}</p>@endif
-                    @if ($ctaLabel && $ctaUrl)
-                        <a href="{{ $ctaUrl }}" class="gt-cols__cta">{{ $ctaLabel }}</a>
-                    @endif
-                </article>
-            @endforeach
-        </div>
-    </section>
 
-@elseif ($type === 'threeColumns')
+@elseif ($type === 'mediaTextLinks3')
     @php
-        $heading = $data['heading'] ?? null;
-        $columns = is_array($data['columns'] ?? null) ? $data['columns'] : [];
-    @endphp
-    <section class="gt-cols">
-        @if ($heading)<h3 class="gt-cols__heading">{{ $heading }}</h3>@endif
-        <div class="gt-cols__grid gt-cols__grid--3">
-            @foreach ($columns as $col)
-                @php
-                    $title = $col['title'] ?? '';
-                    $text = $col['text'] ?? '';
-                    $ctaLabel = $col['cta_label'] ?? null;
-                    $ctaUrl = $col['cta_url'] ?? null;
-                @endphp
-                <article class="gt-cols__item">
-                    <h4 class="gt-cols__title">{{ $title }}</h4>
-                    @if ($text)<p class="gt-cols__text">{{ $text }}</p>@endif
-                    @if ($ctaLabel && $ctaUrl)
-                        <a href="{{ $ctaUrl }}" class="gt-cols__cta">{{ $ctaLabel }}</a>
-                    @endif
-                </article>
-            @endforeach
-        </div>
-    </section>
+        $layout    = $data['layout']     ?? 'media-text-links';
+        $mediaType = $data['media_type'] ?? 'image';
 
-@elseif ($type === 'dropdownRow')
-    @php
-        $heading = $data['heading'] ?? null;
-        $items = is_array($data['items'] ?? null) ? $data['items'] : [];
+        $mediaWidth = (int)($data['media_width'] ?? 35);
+        $mediaWidth = max(30, min(40, $mediaWidth));
+
+        $textWidth = (int)($data['text_width'] ?? 35);
+        $textWidth = max(30, min(40, $textWidth));
+
+        $linksWidth = (int)($data['links_width'] ?? 35);
+        $linksWidth = max(30, min(40, $linksWidth));
+
+        $maxH = is_numeric($data['media_max_h'] ?? null) ? (int)$data['media_max_h'] : null;
+
+        $imgUrl    = !empty($data['image'])  ? Storage::disk('public')->url($data['image'])  : null;
+        $vidUrl    = !empty($data['video'])  ? Storage::disk('public')->url($data['video'])  : null;
+        $posterUrl = !empty($data['poster']) ? Storage::disk('public')->url($data['poster']) : null;
+
+        $title    = $data['title']    ?? '';
+        $excerpt  = $data['excerpt']  ?? '';
+        $html     = $data['body_html'] ?? '';
+        $ctaLabel = $data['cta_label'] ?? null;
+        $ctaUrl   = $data['cta_url']   ?? null;
+
+        $linksTitle = $data['links_title'] ?? '';
+        $links = is_array($data['links'] ?? null) ? $data['links'] : [];
+
+        $mediaStyle = $maxH ? "max-height:{$maxH}px; height:{$maxH}px;" : '';
+
+        // Build grid-template-columns to match the chosen layout
+        $mCol = "{$mediaWidth}%";
+        $tCol = "{$textWidth}%";
+        $lCol = "{$linksWidth}%";
+
+        $gridCols = match ($layout) {
+            'media-text-links' => "{$mCol} {$tCol} {$lCol}",
+            'links-media-text' => "{$lCol} {$mCol} {$tCol}",
+            'links-text-media' => "{$lCol} {$tCol} {$mCol}",
+            'text-media-links' => "{$tCol} {$mCol} {$lCol}",
+            default            => "{$mCol} {$tCol} {$lCol}",
+        };
+
+        // Render the three columns in the correct DOM order
+        $colOrder = match ($layout) {
+            'media-text-links' => ['media', 'text', 'links'],
+            'links-media-text' => ['links', 'media', 'text'],
+            'links-text-media' => ['links', 'text', 'media'],
+            'text-media-links' => ['text', 'media', 'links'],
+            default            => ['media', 'text', 'links'],
+        };
+
+        $linksPadColor = $data['links_pad_color'] ?? '#ffffff';
+        $linksRowColor = $data['links_row_color'] ?? '#0ea5e9';
     @endphp
-    <section class="gt-dd">
-        @if ($heading)<h3 class="gt-cols__heading">{{ $heading }}</h3>@endif
-        <div class="gt-dd__rows">
-            @foreach ($items as $item)
-                @php
-                    $title = $item['title'] ?? '';
-                    $content = $item['content'] ?? '';
-                    $ctaLabel = $item['cta_label'] ?? null;
-                    $ctaUrl = $item['cta_url'] ?? null;
-                @endphp
-                <details class="gt-dd__item">
-                    <summary class="gt-dd__summary">{{ $title }}</summary>
-                    <div class="gt-dd__body">
-                        @if ($content)<p class="gt-dd__text">{{ $content }}</p>@endif
+
+    <section class="gt-mtl3">
+        <div class="gt-mtl3__grid" style="grid-template-columns: {{ $gridCols }};">
+
+            @foreach ($colOrder as $col)
+
+                @if ($col === 'media')
+                    <div class="gt-mtl3__media">
+                        @include('shared.blocks.partials.media', [
+                            'mediaType'  => $mediaType,
+                            'imgUrl'     => $imgUrl,
+                            'vidUrl'     => $vidUrl,
+                            'posterUrl'  => $posterUrl,
+                            'mediaStyle' => $mediaStyle,
+                        ])
+                    </div>
+
+                @elseif ($col === 'text')
+                    <div class="gt-mtl3__text">
+                        @if ($title)   <h3 class="gt-mtl3__title">{{ $title }}</h3> @endif
+                        @if ($excerpt) <p  class="gt-mtl3__excerpt">{{ $excerpt }}</p> @endif
+                        @if ($html)    <div class="gt-mtl3__body prose prose-slate max-w-none">{!! $html !!}</div> @endif
+
                         @if ($ctaLabel && $ctaUrl)
-                            <a href="{{ $ctaUrl }}" class="gt-cols__cta">{{ $ctaLabel }}</a>
+                            <div class="gt-mtl3__cta">
+                                <a href="{{ $ctaUrl }}" class="gt-btn gt-btn--primary">{{ $ctaLabel }}</a>
+                            </div>
                         @endif
                     </div>
-                </details>
+
+                @elseif ($col === 'links')
+                    <aside class="gt-mtl3__links" style="background: {{ $linksPadColor }};";">
+                        @if (count($links))
+                            <div class="gt-mtl3__title">{{ $linksTitle }}</div>
+                            <div class="gt-mtl3__linksList">
+                                @foreach ($links as $row)
+                                    @php
+                                        $linksNo = (string)($row['linksNo'] ?? '');
+                                        $label  = (string)($row['label']  ?? '');
+                                        $url    = (string)($row['url']    ?? '#');
+                                        $hint   = (string)($row['hint']   ?? '');
+                                        $target = (string)($row['target'] ?? '_self');
+                                    @endphp
+                                    <a class="gt-mtl3__link"
+                                       href="{{ $url }}"
+                                       target="{{ $target }}"
+                                       @if ($target === '_blank') rel="noopener" @endif>
+                                        <span class="gt-mtl3__linkLabel">{{ $label }}</span>
+                                        @if ($hint)
+                                            <span class="gt-mtl3__linkHint">
+                                                <span class="gt-mtl3__linksNo">{{ $linksNo }}</span>
+                                                <span class="gt-mtl3__hintText" style="color: {{ $linksRowColor }};">{{ $hint }}</span>
+                                                <span class="gt-mtl3__chev">›</span>
+                                            </span>
+                                        @endif
+                                    </a>
+                                @endforeach
+                            </div>
+                        @endif
+                    </aside>
+                @endif
             @endforeach
+
         </div>
     </section>
+
+@elseif ($type === 'dropdownLinks')
+  @php
+    $heading = $data['heading'] ?? null;
+    $items = is_array($data['items'] ?? null) ? $data['items'] : [];
+  @endphp
+
+  <section class="gt-acc">
+    @if ($heading)
+      <h3 class="gt-acc__heading">{{ $heading }}</h3>
+    @endif
+
+    <div class="gt-acc__list">
+      @foreach ($items as $i => $row)
+        @php
+          $title = (string)($row['title'] ?? '');
+          $content = (string)($row['content'] ?? '');
+
+          $linkLabel = (string)($row['link_label'] ?? '');
+          $linkUrl = (string)($row['link_url'] ?? '');
+          $target = (string)($row['target'] ?? '_self');
+
+          // Per-row media+text panel (INSIDE expanded accordion)
+          $side = $row['media_side'] ?? 'left';
+          $mediaType = $row['media_type'] ?? 'image';
+          $ratio = $row['media_width'] ?? '50-50';
+          $maxH = is_numeric($row['media_max_h'] ?? null) ? (int)$row['media_max_h'] : null;
+
+          $imgUrl = !empty($row['image']) ? Storage::disk('public')->url($row['image']) : null;
+          $vidUrl = !empty($row['video']) ? Storage::disk('public')->url($row['video']) : null;
+          $posterUrl = !empty($row['poster']) ? Storage::disk('public')->url($row['poster']) : null;
+
+          $insideTitle = (string)($row['row_title'] ?? '');
+          $excerpt = (string)($row['excerpt'] ?? '');
+          $html = (string)($row['body_html'] ?? '');
+          $ctaLabel = (string)($row['cta_label'] ?? '');
+          $ctaUrl = (string)($row['cta_url'] ?? '');
+
+          // Keep your existing ratio mapping, but use a reliable 12-col grid
+          [$mediaClass, $textClass] = match($ratio) {
+            '30-70' => ['lg:col-span-4',  'lg:col-span-8'],
+            '40-60' => ['lg:col-span-5',  'lg:col-span-7'],
+            '60-40' => ['lg:col-span-7',  'lg:col-span-5'],
+            '70-30' => ['lg:col-span-8',  'lg:col-span-4'],
+            default => ['lg:col-span-6',  'lg:col-span-6'],
+          };
+
+          $mediaStyle = $maxH ? "max-height:{$maxH}px; height:{$maxH}px;" : '';
+          $hasInnerPanel = ($insideTitle !== '' || $excerpt !== '' || $html !== '' || $imgUrl || $vidUrl);
+        @endphp
+
+        <details class="gt-acc__item" @if($i === 0) open @endif>
+          <summary class="gt-acc__summary">
+            <span class="gt-acc__title">{{ $title }}</span>
+            <span class="gt-acc__icon" aria-hidden="true"></span>
+          </summary>
+
+          <div class="gt-acc__body">
+            @if ($content)
+              <p class="gt-acc__text">{{ $content }}</p>
+            @endif
+
+            @if ($linkUrl)
+              <a class="gt-acc__link"
+                 href="{{ $linkUrl }}"
+                 target="{{ $target }}"
+                 @if($target === '_blank') rel="noopener" @endif>
+                {{ $linkLabel ?: __('Learn more') }} →
+              </a>
+            @endif
+
+            @if ($hasInnerPanel)
+              <div class="gt-acc__panel">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                  @if ($side === 'left')
+                    <div class="{{ $mediaClass }}">
+                      @include('shared.blocks.partials.media', [
+                        'mediaType' => $mediaType,
+                        'imgUrl' => $imgUrl,
+                        'vidUrl' => $vidUrl,
+                        'posterUrl' => $posterUrl,
+                        'mediaStyle' => $mediaStyle
+                      ])
+                    </div>
+                  @endif
+
+                  <div class="{{ $textClass }}">
+                    @if ($insideTitle)
+                      <h4 class="text-xl font-semibold tracking-tight">{{ $insideTitle }}</h4>
+                    @endif
+                    @if ($excerpt)
+                      <p class="mt-2 text-slate-600">{{ $excerpt }}</p>
+                    @endif
+                    @if ($html)
+                      <div class="mt-3 prose prose-slate max-w-none">{!! $html !!}</div>
+                    @endif
+
+                    @if ($ctaLabel && $ctaUrl)
+                      <div class="mt-5">
+                        <a href="{{ $ctaUrl }}"
+                           class="inline-flex items-center rounded-md bg-slate-900 px-4 py-2 text-white hover:bg-slate-800">
+                          {{ $ctaLabel }}
+                        </a>
+                      </div>
+                    @endif
+                  </div>
+
+                  @if ($side === 'right')
+                    <div class="{{ $mediaClass }}">
+                      @include('shared.blocks.partials.media', [
+                        'mediaType' => $mediaType,
+                        'imgUrl' => $imgUrl,
+                        'vidUrl' => $vidUrl,
+                        'posterUrl' => $posterUrl,
+                        'mediaStyle' => $mediaStyle
+                      ])
+                    </div>
+                  @endif
+                </div>
+              </div>
+            @endif
+          </div>
+        </details>
+      @endforeach
+    </div>
+  </section>
 @endif
 
 @if ($type === 'richText')

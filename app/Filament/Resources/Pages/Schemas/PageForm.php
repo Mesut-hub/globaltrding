@@ -16,6 +16,8 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\ColorPicker;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\KeyValue;
 
 class PageForm
 {
@@ -511,55 +513,183 @@ class PageForm
                                 TextInput::make('cta_url'),
                             ]),
 
-                        Block::make('twoColumns')
-                            ->label('2 Columns')
+                        Block::make('mediaTextLinks3')
+                            ->label('Media + Text + Links (3 columns)')
                             ->schema([
-                                TextInput::make('heading')->label('Section heading'),
-                                Repeater::make('columns')
-                                    ->label('Columns')
-                                    ->minItems(2)
-                                    ->maxItems(2)
-                                    ->defaultItems(2)
-                                    ->schema([
-                                        TextInput::make('title')->required(),
-                                        Textarea::make('text')->rows(4),
-                                        TextInput::make('cta_label')->label('CTA label'),
-                                        TextInput::make('cta_url')->label('CTA URL'),
+
+                                Select::make('layout')
+                                    ->label('Columns layout')
+                                    ->options([
+                                        'media-text-links' => 'Media | Text | Links',
+                                        'links-media-text' => 'Links | Media | Text',
+                                        'links-text-media' => 'Links | Text | Media',
+                                        'text-media-links' => 'Text | Media | Links',
                                     ])
-                                    ->columns(2),
+                                    ->default('media-text-links')
+                                    ->required(),
+
+                                Select::make('media_type')
+                                    ->label('Media type')
+                                    ->options(['image' => 'Image', 'video' => 'Video'])
+                                    ->default('image')
+                                    ->required(),
+
+                                TextInput::make('media_width')
+                                    ->label('Media column width (%)')
+                                    ->numeric()
+                                    ->default(35)
+                                    ->minValue(30)
+                                    ->maxValue(40)
+                                    ->helperText('30 – 40 (e.g. 35)'),
+
+                                TextInput::make('media_max_h')
+                                    ->label('Media max height (px, optional)')
+                                    ->numeric()
+                                    ->helperText('Example: 520'),
+
+                                FileUpload::make('image')
+                                    ->label('Image')
+                                    ->disk('public')
+                                    ->directory('pages/media-text-links3')
+                                    ->image()
+                                    ->visible(fn ($get) => $get('media_type') === 'image'),
+
+                                FileUpload::make('video')
+                                    ->label('Video (mp4/webm)')
+                                    ->disk('public')
+                                    ->directory('pages/media-text-links3')
+                                    ->acceptedFileTypes(['video/mp4', 'video/webm'])
+                                    ->visible(fn ($get) => $get('media_type') === 'video'),
+
+                                FileUpload::make('poster')
+                                    ->label('Video poster (optional)')
+                                    ->disk('public')
+                                    ->directory('pages/media-text-links3')
+                                    ->image()
+                                    ->visible(fn ($get) => $get('media_type') === 'video'),
+
+                                TextInput::make('text_width')
+                                    ->label('Text column width (%)')
+                                    ->numeric()
+                                    ->default(35)
+                                    ->minValue(30)
+                                    ->maxValue(40)
+                                    ->helperText('30 – 40 (e.g. 35)'),
+                                TextInput::make('title')->label('Title')->required(),
+                                Textarea::make('excerpt')->label('Excerpt')->rows(2),
+                                Textarea::make('body_html')
+                                    ->label('Body (HTML)')
+                                    ->rows(6)
+                                    ->helperText('You can paste formatted HTML.'),
+
+                                TextInput::make('cta_label')->label('CTA label'),
+                                TextInput::make('cta_url')->label('CTA URL'),
+
+                                ColorPicker::make('links_pad_color')
+                                    ->label('Links panel color')
+                                    ->default('#ffffff'),
+
+                                ColorPicker::make('links_row_color')
+                                    ->label('Links row color')
+                                    ->default('#0ea5e9'),
+                                TextInput::make('links_title')->label('Title'),
+                                TextInput::make('links_width')
+                                    ->label('Links column width (%)')
+                                    ->numeric()
+                                    ->default(35)
+                                    ->minValue(30)
+                                    ->maxValue(40)
+                                    ->helperText('30 – 40 (e.g. 35)'),
+                                Section::make('Link rows')
+                                    ->schema([
+                                        Repeater::make('links')
+                                            ->label('Hyper-linked text rows')
+                                            ->minItems(0)
+                                            ->schema([
+                                                TextInput::make('linksNo')->label('No'),
+                                                TextInput::make('label'),
+                                                TextInput::make('url')->label('URL'),
+                                                TextInput::make('hint')->label('Hint / small text (optional)'),
+                                                Select::make('target')
+                                                    ->label('Target')
+                                                    ->options(['_self' => '_self', '_blank' => '_blank'])
+                                                    ->default('_self'),
+                                            ])
+                                            ->columns(2),
+                                    ]),
                             ]),
 
-                        Block::make('threeColumns')
-                            ->label('3 Columns')
+                        Block::make('dropdownLinks')
+                            ->label('Dropdown links (accordion)')
                             ->schema([
-                                TextInput::make('heading')->label('Section heading'),
-                                Repeater::make('columns')
-                                    ->label('Columns')
-                                    ->minItems(3)
-                                    ->maxItems(3)
-                                    ->defaultItems(3)
-                                    ->schema([
-                                        TextInput::make('title')->required(),
-                                        Textarea::make('text')->rows(4),
-                                        TextInput::make('cta_label')->label('CTA label'),
-                                        TextInput::make('cta_url')->label('CTA URL'),
-                                    ])
-                                    ->columns(2),
-                            ]),
+                                TextInput::make('heading')->label('Heading (optional)'),
 
-                        Block::make('dropdownRow')
-                            ->label('Dropdown Row')
-                            ->schema([
-                                TextInput::make('heading')->label('Section heading'),
                                 Repeater::make('items')
                                     ->label('Rows')
                                     ->minItems(1)
-                                    ->defaultItems(3)
                                     ->schema([
-                                        TextInput::make('title')->required(),
-                                        Textarea::make('content')->rows(4),
-                                        TextInput::make('cta_label')->label('CTA label'),
-                                        TextInput::make('cta_url')->label('CTA URL'),
+                                        TextInput::make('title')->required()->label('Row title'),
+                                        Textarea::make('content')->rows(3)->label('Row text (optional)'),
+
+                                        TextInput::make('link_label')->label('Link label')->default('Learn more'),
+                                        TextInput::make('link_url')->label('Link URL'),
+                                        Select::make('target')
+                                            ->label('Target')
+                                            ->options(['_self' => '_self', '_blank' => '_blank'])
+                                            ->default('_self'),
+                                        Select::make('media_side')
+                                            ->label('Media side')
+                                            ->options(['left' => 'Left', 'right' => 'Right'])
+                                            ->default('left'),
+
+                                        Select::make('media_type')
+                                            ->label('Media type')
+                                            ->options(['image' => 'Image', 'video' => 'Video'])
+                                            ->default('image'),
+
+                                        Select::make('media_width')
+                                            ->label('Column ratio')
+                                            ->options([
+                                                '30-70' => '30% media / 70% text',
+                                                '40-60' => '40% media / 60% text',
+                                                '50-50' => '50% / 50%',
+                                                '60-40' => '60% media / 40% text',
+                                                '70-30' => '70% media / 30% text',
+                                            ])
+                                            ->default('50-50'),
+
+                                        TextInput::make('media_max_h')
+                                            ->label('Media max height (px, optional)')
+                                            ->numeric()
+                                            ->helperText('Example: 520'),
+
+                                        FileUpload::make('image')
+                                            ->label('Image')
+                                            ->disk('public')
+                                            ->directory('pages/media-text')
+                                            ->image()
+                                            ->visible(fn ($get) => $get('media_type') === 'image'),
+
+                                        FileUpload::make('video')
+                                            ->label('Video (mp4/webm)')
+                                            ->disk('public')
+                                            ->directory('pages/media-text')
+                                            ->acceptedFileTypes(['video/mp4', 'video/webm'])
+                                            ->visible(fn ($get) => $get('media_type') === 'video'),
+
+                                        FileUpload::make('poster')
+                                            ->label('Video poster (optional)')
+                                            ->disk('public')
+                                            ->directory('pages/media-text')
+                                            ->image()
+                                            ->visible(fn ($get) => $get('media_type') === 'video'),
+
+                                        TextInput::make('row_title')->label('Row inside title'),
+                                        Textarea::make('excerpt')->rows(3),
+                                        Textarea::make('body_html')->label('Body (HTML)')->rows(8)->helperText('Paste HTML content.'),
+
+                                        TextInput::make('cta_label'),
+                                        TextInput::make('cta_url'),
                                     ])
                                     ->columns(2),
                             ]),
