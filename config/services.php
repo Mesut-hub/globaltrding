@@ -44,4 +44,9 @@ return [
         'today_xml_url' => env('TCMB_TODAY_XML_URL', 'https://www.tcmb.gov.tr/kurlar/today.xml'),
     ],
 
+    'recaptcha' => [
+        'site_key' => env('RECAPTCHA_SITE_KEY', ''),
+        'secret' => env('RECAPTCHA_SECRET_KEY', ''),
+    ],
+
 ];

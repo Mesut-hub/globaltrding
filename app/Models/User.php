@@ -30,6 +30,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_admin' => 'boolean',
             'limits' => 'array',
+            'has_product_access' => 'boolean',
         ];
     }
     public function canAccessPanel(Panel $panel): bool

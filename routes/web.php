@@ -4,12 +4,15 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductAuthController;
+use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\CollaborationController;
 use App\Http\Controllers\MarketController;
 use App\Http\Controllers\IndustryController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InquiryController;
+use App\Http\Controllers\PasswordResetController;
 use Illuminate\Support\Facades\Response;
 use App\Models\Product;
 use App\Models\Industry;
@@ -125,4 +128,20 @@ Route::prefix('{locale}')
         Route::get('/search', [SearchController::class, 'index'])
             ->middleware('search.throttle')
             ->name('search.index');
+
+        Route::get('/register', [RegisterController::class, 'step1'])->name('register.step1');
+        Route::post('/register/step1', [RegisterController::class, 'postStep1'])->name('register.step1.post');
+        Route::get('/register/step2', [RegisterController::class, 'step2'])->name('register.step2');
+        Route::post('/register/step2', [RegisterController::class, 'postStep2'])->name('register.step2.post');
+        Route::get('/register/success', [RegisterController::class, 'success'])->name('register.success');
+
+        Route::get('/login', [ProductAuthController::class, 'show'])->name('product.login');
+        Route::post('/login', [ProductAuthController::class, 'login'])->name('product.login.post');
+        Route::post('/logout', [ProductAuthController::class, 'logout'])->name('product.logout');
+
+        Route::get('/reset-password/{token}', [PasswordResetController::class, 'show'])
+            ->name('password.reset');
+
+        Route::post('/reset-password', [PasswordResetController::class, 'update'])
+            ->name('password.update');
     });

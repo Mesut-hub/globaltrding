@@ -822,6 +822,140 @@
       @endforeach
     </div>
   </section>
+
+@elseif ($type === 'twoCols')
+  @php
+    $bg = $data['bg'] ?? '#ffffff';
+    $layout = $data['layout'] ?? 'text_media';
+    $mediaType = $data['media_type'] ?? 'image';
+
+    $leftTitle = $data['left_title'] ?? '';
+    $leftHtml = $data['left_html'] ?? '';
+
+    $rightTitle = $data['right_title'] ?? '';
+    $rightHtml = $data['right_html'] ?? '';
+
+    $ctaLabel = $data['cta_label'] ?? null;
+    $ctaUrl = $data['cta_url'] ?? null;
+
+    $imgUrl = !empty($data['image']) ? Storage::disk('public')->url($data['image']) : null;
+    $vidUrl = !empty($data['video']) ? Storage::disk('public')->url($data['video']) : null;
+    $posterUrl = !empty($data['poster']) ? Storage::disk('public')->url($data['poster']) : null;
+  @endphp
+
+  <section class="gt-twoCols" style="background: {{ $bg }};">
+    <div class="gt-twoCols__grid">
+      @if($layout === 'media_text')
+        <div class="gt-twoCols__media">
+          @include('shared.blocks.partials.media', ['mediaType'=>$mediaType,'imgUrl'=>$imgUrl,'vidUrl'=>$vidUrl,'posterUrl'=>$posterUrl,'mediaStyle'=>''])
+        </div>
+      @endif
+
+      <div class="gt-twoCols__col">
+        @if($leftTitle)<h3 class="gt-twoCols__h">{{ $leftTitle }}</h3>@endif
+        @if($leftHtml)<div class="prose prose-slate max-w-none">{!! $leftHtml !!}</div>@endif
+      </div>
+
+      @if($layout === 'text_text')
+        <div class="gt-twoCols__col">
+          @if($rightTitle)<h3 class="gt-twoCols__h">{{ $rightTitle }}</h3>@endif
+          @if($rightHtml)<div class="prose prose-slate max-w-none">{!! $rightHtml !!}</div>@endif
+        </div>
+      @else
+        @if($layout === 'text_media')
+          <div class="gt-twoCols__media">
+            @include('shared.blocks.partials.media', ['mediaType'=>$mediaType,'imgUrl'=>$imgUrl,'vidUrl'=>$vidUrl,'posterUrl'=>$posterUrl,'mediaStyle'=>''])
+          </div>
+        @else
+          <div class="gt-twoCols__col">
+            @if($rightTitle)<h3 class="gt-twoCols__h">{{ $rightTitle }}</h3>@endif
+            @if($rightHtml)<div class="prose prose-slate max-w-none">{!! $rightHtml !!}</div>@endif
+          </div>
+        @endif
+      @endif
+    </div>
+
+    @if($ctaLabel && $ctaUrl)
+      <div class="gt-twoCols__cta">
+        <a class="gt-btn gt-btn--primary" href="{{ $ctaUrl }}">{{ $ctaLabel }}</a>
+      </div>
+    @endif
+  </section>
+
+@elseif ($type === 'cards')
+  @php
+    $bg = $data['bg'] ?? '#ffffff';
+    $heading = $data['heading'] ?? '';
+    $items = is_array($data['items'] ?? null) ? $data['items'] : [];
+  @endphp
+  <section class="gt-cards" style="background: {{ $bg }};">
+    <div class="gt-cards__inner">
+      @if($heading)<h3 class="gt-cards__h">{{ $heading }}</h3>@endif
+      <div class="gt-cards__grid">
+        @foreach($items as $card)
+          @php
+            $mediaType = $card['media_type'] ?? 'image';
+            $imgUrl = !empty($card['image']) ? Storage::disk('public')->url($card['image']) : null;
+            $vidUrl = !empty($card['video']) ? Storage::disk('public')->url($card['video']) : null;
+            $posterUrl = !empty($card['poster']) ? Storage::disk('public')->url($card['poster']) : null;
+
+            $title = $card['title'] ?? '';
+            $html = $card['html'] ?? '';
+            $ctaLabel = $card['cta_label'] ?? null;
+            $ctaUrl = $card['cta_url'] ?? null;
+          @endphp
+
+          <article class="gt-cards__card">
+            <div class="gt-cards__media">
+              @include('shared.blocks.partials.media', ['mediaType'=>$mediaType,'imgUrl'=>$imgUrl,'vidUrl'=>$vidUrl,'posterUrl'=>$posterUrl,'mediaStyle'=>''])
+            </div>
+            <div class="gt-cards__body">
+              <div class="gt-cards__title">{{ $title }}</div>
+              @if($html)<div class="prose prose-slate max-w-none">{!! $html !!}</div>@endif
+              @if($ctaLabel && $ctaUrl)
+                <div class="gt-cards__cta">
+                  <a class="gt-btn gt-btn--primary" href="{{ $ctaUrl }}">{{ $ctaLabel }}</a>
+                </div>
+              @endif
+            </div>
+          </article>
+        @endforeach
+      </div>
+    </div>
+  </section>
+
+@elseif ($type === 'docDropdown')
+  @php
+    $heading = $data['heading'] ?? '';
+    $rows = is_array($data['rows'] ?? null) ? $data['rows'] : [];
+    $disable = (bool)($disableDocLinks ?? false);
+  @endphp
+
+  <section class="gt-docdd">
+    <details class="gt-docdd__item" open>
+      <summary class="gt-docdd__sum">
+        <span>{{ $heading ?: 'Documents' }}</span>
+        <span class="gt-docdd__chev" aria-hidden="true"></span>
+      </summary>
+      <div class="gt-docdd__rows">
+        @foreach($rows as $r)
+          @php
+            $title = (string)($r['title'] ?? 'Document');
+            $url = (string)($r['url'] ?? '#');
+            $target = (string)($r['target'] ?? '_blank');
+          @endphp
+
+          @if($disable)
+            <span class="gt-docdd__row is-disabled">{{ $title }}</span>
+          @else
+            <a class="gt-docdd__row" href="{{ $url }}" target="{{ $target }}" @if($target==='_blank') rel="noopener" @endif>
+              {{ $title }}
+            </a>
+          @endif
+        @endforeach
+      </div>
+    </details>
+  </section>
 @endif
 
 @if ($type === 'richText')
