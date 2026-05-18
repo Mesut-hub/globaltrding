@@ -900,7 +900,7 @@
             $posterUrl = !empty($card['poster']) ? Storage::disk('public')->url($card['poster']) : null;
 
             $title = $card['title'] ?? '';
-            $html = $card['html'] ?? '';
+            $html = $card['body_html'] ?? ($card['html'] ?? '');
             $ctaLabel = $card['cta_label'] ?? null;
             $ctaUrl = $card['cta_url'] ?? null;
           @endphp
@@ -928,10 +928,29 @@
   @php
     $heading = $data['heading'] ?? '';
     $rows = is_array($data['rows'] ?? null) ? $data['rows'] : [];
+
+    $hasAccess = (bool)($hasProductAccess ?? false);
+    $publicDocsEnabled = (bool)($publicDocsEnabled ?? false);
     $disable = (bool)($disableDocLinks ?? false);
+
+    $uid = 'docdd_' . substr(md5(json_encode($data)), 0, 10);
+    $languages = collect($rows)->map(fn($r) => (string)($r['language'] ?? ''))->filter()->unique()->sort()->values();
   @endphp
 
   <section class="gt-docdd">
+    <div class="gt-docdd__toolbar" data-docdd="{{ $uid }}">
+        <button type="button" class="gt-docdd__toolLink" data-docdd-expand>Expand All</button>
+        <button type="button" class="gt-docdd__toolLink" data-docdd-collapse>Collapse All</button>
+
+        <select class="gt-docdd__toolSelect" data-docdd-lang>
+            <option value="">Language</option>
+            @foreach($languages as $lang)
+            <option value="{{ $lang }}">{{ $lang }}</option>
+            @endforeach
+        </select>
+
+        <input class="gt-docdd__toolSearch" type="search" placeholder="Search" data-docdd-search>
+    </div>
     <details class="gt-docdd__item" open>
       <summary class="gt-docdd__sum">
         <span>{{ $heading ?: 'Documents' }}</span>
@@ -943,12 +962,31 @@
             $title = (string)($r['title'] ?? 'Document');
             $url = (string)($r['url'] ?? '#');
             $target = (string)($r['target'] ?? '_blank');
+            $lang = (string)($r['language'] ?? '');
+            $downloadable = (bool)($r['downloadable'] ?? false);
+
+            // Logged out rules:
+            // - If docs are public: downloadable toggle decides
+            // - If docs are not public: disableDocLinks decides
+            $isLocked = false;
+
+            if (!$hasAccess) {
+              if ($publicDocsEnabled) {
+                $isLocked = !$downloadable;
+              } else {
+                $isLocked = $disable;
+              }
+            }
           @endphp
 
-          @if($disable)
-            <span class="gt-docdd__row is-disabled">{{ $title }}</span>
+          @if($isLocked)
+            <span class="gt-docdd__row is-disabled" data-docdd-row
+                data-docdd-title="{{ strtolower($title) }}"
+                data-docdd-lang="{{ strtolower($lang) }}">{{ $title }}</span>
           @else
-            <a class="gt-docdd__row" href="{{ $url }}" target="{{ $target }}" @if($target==='_blank') rel="noopener" @endif>
+            <a class="gt-docdd__row" href="{{ $url }}" target="{{ $target }}" @if($target==='_blank') rel="noopener" @endif data-docdd-row
+                data-docdd-title="{{ strtolower($title) }}"
+                data-docdd-lang="{{ strtolower($lang) }}">
               {{ $title }}
             </a>
           @endif
@@ -1007,3 +1045,46 @@
         {{ $label }}
     </a>
 @endif
+
+@once
+  @push('scripts')
+  <script>
+    (function(){
+      function init(root){
+        const expand = root.querySelector('[data-docdd-expand]');
+        const collapse = root.querySelector('[data-docdd-collapse]');
+        const langSel = root.querySelector('[data-docdd-lang]');
+        const search = root.querySelector('[data-docdd-search]');
+        const scope = root.closest('.gt-docdd');
+
+        if(!scope) return;
+
+        const details = scope.querySelectorAll('details.gt-docdd__item');
+        const rows = scope.querySelectorAll('[data-docdd-row]');
+
+        expand?.addEventListener('click', () => details.forEach(d => d.open = true));
+        collapse?.addEventListener('click', () => details.forEach(d => d.open = false));
+
+        function applyFilter(){
+          const q = (search?.value || '').trim().toLowerCase();
+          const lang = (langSel?.value || '').trim().toLowerCase();
+
+          rows.forEach(el => {
+            const t = (el.getAttribute('data-docdd-title') || '');
+            const l = (el.getAttribute('data-docdd-lang') || '');
+            const ok = (!q || t.includes(q)) && (!lang || l === lang);
+            el.style.display = ok ? '' : 'none';
+          });
+        }
+
+        langSel?.addEventListener('change', applyFilter);
+        search?.addEventListener('input', applyFilter);
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.gt-docdd__toolbar').forEach(init);
+      });
+    })();
+  </script>
+  @endpush
+@endonce

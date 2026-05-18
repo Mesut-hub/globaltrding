@@ -19,6 +19,7 @@
 
   $docMode = (string)($product->pdp_documents_logged_out_mode ?? 'list_disabled');
   $disableDocLinks = (!$hasAccess && $docMode === 'list_disabled');
+  $publicDocsEnabled = (bool)($product->pdp_public_documents ?? false);
 
   $overviewBlocks = is_array($product->pdp_overview_blocks ?? null) ? $product->pdp_overview_blocks : [];
   $propsBlocks = is_array($product->pdp_properties_blocks ?? null) ? $product->pdp_properties_blocks : [];
@@ -126,8 +127,10 @@
 
                 @foreach($docsBlocks as $block)
                     @include('shared.blocks.render', [
-                    'block' => $block,
-                    'disableDocLinks' => $disableDocLinks,
+                        'block' => $block,
+                        'disableDocLinks' => $disableDocLinks,
+                        'publicDocsEnabled' => $publicDocsEnabled,
+                        'hasProductAccess' => $hasAccess,
                     ])
                 @endforeach
             @endif

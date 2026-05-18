@@ -1860,3 +1860,8 @@ body.has-hero-header .gt-hero{
 .gt-docdd__rows{ padding: 0 0 14px; display:grid; gap:10px; }
 .gt-docdd__row{ color:#0ea5e9; text-decoration: underline; font-weight:600; }
 .gt-docdd__row.is-disabled{ color:#94a3b8; text-decoration:none; cursor:not-allowed; }
+
+.gt-docdd__toolbar{ display:flex; gap:10px; align-items:center; margin: 10px 0 12px; }
+.gt-docdd__toolLink{ border:0; background:transparent; color:#0ea5e9; text-decoration:underline; font-size:13px; cursor:pointer; padding:0; }
+.gt-docdd__toolSelect,.gt-docdd__toolSearch{ border:1px solid #d1d5db; padding:10px 12px; background:#fff; font-size:13px; }
+.gt-docdd__toolSearch{ flex:1; }

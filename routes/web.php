@@ -144,4 +144,9 @@ Route::prefix('{locale}')
 
         Route::post('/reset-password', [PasswordResetController::class, 'update'])
             ->name('password.update');
+
+        Route::get('/reset-password', function (string $locale) {
+            // If someone opens /en/reset-password directly, send them to login
+            return redirect("/{$locale}/login");
+        })->name('password.reset.landing');
     });

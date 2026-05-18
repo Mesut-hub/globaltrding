@@ -138,6 +138,9 @@ class ProductForm
                                 ->schema([
                                     TextInput::make('title')->label('File name')->required(),
                                     TextInput::make('url')->label('Document URL')->required(),
+                                    Toggle::make('downloadable')
+                                        ->label('Downloadable when logged out (if Documents is public)')
+                                        ->default(false),
                                     Select::make('target')->options(['_blank' => '_blank', '_self' => '_self'])->default('_blank'),
                                 ])
                                 ->columns(2),
@@ -203,7 +206,7 @@ class ProductForm
                 ->schema([
                     TextInput::make('title')->required(),
                     TextInput::make('url')->required(),
-                    TextInput::make('language')->default('English'),
+                    TextInput::make('language')->label('Language')->default('English'),
                     TextInput::make('category')->default('Statements - Regulatory'),
                 ])
                 ->columns(2),
@@ -288,7 +291,7 @@ class ProductForm
                                 ->visible(fn ($get) => $get('media_type') === 'video'),
 
                             TextInput::make('title')->required(),
-                            Textarea::make('html')->label('Body HTML')->rows(4),
+                            Textarea::make('body_html')->label('Body (HTML)')->rows(4),
                             TextInput::make('cta_label')->label('CTA label'),
                             TextInput::make('cta_url')->label('CTA URL'),
                         ])

@@ -19,22 +19,22 @@ class PasswordResetController extends Controller
 
     public function update(Request $request, string $locale)
     {
-        $data = $request->validate([
-            'token' => ['required','string'],
-            'email' => ['required','email'],
-            'password' => ['required', 'confirmed', PasswordRule::min(8)],
+        $validated = $request->validate([
+            'token' => ['required', 'string'],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::min(8)],
         ]);
 
         $status = Password::reset(
             [
-                'email' => $data['email'],
-                'password' => $data['password'],
-                'password_confirmation' => $data['password_confirmation'],
-                'token' => $data['token'],
+                'email' => $validated['email'],
+                'password' => $validated['password'],
+                'password_confirmation' => $request->input('password_confirmation', ''), // safe fallback
+                'token' => $validated['token'],
             ],
-            function ($user) use ($data) {
+            function ($user) use ($validated) {
                 $user->forceFill([
-                    'password' => Hash::make($data['password']),
+                    'password' => Hash::make($validated['password']),
                 ])->save();
             }
         );
