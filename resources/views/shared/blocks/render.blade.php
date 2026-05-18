@@ -882,7 +882,7 @@
     @endif
   </section>
 
-@elseif ($type === 'cards')
+@elseif ($type === 'pdcards')
   @php
     $bg = $data['bg'] ?? '#ffffff';
     $heading = $data['heading'] ?? '';
@@ -901,6 +901,7 @@
 
             $title = $card['title'] ?? '';
             $html = $card['body_html'] ?? ($card['html'] ?? '');
+            $excerpt = (string)($card['excerpt'] ?? '');
             $ctaLabel = $card['cta_label'] ?? null;
             $ctaUrl = $card['cta_url'] ?? null;
           @endphp
@@ -911,12 +912,17 @@
             </div>
             <div class="gt-cards__body">
               <div class="gt-cards__title">{{ $title }}</div>
-              @if($html)<div class="prose prose-slate max-w-none">{!! $html !!}</div>@endif
-              @if($ctaLabel && $ctaUrl)
-                <div class="gt-cards__cta">
-                  <a class="gt-btn gt-btn--primary" href="{{ $ctaUrl }}">{{ $ctaLabel }}</a>
-                </div>
-              @endif
+                @if($excerpt)
+                    <div class="gt-cards__excerpt">{{ $excerpt }}</div>
+                @endif
+                @if($html)
+                    <div class="prose prose-slate max-w-none">{!! $html !!}</div>
+                @endif
+                @if($ctaLabel && $ctaUrl)
+                    <div class="gt-cards__cta">
+                        <a class="gt-btn gt-btn--primary" href="{{ $ctaUrl }}">{{ $ctaLabel }}</a>
+                    </div>
+                @endif
             </div>
           </article>
         @endforeach
@@ -940,7 +946,6 @@
   <section class="gt-docdd">
     <div class="gt-docdd__toolbar" data-docdd="{{ $uid }}">
         <button type="button" class="gt-docdd__toolLink" data-docdd-expand>Expand All</button>
-        <button type="button" class="gt-docdd__toolLink" data-docdd-collapse>Collapse All</button>
 
         <select class="gt-docdd__toolSelect" data-docdd-lang>
             <option value="">Language</option>

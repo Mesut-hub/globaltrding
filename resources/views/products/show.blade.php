@@ -10,7 +10,7 @@
   $metaTitle = data_get($product->seo, "title.$locale") ?: data_get($product->seo, "title.en") ?: $name;
   $metaDescription = data_get($product->seo, "description.$locale") ?: data_get($product->seo, "description.en") ?: '';
 
-  $hasAccess = auth()->check() && (bool)auth()->user()?->has_product_access;
+  $hasAccess = auth()->guard('product')->check() && auth()->guard('product')->user()?->has_product_access;
 
   $showOverview = $hasAccess || (bool)($product->pdp_public_overview ?? true);
   $showProps = $hasAccess || (bool)($product->pdp_public_properties ?? false);
@@ -117,13 +117,6 @@
             @if(!$hasAccess && $docMode === 'hide_all')
                 <div class="gt-pdp__notice">Please login to view documents.</div>
             @else
-                <div class="gt-pdp__docsBar">
-                    <a class="gt-pdp__docsExpand" href="#documents">Expand All</a>
-                    <select class="gt-pdp__docsSelect" disabled>
-                        <option>Language</option>
-                    </select>
-                    <input class="gt-pdp__docsSearch" type="text" placeholder="Search" disabled>
-                </div>
 
                 @foreach($docsBlocks as $block)
                     @include('shared.blocks.render', [
@@ -144,7 +137,7 @@
             <div class="gt-pdp__notice">Please login to access sustainability information.</div>
         @else
             @foreach($sustainBlocks as $block)
-            @include('shared.blocks.render', ['block' => $block])
+                @include('shared.blocks.render', ['block' => $block])
             @endforeach
         @endif
     </div>

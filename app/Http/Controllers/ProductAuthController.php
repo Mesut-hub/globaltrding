@@ -19,14 +19,14 @@ class ProductAuthController extends Controller
             'password' => ['required','string'],
         ]);
 
-        if (!Auth::attempt(['email' => $data['email'], 'password' => $data['password']], true)) {
+        if (!Auth::guard('product')->attempt(['email' => $data['email'], 'password' => $data['password']], true)) {
             return back()->withErrors(['email' => 'Invalid credentials.'])->withInput();
         }
 
-        $u = Auth::user();
+        $u = Auth::guard('product')->user();
         if (!$u || !$u->has_product_access) {
-            Auth::logout();
-            $request->session()->invalidate();
+            Auth::guard('product')->logout();
+            //$request->session()->invalidate();
             $request->session()->regenerateToken();
 
             return back()->withErrors(['email' => 'Your account is not approved for product access yet.'])->withInput();
@@ -39,9 +39,9 @@ class ProductAuthController extends Controller
 
     public function logout(Request $request, string $locale)
     {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        Auth::guard('product')->logout();
+        //$request->session()->invalidate();
+        //$request->session()->regenerateToken();
 
         return redirect("/{$locale}/products");
     }

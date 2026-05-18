@@ -1848,6 +1848,7 @@ body.has-hero-header .gt-hero{
 .gt-cards__card{ border:1px solid #e5e7eb; background:#fff; border-radius:10px; overflow:hidden; }
 .gt-cards__media{ aspect-ratio: 16/9; background:#f8fafc; }
 .gt-cards__body{ padding: 14px; }
+.gt-cards__excerpt{ margin-top:6px; color:#475569; font-size:14px; line-height:1.4; }
 .gt-cards__title{ font-weight:800; margin-bottom:8px; }
 .gt-cards__cta{ margin-top:12px; }
 

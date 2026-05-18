@@ -221,6 +221,8 @@ class ProductForm
                 ->label('Two columns (Text/Text or Text/Media)')
                 ->schema([
                     ColorPicker::make('bg')->label('Background')->default('#ffffff'),
+                    Toggle::make('public_visible')->label('Visible when logged out (if section is public)')->default(true),
+                    Toggle::make('public_clickable')->label('CTA/clickable when logged out')->default(false),
 
                     Select::make('layout')
                         ->label('Layout')
@@ -268,16 +270,21 @@ class ProductForm
                     TextInput::make('cta_url')->label('CTA URL'),
                 ]),
 
-            // 2) Cards block (2+ cards) image/video top + content + CTA
-            \Filament\Forms\Components\Builder\Block::make('cards')
+            // 2) Cards block (2+ pdcards) image/video top + content + CTA
+            \Filament\Forms\Components\Builder\Block::make('pdcards')
                 ->label('Cards (2+), Media top + text + CTA')
                 ->schema([
                     ColorPicker::make('bg')->label('Background')->default('#ffffff'),
+                    Toggle::make('public_visible')->label('Visible when logged out (if section is public)')->default(true),
+                    Toggle::make('public_clickable')->label('CTA/clickable when logged out')->default(false),
                     TextInput::make('heading')->label('Heading'),
                     Repeater::make('items')
                         ->label('Cards')
                         ->minItems(2)
                         ->schema([
+                            ColorPicker::make('bg')->label('Background')->default('#ffffff'),
+                            Toggle::make('public_visible')->label('Visible when logged out (if section is public)')->default(true),
+                            Toggle::make('public_clickable')->label('CTA/clickable when logged out')->default(false),
                             Select::make('media_type')->options(['image'=>'Image','video'=>'Video'])->default('image'),
                             FileUpload::make('image')
                                 ->disk('public')->directory('products/pdp/cards')->image()
@@ -292,6 +299,7 @@ class ProductForm
 
                             TextInput::make('title')->required(),
                             Textarea::make('body_html')->label('Body (HTML)')->rows(4),
+                            TextInput::make('excerpt')->label('Excerpt'),
                             TextInput::make('cta_label')->label('CTA label'),
                             TextInput::make('cta_url')->label('CTA URL'),
                         ])
