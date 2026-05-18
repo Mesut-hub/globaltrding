@@ -18,8 +18,8 @@
   $showSustain = $hasAccess || (bool)($product->pdp_public_sustainability ?? true);
 
   $docMode = (string)($product->pdp_documents_logged_out_mode ?? 'list_disabled');
-  $disableDocLinks = (!$hasAccess && $docMode === 'list_disabled');
   $publicDocsEnabled = (bool)($product->pdp_public_documents ?? false);
+  $disableDocLinks = (!$hasAccess && !$publicDocsEnabled && $docMode === 'list_disabled');
 
   $overviewBlocks = is_array($product->pdp_overview_blocks ?? null) ? $product->pdp_overview_blocks : [];
   $propsBlocks = is_array($product->pdp_properties_blocks ?? null) ? $product->pdp_properties_blocks : [];
@@ -108,27 +108,34 @@
         <h2 class="gt-pdp__h2">Documents</h2>
 
         @if(!$hasAccess)
-            <div class="gt-pdp__notice gt-pdp__notice--warn">Please login to download documents</div>
+            @if($publicDocsEnabled)
+            <div class="gt-pdp__notice gt-pdp__notice--warn">
+                Some documents may require login to download.
+            </div>
+            @else
+            <div class="gt-pdp__notice gt-pdp__notice--warn">
+                Please login to download documents
+            </div>
+            @endif
         @endif
 
         @if(!$showDocs)
             <div class="gt-pdp__notice">Please login to access documents.</div>
         @else
-            @if(!$hasAccess && $docMode === 'hide_all')
-                <div class="gt-pdp__notice">Please login to view documents.</div>
+            @if(!$hasAccess && !$publicDocsEnabled && $docMode === 'hide_all')
+            <div class="gt-pdp__notice">Please login to view documents.</div>
             @else
-
-                @foreach($docsBlocks as $block)
-                    @include('shared.blocks.render', [
-                        'block' => $block,
-                        'disableDocLinks' => $disableDocLinks,
-                        'publicDocsEnabled' => $publicDocsEnabled,
-                        'hasProductAccess' => $hasAccess,
-                    ])
-                @endforeach
+            @foreach($docsBlocks as $block)
+                @include('shared.blocks.render', [
+                'block' => $block,
+                'disableDocLinks' => $disableDocLinks,
+                'publicDocsEnabled' => $publicDocsEnabled,
+                'hasProductAccess' => $hasAccess,
+                ])
+            @endforeach
             @endif
         @endif
-    </div>
+        </div>
 
     <div class="gt-pdp__section" id="sustainability">
         <h2 class="gt-pdp__h2">Sustainability</h2>

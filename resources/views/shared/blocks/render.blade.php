@@ -825,6 +825,12 @@
 
 @elseif ($type === 'twoCols')
   @php
+    $hasAccess = (bool)($hasProductAccess ?? false);
+    $publicVisible = (bool)($data['public_visible'] ?? true);
+    $publicClickable = (bool)($data['public_clickable'] ?? false);
+
+    $blockLocked = (!$hasAccess && !$publicClickable);
+    $blockHidden = (!$hasAccess && !$publicVisible);
     $bg = $data['bg'] ?? '#ffffff';
     $layout = $data['layout'] ?? 'text_media';
     $mediaType = $data['media_type'] ?? 'image';
@@ -843,92 +849,115 @@
     $posterUrl = !empty($data['poster']) ? Storage::disk('public')->url($data['poster']) : null;
   @endphp
 
-  <section class="gt-twoCols" style="background: {{ $bg }};">
-    <div class="gt-twoCols__grid">
-      @if($layout === 'media_text')
-        <div class="gt-twoCols__media">
-          @include('shared.blocks.partials.media', ['mediaType'=>$mediaType,'imgUrl'=>$imgUrl,'vidUrl'=>$vidUrl,'posterUrl'=>$posterUrl,'mediaStyle'=>''])
-        </div>
-      @endif
-
-      <div class="gt-twoCols__col">
-        @if($leftTitle)<h3 class="gt-twoCols__h">{{ $leftTitle }}</h3>@endif
-        @if($leftHtml)<div class="prose prose-slate max-w-none">{!! $leftHtml !!}</div>@endif
-      </div>
-
-      @if($layout === 'text_text')
-        <div class="gt-twoCols__col">
-          @if($rightTitle)<h3 class="gt-twoCols__h">{{ $rightTitle }}</h3>@endif
-          @if($rightHtml)<div class="prose prose-slate max-w-none">{!! $rightHtml !!}</div>@endif
-        </div>
-      @else
-        @if($layout === 'text_media')
-          <div class="gt-twoCols__media">
+  @if($blockHidden)
+    {{-- render nothing --}}
+  @else
+    <section class="gt-twoCols" style="background: {{ $bg }};">
+        <div class="gt-twoCols__grid">
+        @if($layout === 'media_text')
+            <div class="gt-twoCols__media">
             @include('shared.blocks.partials.media', ['mediaType'=>$mediaType,'imgUrl'=>$imgUrl,'vidUrl'=>$vidUrl,'posterUrl'=>$posterUrl,'mediaStyle'=>''])
-          </div>
-        @else
-          <div class="gt-twoCols__col">
+            </div>
+        @endif
+
+        <div class="gt-twoCols__col">
+            @if($leftTitle)<h3 class="gt-twoCols__h">{{ $leftTitle }}</h3>@endif
+            @if($leftHtml)<div class="prose prose-slate max-w-none">{!! $leftHtml !!}</div>@endif
+            @if($ctaLabel && $ctaUrl)
+                <div class="gt-twoCols__cta">
+                    <a class="gt-btn gt-btn--primary" href="{{ $ctaUrl }}">{{ $ctaLabel }}</a>
+                </div>
+            @endif
+        </div>
+
+        @if($layout === 'text_text')
+            <div class="gt-twoCols__col">
             @if($rightTitle)<h3 class="gt-twoCols__h">{{ $rightTitle }}</h3>@endif
             @if($rightHtml)<div class="prose prose-slate max-w-none">{!! $rightHtml !!}</div>@endif
-          </div>
-        @endif
-      @endif
-    </div>
-
-    @if($ctaLabel && $ctaUrl)
-      <div class="gt-twoCols__cta">
-        <a class="gt-btn gt-btn--primary" href="{{ $ctaUrl }}">{{ $ctaLabel }}</a>
-      </div>
-    @endif
-  </section>
-
-@elseif ($type === 'pdcards')
-  @php
-    $bg = $data['bg'] ?? '#ffffff';
-    $heading = $data['heading'] ?? '';
-    $items = is_array($data['items'] ?? null) ? $data['items'] : [];
-  @endphp
-  <section class="gt-cards" style="background: {{ $bg }};">
-    <div class="gt-cards__inner">
-      @if($heading)<h3 class="gt-cards__h">{{ $heading }}</h3>@endif
-      <div class="gt-cards__grid">
-        @foreach($items as $card)
-          @php
-            $mediaType = $card['media_type'] ?? 'image';
-            $imgUrl = !empty($card['image']) ? Storage::disk('public')->url($card['image']) : null;
-            $vidUrl = !empty($card['video']) ? Storage::disk('public')->url($card['video']) : null;
-            $posterUrl = !empty($card['poster']) ? Storage::disk('public')->url($card['poster']) : null;
-
-            $title = $card['title'] ?? '';
-            $html = $card['body_html'] ?? ($card['html'] ?? '');
-            $excerpt = (string)($card['excerpt'] ?? '');
-            $ctaLabel = $card['cta_label'] ?? null;
-            $ctaUrl = $card['cta_url'] ?? null;
-          @endphp
-
-          <article class="gt-cards__card">
-            <div class="gt-cards__media">
-              @include('shared.blocks.partials.media', ['mediaType'=>$mediaType,'imgUrl'=>$imgUrl,'vidUrl'=>$vidUrl,'posterUrl'=>$posterUrl,'mediaStyle'=>''])
+            @if($ctaLabel && $ctaUrl)
+                <div class="gt-twoCols__cta">
+                    <a class="gt-btn gt-btn--primary" href="{{ $ctaUrl }}">{{ $ctaLabel }}</a>
+                </div>
+            @endif
             </div>
-            <div class="gt-cards__body">
-              <div class="gt-cards__title">{{ $title }}</div>
-                @if($excerpt)
-                    <div class="gt-cards__excerpt">{{ $excerpt }}</div>
-                @endif
-                @if($html)
-                    <div class="prose prose-slate max-w-none">{!! $html !!}</div>
-                @endif
+        @else
+            @if($layout === 'text_media')
+            <div class="gt-twoCols__media">
+                @include('shared.blocks.partials.media', ['mediaType'=>$mediaType,'imgUrl'=>$imgUrl,'vidUrl'=>$vidUrl,'posterUrl'=>$posterUrl,'mediaStyle'=>''])
+            </div>
+            @else
+            <div class="gt-twoCols__col">
+                @if($rightTitle)<h3 class="gt-twoCols__h">{{ $rightTitle }}</h3>@endif
+                @if($rightHtml)<div class="prose prose-slate max-w-none">{!! $rightHtml !!}</div>@endif
                 @if($ctaLabel && $ctaUrl)
-                    <div class="gt-cards__cta">
+                    <div class="gt-twoCols__cta">
                         <a class="gt-btn gt-btn--primary" href="{{ $ctaUrl }}">{{ $ctaLabel }}</a>
                     </div>
                 @endif
             </div>
-          </article>
-        @endforeach
-      </div>
-    </div>
-  </section>
+            @endif
+        @endif
+        </div>
+    </section>
+  @endif
+
+@elseif ($type === 'pdcards')
+  @php
+    $hasAccess = (bool)($hasProductAccess ?? false);
+    $publicVisible = (bool)($data['public_visible'] ?? true);
+    $publicClickable = (bool)($data['public_clickable'] ?? false);
+
+    $blockLocked = (!$hasAccess && !$publicClickable);
+    $blockHidden = (!$hasAccess && !$publicVisible);
+    $bg = $data['bg'] ?? '#ffffff';
+    $heading = $data['heading'] ?? '';
+    $items = is_array($data['items'] ?? null) ? $data['items'] : [];
+  @endphp
+  @if($blockHidden)
+    {{-- render nothing --}}
+  @else
+    <section class="gt-cards" style="background: {{ $bg }};">
+        <div class="gt-cards__inner">
+        @if($heading)<h3 class="gt-cards__h">{{ $heading }}</h3>@endif
+        <div class="gt-cards__grid">
+            @foreach($items as $card)
+            @php
+                $mediaType = $card['media_type'] ?? 'image';
+                $imgUrl = !empty($card['image']) ? Storage::disk('public')->url($card['image']) : null;
+                $vidUrl = !empty($card['video']) ? Storage::disk('public')->url($card['video']) : null;
+                $posterUrl = !empty($card['poster']) ? Storage::disk('public')->url($card['poster']) : null;
+
+                $title = $card['title'] ?? '';
+                $html = $card['body_html'] ?? ($card['html'] ?? '');
+                $excerpt = (string)($card['excerpt'] ?? '');
+                $ctaLabel = $card['cta_label'] ?? null;
+                $ctaUrl = $card['cta_url'] ?? null;
+            @endphp
+
+            <article class="gt-cards__card">
+                <div class="gt-cards__media">
+                @include('shared.blocks.partials.media', ['mediaType'=>$mediaType,'imgUrl'=>$imgUrl,'vidUrl'=>$vidUrl,'posterUrl'=>$posterUrl,'mediaStyle'=>''])
+                </div>
+                <div class="gt-cards__body">
+                <div class="gt-cards__title">{{ $title }}</div>
+                    @if($excerpt)
+                        <div class="gt-cards__excerpt">{{ $excerpt }}</div>
+                    @endif
+                    @if($html)
+                        <div class="prose prose-slate max-w-none">{!! $html !!}</div>
+                    @endif
+                    @if($ctaLabel && $ctaUrl)
+                        <div class="gt-cards__cta">
+                            <a class="gt-btn gt-btn--primary" href="{{ $ctaUrl }}">{{ $ctaLabel }}</a>
+                        </div>
+                    @endif
+                </div>
+            </article>
+            @endforeach
+        </div>
+        </div>
+    </section>
+  @endif
 
 @elseif ($type === 'docDropdown')
   @php
