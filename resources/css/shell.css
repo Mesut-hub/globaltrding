@@ -863,19 +863,33 @@ body.nav-overlay-open .site-header .main-nav a.is-overlay-active {
 
 /* ===== Global blocks ===== */
 .gt-btn{
-  display:inline-flex;
+  display:inline-block;
   align-items:center;
   justify-content:center;
   padding:10px 14px;
   border-radius:10px;
   font-weight:700;
+  transition: transform 0.3s ease, text-shadow 0.3s ease, letter-spacing 0.3s ease;
 }
 .gt-btn--primary{
   background:#10a6df;
   color:#fff;
 }
-.gt-btn--primary:hover{ filter: brightness(0.95); }
+.gt-btn--primary:hover{
+  /* Makes the text slightly larger */
+  transform: scale(1.01); 
+  /* Adds a subtle glow to make it pop */
+  /*text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);*/
+  /* Slightly spreads letters for prominence */
+  letter-spacing: 0.2px; 
+}
 
+.gt-btn.is-disabled{
+  opacity:.55;
+  cursor:not-allowed;
+  pointer-events:none;
+  filter: grayscale(.2);
+}
 /* ===== Hero ===== */
 .gt-hero{
   position: relative;
@@ -1837,8 +1851,10 @@ body.has-hero-header .gt-hero{
 .gt-twoCols__grid{ width:min(92%,1120px); margin:0 auto; display:grid; gap:22px; grid-template-columns: 1fr 1fr; align-items:center; }
 @media(max-width:980px){ .gt-twoCols__grid{ grid-template-columns:1fr; } }
 .gt-twoCols__media{ border:1px solid #e5e7eb; background:#fff; overflow:hidden; border-radius:8px; }
-.gt-twoCols__h{ font-weight:800; font-size:20px; margin-bottom:8px; }
-.gt-twoCols__cta{ width:min(92%,1120px); margin:16px auto 0; }
+.gt-twoCols__col{ border:1px solid #e5e7eb; overflow:hidden; border-radius:8px; }
+.gt-twoCols__h{ font-weight:800; font-size:20px; margin-bottom:8px; margin-left: 18px; margin-top: 14px; }
+.prose1{ margin-left: 18px; margin-right: 14px; }
+.gt-twoCols__cta{ width:min(92%,1120px); margin:16px auto 0; margin-bottom: 8px; }
 
 .gt-cards{ padding: 28px 0; }
 .gt-cards__inner{ width:min(92%,1120px); margin:0 auto; }

@@ -2,6 +2,7 @@
 
 @php
   $locale = app()->getLocale();
+  $data = $block['data'] ?? [];
 
   $name = $product->display_name ?: ($product->slug ?? '');
   $prd = $product->prd_number;
@@ -30,6 +31,11 @@
   $propertiesHtml = (string)($product->pdp_properties_html ?? '');
   $sustainHtml = (string)($product->pdp_sustainability_html ?? '');
   $documents = is_array($product->pdp_documents ?? null) ? $product->pdp_documents : [];
+
+  $rows = is_array($data['rows'] ?? null) ? $data['rows'] : [];
+
+  $uid = 'docdd_' . substr(md5(json_encode($data)), 0, 10);
+  $languages = collect($rows)->map(fn($r) => (string)($r['language'] ?? ''))->filter()->unique()->sort()->values();
 
   $loginUrl = "/{$locale}/login";
   $registerUrl = "/{$locale}/register";
@@ -87,7 +93,7 @@
             <div class="gt-pdp__notice">Please login to access overview.</div>
         @else
             @foreach($overviewBlocks as $block)
-            @include('shared.blocks.render', ['block' => $block])
+                @include('shared.blocks.render', ['block' => $block, 'hasProductAccess' => $hasAccess])
             @endforeach
         @endif
     </div>
@@ -99,7 +105,7 @@
             <div class="gt-pdp__notice">Please login to access properties.</div>
         @else
             @foreach($propsBlocks as $block)
-            @include('shared.blocks.render', ['block' => $block])
+                @include('shared.blocks.render', ['block' => $block, 'hasProductAccess' => $hasAccess])
             @endforeach
         @endif
     </div>
@@ -109,33 +115,36 @@
 
         @if(!$hasAccess)
             @if($publicDocsEnabled)
-            <div class="gt-pdp__notice gt-pdp__notice--warn">
-                Some documents may require login to download.
-            </div>
+                <div class="gt-pdp__notice gt-pdp__notice--warn">
+                    Some documents may require login to download.
+                </div>
+                <div class="gt-docdd__toolbar" data-docdd="{{ $uid }}">
+                    <button type="button" class="gt-docdd__toolLink" data-docdd-expand>Expand All</button>
+
+                    <select class="gt-docdd__toolSelect" data-docdd-lang>
+                        <option value="">Language</option>
+                        @foreach($languages as $lang)
+                            <option value="{{ $lang }}">{{ $lang }}</option>
+                        @endforeach
+                    </select>
+
+                    <input class="gt-docdd__toolSearch" type="search" placeholder="Search" data-docdd-search>
+                </div>
+                @foreach($docsBlocks as $block)
+                    @include('shared.blocks.render', [
+                    'block' => $block,
+                    'disableDocLinks' => $disableDocLinks,
+                    'publicDocsEnabled' => $publicDocsEnabled,
+                    'hasProductAccess' => $hasAccess,
+                    ])
+                @endforeach                                                             
             @else
             <div class="gt-pdp__notice gt-pdp__notice--warn">
                 Please login to download documents
             </div>
             @endif
         @endif
-
-        @if(!$showDocs)
-            <div class="gt-pdp__notice">Please login to access documents.</div>
-        @else
-            @if(!$hasAccess && !$publicDocsEnabled && $docMode === 'hide_all')
-            <div class="gt-pdp__notice">Please login to view documents.</div>
-            @else
-            @foreach($docsBlocks as $block)
-                @include('shared.blocks.render', [
-                'block' => $block,
-                'disableDocLinks' => $disableDocLinks,
-                'publicDocsEnabled' => $publicDocsEnabled,
-                'hasProductAccess' => $hasAccess,
-                ])
-            @endforeach
-            @endif
-        @endif
-        </div>
+    </div>
 
     <div class="gt-pdp__section" id="sustainability">
         <h2 class="gt-pdp__h2">Sustainability</h2>
@@ -144,7 +153,7 @@
             <div class="gt-pdp__notice">Please login to access sustainability information.</div>
         @else
             @foreach($sustainBlocks as $block)
-                @include('shared.blocks.render', ['block' => $block])
+                @include('shared.blocks.render', ['block' => $block, 'hasProductAccess' => $hasAccess])
             @endforeach
         @endif
     </div>

@@ -221,8 +221,13 @@ class ProductForm
                 ->label('Two columns (Text/Text or Text/Media)')
                 ->schema([
                     ColorPicker::make('bg')->label('Background')->default('#ffffff'),
+                    ColorPicker::make('card_bg')->label('Card_Background')->default('#ffffff'),
+                    ColorPicker::make('cta_bg')->label('CTA_Background')->default('#ffffff'),
+                    ColorPicker::make('text')->label('CTA_Color')->default('#ffffff'),
+                    ColorPicker::make('html')->label('HTML_Color')->default('#ffffff'),
                     Toggle::make('public_visible')->label('Visible when logged out (if section is public)')->default(true),
-                    Toggle::make('public_clickable')->label('CTA/clickable when logged out')->default(false),
+                    Toggle::make('public_clickable_r')->label('CTA/clickable when logged out Right')->default(false),
+                    Toggle::make('public_clickable_l')->label('CTA/clickable when logged out Left')->default(false),
 
                     Select::make('layout')
                         ->label('Layout')
@@ -267,7 +272,8 @@ class ProductForm
                     Textarea::make('right_html')->label('Right column HTML')->rows(6),
 
                     TextInput::make('cta_label')->label('CTA label'),
-                    TextInput::make('cta_url')->label('CTA URL'),
+                    TextInput::make('ctaL_url')->label('CTA Left URL'),
+                    TextInput::make('ctaR_url')->label('CTA Right URL'),
                 ]),
 
             // 2) Cards block (2+ pdcards) image/video top + content + CTA
@@ -282,7 +288,11 @@ class ProductForm
                         ->label('Cards')
                         ->minItems(2)
                         ->schema([
-                            ColorPicker::make('bg')->label('Background')->default('#ffffff'),
+                            ColorPicker::make('card_bg')->label('Card_Background')->default('#ffffff'),
+                            ColorPicker::make('cta_bg')->label('CTA_Background')->default('#ffffff'),
+                            ColorPicker::make('text')->label('CTA_Color')->default('#ffffff'),
+                            ColorPicker::make('html')->label('HTML_Color')->default('#ffffff'),
+                            ColorPicker::make('exrt')->label('EXRT_Color')->default('#ffffff'),
                             Toggle::make('public_visible')->label('Visible when logged out (if section is public)')->default(true),
                             Toggle::make('public_clickable')->label('CTA/clickable when logged out')->default(false),
                             Select::make('media_type')->options(['image'=>'Image','video'=>'Video'])->default('image'),
