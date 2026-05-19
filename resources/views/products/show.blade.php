@@ -118,26 +118,30 @@
                 <div class="gt-pdp__notice gt-pdp__notice--warn">
                     Some documents may require login to download.
                 </div>
-                <div class="gt-docdd__toolbar" data-docdd="{{ $uid }}">
-                    <button type="button" class="gt-docdd__toolLink" data-docdd-expand>Expand All</button>
+                <div class="gt-docdd__toolbar" data-docdd-toolbar>
+                    <button type="button" class="gt-docdd__toolLink" data-docdd-toggle aria-pressed="false">
+                        Expand all
+                    </button>
 
                     <select class="gt-docdd__toolSelect" data-docdd-lang>
-                        <option value="">Language</option>
+                        <option value="">{{ __('documents.language') }}</option>
                         @foreach($languages as $lang)
-                            <option value="{{ $lang }}">{{ $lang }}</option>
+                        <option value="{{ $lang }}">{{ $lang }}</option>
                         @endforeach
                     </select>
 
-                    <input class="gt-docdd__toolSearch" type="search" placeholder="Search" data-docdd-search>
+                    <input class="gt-docdd__toolSearch" type="search" placeholder="{{ __('documents.search') }}" data-docdd-search>
                 </div>
-                @foreach($docsBlocks as $block)
-                    @include('shared.blocks.render', [
-                    'block' => $block,
-                    'disableDocLinks' => $disableDocLinks,
-                    'publicDocsEnabled' => $publicDocsEnabled,
-                    'hasProductAccess' => $hasAccess,
-                    ])
-                @endforeach                                                             
+                <div data-docdd-scope>
+                    @foreach($docsBlocks as $block)
+                        @include('shared.blocks.render', [
+                        'block' => $block,
+                        'disableDocLinks' => $disableDocLinks,
+                        'publicDocsEnabled' => $publicDocsEnabled,
+                        'hasProductAccess' => $hasAccess,
+                        ])
+                    @endforeach
+                </div>
             @else
             <div class="gt-pdp__notice gt-pdp__notice--warn">
                 Please login to download documents

@@ -10,3 +10,5 @@ import './home';
 import './market-page';
 import './market-belt';
 import './layout';
+
+import './pdp-docdd';

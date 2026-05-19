@@ -11,14 +11,14 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Filament\Panel;
 
-#[Fillable(['name', 'email', 'password', 'is_admin', 'limits'])]
+#[Fillable(['name', 'email', 'password', 'is_admin', 'limits', 'has_product_access'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
+    /*
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
