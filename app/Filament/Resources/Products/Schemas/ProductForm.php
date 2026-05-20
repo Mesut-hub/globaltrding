@@ -47,27 +47,12 @@ class ProductForm
                 ->maxLength(255)
                 ->regex('/^[a-z0-9]+(?:-[a-z0-9]+)*$/')
                 ->unique(ignoreRecord: true)
-                ->helperText('Example: pd-al-5637-e-1-12')
-                ->afterStateUpdated(function (?string $state, callable $set) {
-                    if (is_string($state)) $set('slug', Str::slug($state));
-                }),
+                ->helperText('Example: pd-al-5637-e-1-12'),
 
             Grid::make(2)->schema([
-                KeyValue::make('display_name')
-                    ->label('Product name (hyperlinked text) (en,tr,ar,fr)')
-                    ->keyLabel('Locale')
-                    ->valueLabel('Title')
-                    ->required()
-                    ->formatStateUsing(fn ($state) => MultiLangKeyValue::normalize($state))
-                    ->dehydrateStateUsing(fn ($state) => MultiLangKeyValue::dehydrate($state))
-                    ->rule(function () {
-                        return function (string $attribute, $value, $fail) {
-                            $arr = MultiLangKeyValue::normalize($value);
-                            if (trim((string)($arr['en'] ?? '')) === '') {
-                                $fail("Display name must include a non-empty 'en' value.");
-                            }
-                        };
-                    }),
+                TextInput::make('display_name')
+                    ->label('Product name (hyperlinked text)')
+                    ->required(),
 
                 TextInput::make('display_url')
                     ->label('Product name URL (related page)')
@@ -80,12 +65,8 @@ class ProductForm
                     ->label('PRD Number')
                     ->maxLength(64),
 
-                KeyValue::make('industry_label')
-                    ->label('Industry (en,tr,ar,fr)')
-                    ->keyLabel('Locale')
-                    ->valueLabel('Industry')
-                    ->formatStateUsing(fn ($state) => MultiLangKeyValue::normalize($state))
-                    ->dehydrateStateUsing(fn ($state) => MultiLangKeyValue::dehydrate($state)),
+                TextInput::make('industry_label')
+                    ->label('Industry')
             ]),
 
             Grid::make(2)->schema([
@@ -171,43 +152,31 @@ class ProductForm
             Grid::make(2)->schema([
                 Textarea::make('industries')
                     ->label('Industries (one per line)')
-                    ->rows(4)
-                    ->formatStateUsing(fn ($state) => is_array($state) ? implode("\n", $state) : '')
-                    ->dehydrateStateUsing(fn ($state) => array_values(array_filter(array_map('trim', preg_split("/\r\n|\n|\r/", (string)$state))))),
+                    ->rows(4),
 
                 Textarea::make('applications')
                     ->label('Applications (one per line)')
-                    ->rows(4)
-                    ->formatStateUsing(fn ($state) => is_array($state) ? implode("\n", $state) : '')
-                    ->dehydrateStateUsing(fn ($state) => array_values(array_filter(array_map('trim', preg_split("/\r\n|\n|\r/", (string)$state))))),
+                    ->rows(4),
             ]),
 
             Grid::make(2)->schema([
                 Textarea::make('product_groups')
                     ->label('Products Group (one per line)')
-                    ->rows(4)
-                    ->formatStateUsing(fn ($state) => is_array($state) ? implode("\n", $state) : '')
-                    ->dehydrateStateUsing(fn ($state) => array_values(array_filter(array_map('trim', preg_split("/\r\n|\n|\r/", (string)$state))))),
+                    ->rows(4),
 
                 Textarea::make('processes')
                     ->label('Processes (one per line)')
-                    ->rows(4)
-                    ->formatStateUsing(fn ($state) => is_array($state) ? implode("\n", $state) : '')
-                    ->dehydrateStateUsing(fn ($state) => array_values(array_filter(array_map('trim', preg_split("/\r\n|\n|\r/", (string)$state))))),
+                    ->rows(4),
             ]),
 
             Grid::make(2)->schema([
                 Textarea::make('sustainability_tags')
                     ->label('Sustainability (one per line)')
-                    ->rows(4)
-                    ->formatStateUsing(fn ($state) => is_array($state) ? implode("\n", $state) : '')
-                    ->dehydrateStateUsing(fn ($state) => array_values(array_filter(array_map('trim', preg_split("/\r\n|\n|\r/", (string)$state))))),
+                    ->rows(4),
 
                 Textarea::make('regulatory_tags')
                     ->label('Regulatory (one per line)')
-                    ->rows(4)
-                    ->formatStateUsing(fn ($state) => is_array($state) ? implode("\n", $state) : '')
-                    ->dehydrateStateUsing(fn ($state) => array_values(array_filter(array_map('trim', preg_split("/\r\n|\n|\r/", (string)$state))))),
+                    ->rows(4),
             ]),
 
             // PDP sections
