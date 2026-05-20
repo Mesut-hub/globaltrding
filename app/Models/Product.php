@@ -48,6 +48,8 @@ class Product extends Model
         'description' => 'array',
         'seo' => 'array',
         'is_published' => 'boolean',
+        'display_name' => 'array',
+        'industry_label' => 'array',
         'industries' => 'array',
         'applications' => 'array',
         'product_groups' => 'array',

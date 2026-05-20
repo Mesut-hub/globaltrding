@@ -4,9 +4,16 @@
   $locale = app()->getLocale();
   $data = $block['data'] ?? [];
 
-  $name = $product->display_name ?: ($product->slug ?? '');
+  $locale = app()->getLocale();
+  $fallback = config('locales.default', 'en');
+
+  $name = data_get($product->display_name, $locale)
+      ?: data_get($product->display_name, $fallback)
+      ?: $product->slug;
   $prd = $product->prd_number;
-  $industry = $product->industry_label;
+  $industry = data_get($product->industry_label, $locale)
+        ?: data_get($product->industry_label, $fallback)
+        ?: $product->slug;
 
   $metaTitle = data_get($product->seo, "title.$locale") ?: data_get($product->seo, "title.en") ?: $name;
   $metaDescription = data_get($product->seo, "description.$locale") ?: data_get($product->seo, "description.en") ?: '';
@@ -35,7 +42,17 @@
   $rows = is_array($data['rows'] ?? null) ? $data['rows'] : [];
 
   $uid = 'docdd_' . substr(md5(json_encode($data)), 0, 10);
-  $languages = collect($rows)->map(fn($r) => (string)($r['language'] ?? ''))->filter()->unique()->sort()->values();
+  $languages = collect($docsBlocks)
+    ->filter(fn($b) => ($b['type'] ?? null) === 'docDropdown')
+    ->flatMap(function ($b) {
+      $rows = $b['data']['rows'] ?? [];
+      return collect(is_array($rows) ? $rows : [])
+        ->map(fn($r) => trim((string)($r['language'] ?? '')))
+        ->filter();
+    })
+    ->unique()
+    ->sort()
+    ->values();
 
   $loginUrl = "/{$locale}/login";
   $registerUrl = "/{$locale}/register";

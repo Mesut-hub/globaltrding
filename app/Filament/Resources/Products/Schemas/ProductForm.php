@@ -6,6 +6,7 @@ use App\Models\Brand;
 use Filament\Forms\Components\Builder;
 use Filament\Forms\Components\Builder\Block;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -52,10 +53,21 @@ class ProductForm
                 }),
 
             Grid::make(2)->schema([
-                TextInput::make('display_name')
-                    ->label('Product name (hyperlinked text)')
+                KeyValue::make('display_name')
+                    ->label('Product name (hyperlinked text) (en,tr,ar,fr)')
+                    ->keyLabel('Locale')
+                    ->valueLabel('Title')
                     ->required()
-                    ->maxLength(255),
+                    ->formatStateUsing(fn ($state) => MultiLangKeyValue::normalize($state))
+                    ->dehydrateStateUsing(fn ($state) => MultiLangKeyValue::dehydrate($state))
+                    ->rule(function () {
+                        return function (string $attribute, $value, $fail) {
+                            $arr = MultiLangKeyValue::normalize($value);
+                            if (trim((string)($arr['en'] ?? '')) === '') {
+                                $fail("Display name must include a non-empty 'en' value.");
+                            }
+                        };
+                    }),
 
                 TextInput::make('display_url')
                     ->label('Product name URL (related page)')
@@ -68,9 +80,12 @@ class ProductForm
                     ->label('PRD Number')
                     ->maxLength(64),
 
-                TextInput::make('industry_label')
-                    ->label('Industry')
-                    ->maxLength(120),
+                KeyValue::make('industry_label')
+                    ->label('Industry (en,tr,ar,fr)')
+                    ->keyLabel('Locale')
+                    ->valueLabel('Industry')
+                    ->formatStateUsing(fn ($state) => MultiLangKeyValue::normalize($state))
+                    ->dehydrateStateUsing(fn ($state) => MultiLangKeyValue::dehydrate($state)),
             ]),
 
             Grid::make(2)->schema([
