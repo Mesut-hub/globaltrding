@@ -7,6 +7,8 @@ use Filament\Forms\Components\Builder;
 use Filament\Forms\Components\Builder\Block;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\KeyValue;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -21,6 +23,9 @@ class ProductForm
 {
     public static function configure(Schema $schema): Schema
     {
+        $locales = config('locales.supported', ['en']);
+        $default = config('locales.default', 'en');
+
         return $schema->components([
             Grid::make(2)->schema([
                 Select::make('brand_id')
@@ -49,10 +54,18 @@ class ProductForm
                 ->unique(ignoreRecord: true)
                 ->helperText('Example: pd-al-5637-e-1-12'),
 
+            Tabs::make('Translations')
+                    ->persistTabInQueryString()
+                    ->tabs(
+                        collect($locales)->map(function (string $locale) use ($default) {
+                            $label = strtoupper($locale);
+
+                            return Tab::make($label)
+                                ->schema([
             Grid::make(2)->schema([
-                TextInput::make('display_name')
-                    ->label('Product name (hyperlinked text)')
-                    ->required(),
+                TextInput::make("display_name.$locale")
+                    ->label("Product name ($label)")
+                    ->required($locale === $default),
 
                 TextInput::make('display_url')
                     ->label('Product name URL (related page)')
@@ -65,17 +78,17 @@ class ProductForm
                     ->label('PRD Number')
                     ->maxLength(64),
 
-                TextInput::make('industry_label')
-                    ->label('Industry')
+                TextInput::make("industry_label.$locale")
+                    ->label("Industry ($label)"),
             ]),
 
             Grid::make(2)->schema([
-                TextInput::make('seo.title.en')
-                    ->label('SEO Title (EN)')
+                TextInput::make("seo.title.$locale")
+                    ->label("SEO Title ($label)")
                     ->maxLength(60),
 
-                Textarea::make('seo.description.en')
-                    ->label('SEO Description (EN)')
+                Textarea::make("seo.description.$locale")
+                    ->label("SEO Description ($label)")
                     ->rows(3)
                     ->maxLength(160),
             ]),
@@ -108,7 +121,6 @@ class ProductForm
                 ->default('list_disabled')
                 ->helperText('If Documents section is not visible before login, this setting applies only after login banner is shown.'),
 
-            // ===== PDP Builders =====
             Builder::make('pdp_overview_blocks')
                 ->label('PDP - Overview blocks')
                 ->collapsed()
@@ -127,12 +139,12 @@ class ProductForm
                     Block::make('docDropdown')
                         ->label('Documents dropdown list')
                         ->schema([
-                            TextInput::make('heading')->label('Heading')->default('Statements - Regulatory'),
+                            TextInput::make("heading.$locale")->label("Heading ($label)")->default('Statements - Regulatory'),
                             Repeater::make('rows')
                                 ->label('Document rows')
                                 ->minItems(1)
                                 ->schema([
-                                    TextInput::make('title')->label('File name')->required(),
+                                    TextInput::make("title.$locale")->label("File name ($label)")->required(),
                                     TextInput::make('url')->label('Document URL')->required(),
                                     Toggle::make('downloadable')
                                         ->label('Downloadable when logged out (if Documents is public)')
@@ -150,50 +162,57 @@ class ProductForm
 
             // Finder filters stored as arrays
             Grid::make(2)->schema([
-                Textarea::make('industries')
-                    ->label('Industries (one per line)')
+                Textarea::make("industries.$locale")
+                    ->label("Industries (one per line) ($label)")
                     ->rows(4),
 
-                Textarea::make('applications')
-                    ->label('Applications (one per line)')
-                    ->rows(4),
-            ]),
-
-            Grid::make(2)->schema([
-                Textarea::make('product_groups')
-                    ->label('Products Group (one per line)')
-                    ->rows(4),
-
-                Textarea::make('processes')
-                    ->label('Processes (one per line)')
+                Textarea::make("applications.$locale")
+                    ->label("Applications (one per line) ($label)")
                     ->rows(4),
             ]),
 
             Grid::make(2)->schema([
-                Textarea::make('sustainability_tags')
-                    ->label('Sustainability (one per line)')
+                Textarea::make("product_groups.$locale")
+                    ->label("Products Group (one per line) ($label)")
+                    ->rows(4)
+                    ->formatStateUsing(fn ($state) => is_array($state) ? implode("\n", $state) : '')
+                    ->dehydrateStateUsing(fn ($state) => array_values(array_filter(array_map('trim',
+                        preg_split("/\r\n|\n|\r/", (string) $state)
+                    )))),
+
+                Textarea::make("processes.$locale")
+                    ->label("Processes (one per line) ($label)")
+                    ->rows(4),
+            ]),
+
+            Grid::make(2)->schema([
+                Textarea::make("sustainability_tags.$locale")
+                    ->label("Sustainability (one per line) ($label)")
                     ->rows(4),
 
-                Textarea::make('regulatory_tags')
-                    ->label('Regulatory (one per line)')
+                Textarea::make("regulatory_tags.$locale")
+                    ->label("Regulatory (one per line) ($label)")
                     ->rows(4),
             ]),
 
             // PDP sections
-            Textarea::make('pdp_overview_html')->label('PDP - Overview (HTML)')->rows(8),
-            Textarea::make('pdp_properties_html')->label('PDP - Properties (HTML)')->rows(8),
-            Textarea::make('pdp_sustainability_html')->label('PDP - Sustainability (HTML)')->rows(8),
+            Textarea::make("pdp_overview_html.$locale")->label("PDP - Overview (HTML) ($label)")->rows(8),
+            Textarea::make("pdp_properties_html.$locale")->label("PDP - Properties (HTML) ($label)")->rows(8),
+            Textarea::make("pdp_sustainability_html.$locale")->label("PDP - Sustainability (HTML) ($label)")->rows(8),
 
             Repeater::make('pdp_documents')
                 ->label('PDP - Documents')
                 ->minItems(0)
                 ->schema([
-                    TextInput::make('title')->required(),
+                    TextInput::make("title.$locale")->required(),
                     TextInput::make('url')->required(),
                     TextInput::make('language')->label('Language')->default('English'),
                     TextInput::make('category')->default('Statements - Regulatory'),
                 ])
                 ->columns(2),
+                ]);
+                        })->values()->all()
+                    ),
         ]);
     }
 

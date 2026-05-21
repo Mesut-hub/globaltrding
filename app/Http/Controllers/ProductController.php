@@ -10,29 +10,69 @@ class ProductController extends Controller
 {
     private function normList($v): array
     {
-        if (is_array($v)) return array_values(array_filter(array_map('trim', $v)));
-        if (is_string($v) && $v !== '') return [trim($v)];
+        if (is_array($v)) {
+            return array_values(array_filter(array_map('trim', $v)));
+        }
+
+        if (is_string($v) && $v !== '') {
+            return [trim($v)];
+        }
+
         return [];
     }
 
-    private function facetValues(): array
+    /**
+     * Extract locale-specific list from either:
+     * - legacy list: ["A","B"]
+     * - locale map: {"en":["A"],"tr":["B"]}
+     */
+    private function extractFacetList($value, string $locale, string $fallback): array
     {
-        // Pull facets from all published products (fast enough for small/medium datasets).
-        // If it grows big, we can cache or build a separate facets table.
+        if (is_array($value) && array_is_list($value)) {
+            return $value;
+        }
+
+        if (is_array($value) && ! array_is_list($value)) {
+            $list = data_get($value, $locale);
+            if (! is_array($list)) {
+                $list = data_get($value, $fallback);
+            }
+
+            return is_array($list) ? $list : [];
+        }
+
+        if (is_string($value) && trim($value) !== '') {
+            return [trim($value)];
+        }
+
+        return [];
+    }
+
+    private function facetValues(string $locale): array
+    {
+        $fallback = config('locales.default', 'en');
+
         $products = Product::query()
             ->where('is_published', true)
             ->get([
-                'industries','applications','product_groups','processes','sustainability_tags','regulatory_tags',
+                'industries',
+                'applications',
+                'product_groups',
+                'processes',
+                'sustainability_tags',
+                'regulatory_tags',
             ]);
 
-        $collect = fn ($key) => $products
-            ->flatMap(fn ($p) => (array)($p->{$key} ?? []))
-            ->map(fn ($x) => trim((string)$x))
-            ->filter()
-            ->unique()
-            ->sort()
-            ->values()
-            ->all();
+        $collect = function (string $key) use ($products, $locale, $fallback): array {
+            return $products
+                ->flatMap(fn ($p) => $this->extractFacetList($p->{$key} ?? null, $locale, $fallback))
+                ->map(fn ($x) => trim((string) $x))
+                ->filter()
+                ->unique()
+                ->sort()
+                ->values()
+                ->all();
+        };
 
         return [
             'industries' => $collect('industries'),
@@ -46,6 +86,8 @@ class ProductController extends Controller
 
     public function index(Request $request, string $locale)
     {
+        $fallback = config('locales.default', 'en');
+
         $q = trim((string) $request->query('q', ''));
         $brandSlug = trim((string) $request->query('brand', ''));
         $sort = trim((string) $request->query('sort', 'relevance'));
@@ -71,24 +113,37 @@ class ProductController extends Controller
                 ->where('is_published', true)
                 ->first();
 
-            if ($brand) $query->where('brand_id', $brand->id);
+            if ($brand) {
+                $query->where('brand_id', $brand->id);
+            }
         }
 
+        // Search (display_name may be JSON after multilingual)
         if ($q !== '') {
-            $query->where(function ($sub) use ($q) {
-                $sub->where('display_name', 'like', "%{$q}%")
-                    ->orWhere('prd_number', 'like', "%{$q}%")
-                    ->orWhere('slug', 'like', "%{$q}%");
+            $query->where(function ($sub) use ($q, $locale, $fallback) {
+                $sub->whereRaw(
+                    "COALESCE(
+                        NULLIF(JSON_UNQUOTE(JSON_EXTRACT(display_name, ?)), ''),
+                        NULLIF(JSON_UNQUOTE(JSON_EXTRACT(display_name, ?)), '')
+                    ) LIKE ?",
+                    ["$.{$locale}", "$.{$fallback}", "%{$q}%"]
+                )
+                ->orWhere('prd_number', 'like', "%{$q}%")
+                ->orWhere('slug', 'like', "%{$q}%");
             });
         }
 
-        // JSON facets filtering (OR across selected values per facet group, AND across facet groups)
+        // Facet filtering (support both legacy list and locale-map list)
         foreach ($filters as $col => $values) {
-            if (!count($values)) continue;
+            if (! count($values)) {
+                continue;
+            }
 
-            $query->where(function ($sub) use ($col, $values) {
+            $query->where(function ($sub) use ($col, $values, $locale, $fallback) {
                 foreach ($values as $v) {
-                    $sub->orWhereJsonContains($col, $v);
+                    $sub->orWhereJsonContains("{$col}->{$locale}", $v)
+                        ->orWhereJsonContains("{$col}->{$fallback}", $v)
+                        ->orWhereJsonContains($col, $v);
                 }
             });
         }
@@ -97,12 +152,36 @@ class ProductController extends Controller
         if ($sort === 'newest') {
             $query->orderByDesc('id');
         } elseif ($sort === 'name_asc') {
-            $query->orderBy('display_name');
+            $query->orderByRaw(
+                "COALESCE(
+                    NULLIF(JSON_UNQUOTE(JSON_EXTRACT(display_name, ?)), ''),
+                    NULLIF(JSON_UNQUOTE(JSON_EXTRACT(display_name, ?)), ''),
+                    slug
+                ) asc",
+                ["$.{$locale}", "$.{$fallback}"]
+            );
         } else {
-            // "Most relevant" baseline: if q present, order by "starts with" then contains then newest.
+            // "Most relevant"
             if ($q !== '') {
-                $query->orderByRaw("CASE WHEN display_name LIKE ? THEN 0 WHEN display_name LIKE ? THEN 1 ELSE 2 END", ["{$q}%", "%{$q}%"]);
+                $query->orderByRaw(
+                    "CASE
+                        WHEN COALESCE(
+                            NULLIF(JSON_UNQUOTE(JSON_EXTRACT(display_name, ?)), ''),
+                            NULLIF(JSON_UNQUOTE(JSON_EXTRACT(display_name, ?)), '')
+                        ) LIKE ? THEN 0
+                        WHEN COALESCE(
+                            NULLIF(JSON_UNQUOTE(JSON_EXTRACT(display_name, ?)), ''),
+                            NULLIF(JSON_UNQUOTE(JSON_EXTRACT(display_name, ?)), '')
+                        ) LIKE ? THEN 1
+                        ELSE 2
+                     END",
+                    [
+                        "$.{$locale}", "$.{$fallback}", "{$q}%",
+                        "$.{$locale}", "$.{$fallback}", "%{$q}%",
+                    ]
+                );
             }
+
             $query->orderByDesc('id');
         }
 
@@ -113,7 +192,7 @@ class ProductController extends Controller
             ->orderBy('id')
             ->get();
 
-        $facets = $this->facetValues();
+        $facets = $this->facetValues($locale);
 
         return view('products.index', [
             'products' => $products,

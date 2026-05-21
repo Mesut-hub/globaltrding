@@ -9,6 +9,7 @@
 @section('content')
 @php
   $locale = app()->getLocale();
+  $fallback = config('locales.default', 'en');
   $resultsCount = $products->total();
 
   $filterLabels = [
@@ -80,7 +81,6 @@
 
               <div class="gt-pf__facetBody" data-facet-body>
                 @foreach(($facets[$key] ?? []) as $val)
-                  @php $id = $key . '_' . md5($val); @endphp
                   <label class="gt-pf__checkRow" data-filter-item>
                     <input type="checkbox"
                            name="{{ $key }}[]"
@@ -126,10 +126,13 @@
         <div class="gt-pf__list">
           @forelse($products as $product)
             @php
-              $title = $product->display_name ?: ($product->slug ?? '');
+              $title = data_get($product->display_name, $locale)
+                    ?: data_get($product->display_name, $fallback)
+                    ?: ($product->slug ?? '');
+
               $url = "/{$locale}/products/{$product->slug}";
               $prd = $product->prd_number;
-              $desc = ''; // BASF list shows short text sometimes; optional later
+              $desc = '';
             @endphp
 
             <article class="gt-pf__row">
@@ -156,7 +159,6 @@
 
 @push('scripts')
 <script>
-  // Filter search within facets (client-side, BASF-like)
   (function(){
     const input = document.querySelector('[data-filter-search]');
     if(!input) return;
