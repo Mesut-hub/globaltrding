@@ -3,6 +3,33 @@
     $data = $block['data'] ?? [];
     $locale = app()->getLocale();
     $fallback = config('locales.default', 'en');
+    $t = function ($value, string $locale, string $fallback): string {
+        if (is_string($value) || is_numeric($value)) {
+            return (string) $value;
+        }
+
+        if (is_array($value)) {
+            $v = data_get($value, $locale);
+            if (is_string($v) || is_numeric($v)) return (string) $v;
+
+            $v = data_get($value, $fallback);
+            if (is_string($v) || is_numeric($v)) return (string) $v;
+
+            foreach ($value as $vv) {
+                if (is_string($vv) || is_numeric($vv)) {
+                    $vv = trim((string) $vv);
+                    if ($vv !== '') return $vv;
+                }
+            }
+        }
+
+        return '';
+    };
+
+    $th = function ($value, string $locale, string $fallback): string {
+        // same as $t but returns HTML (still expects trusted HTML you already store)
+        return $t($value, $locale, $fallback);
+    };
 @endphp
 
 @if ($type === 'hero')
@@ -846,13 +873,13 @@
     $layout = $data['layout'] ?? 'text_media';
     $mediaType = $data['media_type'] ?? 'image';
 
-    $leftTitle = $data['left_title'] ?? '';
-    $leftHtml = $data['left_html'] ?? '';
+    $leftTitle = $t($data['left_title'] ?? '', $locale, $fallback);
+    $leftHtml = $th($data['left_html'] ?? '', $locale, $fallback);
 
-    $rightTitle = $data['right_title'] ?? '';
-    $rightHtml = $data['right_html'] ?? '';
+    $rightTitle = $t($data['right_title'] ?? '', $locale, $fallback);
+    $rightHtml = $th($data['right_html'] ?? '', $locale, $fallback);
 
-    $ctaLabel = $data['cta_label'] ?? null;
+    $ctaLabel = $t($data['cta_label'] ?? '', $locale, $fallback);
     $ctalUrl = $data['ctaL_url'] ?? null;
     $ctarUrl = $data['ctaR_url'] ?? null;
 
@@ -921,7 +948,7 @@
     $blockLocked = (!$hasAccess && !$publicClickable);
     $blockHidden = (!$hasAccess && !$publicVisible);
     $bg = $data['bg'] ?? '#ffffff';
-    $heading = $data['heading'] ?? '';
+    $heading = $t($data['heading'] ?? '', $locale, $fallback);
     $items = is_array($data['items'] ?? null) ? $data['items'] : [];
   @endphp
   @if($blockHidden)
@@ -936,8 +963,8 @@
                         $cardBg = $card['card_bg'] ?? '#ffffff';
                         $ctaBg = $card['cta_bg'] ?? '#ffffff';
                         $Text = $card['text'] ?? '#ffffff';
-                        $Html = $data['html'] ?? '#ffffff';
-                        $Exrt = $data['exrt'] ?? '#ffffff';
+                        $Html = $card['html'] ?? '#ffffff';
+                        $Exrt = $card['exrt'] ?? '#ffffff';
                         $cardPublicVisible = (bool)($card['public_visible'] ?? true);
                         $cardPublicClickable = (bool)($card['public_clickable'] ?? false);
 
@@ -948,10 +975,10 @@
                         $vidUrl = !empty($card['video']) ? Storage::disk('public')->url($card['video']) : null;
                         $posterUrl = !empty($card['poster']) ? Storage::disk('public')->url($card['poster']) : null;
 
-                        $title = $card['title'] ?? '';
-                        $html = $card['body_html'] ?? ($card['html'] ?? '');
-                        $excerpt = (string)($card['excerpt'] ?? '');
-                        $ctaLabel = $card['cta_label'] ?? null;
+                        $title = $t($card['title'] ?? '', $locale, $fallback);
+                        $html = $th($card['body_html'] ?? ($card['html'] ?? ''), $locale, $fallback);
+                        $excerpt = $t($card['excerpt'] ?? '', $locale, $fallback);
+                        $ctaLabel = $t($card['cta_label'] ?? '', $locale, $fallback);
                         $ctaUrl = $card['cta_url'] ?? null;
                     @endphp
 
@@ -988,7 +1015,7 @@
 
 @elseif ($type === 'docDropdown')
   @php
-    $heading = $data['heading'] ?? '';
+    $heading = $t($data['heading'] ?? '', $locale, $fallback);
     $rows = is_array($data['rows'] ?? null) ? $data['rows'] : [];
 
     $hasAccess = (bool)($hasProductAccess ?? false);
@@ -1008,7 +1035,7 @@
       <div class="gt-docdd__rows">
         @foreach($rows as $r)
           @php
-            $title = (string)($r['title'] ?? 'Document');
+            $title = $t($r['title'] ?? 'Document', $locale, $fallback);
             $url = (string)($r['url'] ?? '#');
             $target = (string)($r['target'] ?? '_blank');
             $lang = (string)($r['language'] ?? '');
