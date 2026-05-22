@@ -43,44 +43,67 @@ class Product extends Model
     ];
 
     protected $casts = [
-        'name' => 'array',
-        'summary' => 'array',
-        'description' => 'array',
-        'seo' => 'array',
-        'is_published' => 'boolean',
-
+        // ── Core translatable strings ──────────────────────────────────────
+        'name'         => 'array',
+        'summary'      => 'array',
+        'description'  => 'array',
         'display_name' => 'array',
         'industry_label' => 'array',
 
-        // Legacy list OR locale-map-of-lists; controller supports both.
-        'industries' => 'array',
-        'applications' => 'array',
-        'product_groups' => 'array',
-        'processes' => 'array',
-        'sustainability_tags' => 'array',
-        'regulatory_tags' => 'array',
+        // ── SEO (nested: seo.title.en, seo.description.en) ────────────────
+        'seo' => 'array',
 
-        'pdp_documents' => 'array',
-        'pdp_overview_blocks' => 'array',
-        'pdp_properties_blocks' => 'array',
-        'pdp_documents_blocks' => 'array',
+        // ── Translatable PDP section HTML (dot-notation in form:
+        //    pdp_overview_html.en, pdp_properties_html.en, etc.) ───────────
+        // BUG FIX: these were missing — without 'array' cast, Filament's
+        // dot-notation Textarea::make("pdp_overview_html.$locale") cannot
+        // read/write locale-specific values.
+        'pdp_overview_html'      => 'array',
+        'pdp_properties_html'    => 'array',
+        'pdp_sustainability_html' => 'array',
+
+        // ── Filter tag columns (locale → string[]) ─────────────────────────
+        // Legacy flat list OR locale-map-of-lists; both are handled.
+        'industries'        => 'array',
+        'applications'      => 'array',
+        'product_groups'    => 'array',
+        'processes'         => 'array',
+        'sustainability_tags' => 'array',
+        'regulatory_tags'   => 'array',
+
+        // ── PDP block builders ─────────────────────────────────────────────
+        'pdp_documents'          => 'array',
+        'pdp_overview_blocks'    => 'array',
+        'pdp_properties_blocks'  => 'array',
+        'pdp_documents_blocks'   => 'array',
         'pdp_sustainability_blocks' => 'array',
 
-        'pdp_public_overview' => 'boolean',
-        'pdp_public_properties' => 'boolean',
-        'pdp_public_documents' => 'boolean',
+        // ── Access control toggles ─────────────────────────────────────────
+        'pdp_public_overview'      => 'boolean',
+        'pdp_public_properties'    => 'boolean',
+        'pdp_public_documents'     => 'boolean',
         'pdp_public_sustainability' => 'boolean',
+
         'pdp_documents_logged_out_mode' => 'string',
+        'is_published' => 'boolean',
     ];
 
-    public function searchableAs(): string
-    {
-        return 'products';
-    }
+    // ──────────────────────────────────────────────────────────────────────────
+    // Relationships
+    // ──────────────────────────────────────────────────────────────────────────
 
     public function brand()
     {
         return $this->belongsTo(Brand::class);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Laravel Scout
+    // ──────────────────────────────────────────────────────────────────────────
+
+    public function searchableAs(): string
+    {
+        return 'products';
     }
 
     public function shouldBeSearchable(): bool
@@ -92,46 +115,34 @@ class Product extends Model
     {
         $fallback = config('locales.default', 'en');
 
-        $flattenLocaleMap = function ($value) use ($fallback): string {
+        // Flatten a locale-keyed map {"en": "...", "tr": "..."} into a single search string
+        $flattenLocaleMap = function (mixed $value) use ($fallback): string {
             if (! is_array($value)) {
                 return trim((string) ($value ?? ''));
             }
-
             $out = [];
-
             if (isset($value[$fallback]) && is_scalar($value[$fallback])) {
                 $out[] = (string) $value[$fallback];
             }
-
             foreach ($value as $k => $v) {
-                if ($k === $fallback) {
-                    continue;
-                }
-                if (is_scalar($v)) {
-                    $out[] = (string) $v;
-                }
+                if ($k === $fallback) continue;
+                if (is_scalar($v)) $out[] = (string) $v;
             }
-
             return trim(implode(' ', array_filter(array_map('trim', $out))));
         };
 
-        $flattenAnyArray = function ($value): string {
+        // Flatten a locale-map-of-lists {"en": [...], "tr": [...]} OR a plain list [...]
+        $flattenAnyArray = function (mixed $value): string {
             if (! is_array($value)) {
                 return trim((string) ($value ?? ''));
             }
-
-            // locale-map-of-lists: {en:[...], tr:[...]}
             if (! array_is_list($value)) {
                 $chunks = [];
                 foreach ($value as $list) {
-                    if (is_array($list)) {
-                        $chunks[] = implode(' ', array_map('strval', $list));
-                    }
+                    if (is_array($list)) $chunks[] = implode(' ', array_map('strval', $list));
                 }
                 return trim(implode(' ', $chunks));
             }
-
-            // plain list
             return trim(implode(' ', array_map('strval', $value)));
         };
 
@@ -149,12 +160,12 @@ class Product extends Model
         ])));
 
         return [
-            'type' => 'product',
-            'slug' => $this->slug,
-            'display_name' => $this->display_name,
-            'prd_number' => $this->prd_number,
+            'type'           => 'product',
+            'slug'           => $this->slug,
+            'display_name'   => $this->display_name,
+            'prd_number'     => $this->prd_number,
             'industry_label' => $this->industry_label,
-            'text' => $text,
+            'text'           => $text,
         ];
     }
 }
