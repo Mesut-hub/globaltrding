@@ -14,6 +14,8 @@ final class MultiLangKeyValue
         'right_title',
         'right_html',
         'cta_label',
+        'cta_label_l',
+        'cta_label_r',
     ];
     /**
      * Normalize any stored value (null|string|array) into an associative array suitable for Filament KeyValue.
@@ -91,7 +93,7 @@ final class MultiLangKeyValue
         }
 
         // Normalize nested repeaters (items → pdcards cards, rows → docDropdown rows)
-        foreach (['items', 'rows'] as $repeaterKey) {
+        foreach (['items', 'rows', 'slides', 'links', 'bottom_tiles'] as $repeaterKey) {
             if (! empty($data[$repeaterKey]) && is_array($data[$repeaterKey])) {
                 $data[$repeaterKey] = array_map(function (array $item) use ($fields): array {
                     foreach ($fields as $field) {

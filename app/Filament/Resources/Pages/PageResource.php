@@ -2,27 +2,24 @@
 
 namespace App\Filament\Resources\Pages;
 
-use App\Filament\Resources\Pages\Schemas\PageBlockBuilder;
+use App\Filament\Concerns\HasPermission;
 use App\Filament\Resources\Pages\Pages\CreatePage;
 use App\Filament\Resources\Pages\Pages\EditPage;
 use App\Filament\Resources\Pages\Pages\ListPages;
-use App\Filament\Resources\Pages\Schemas\PageForm;
-use App\Filament\Resources\Pages\Tables\PagesTable;
+use App\Filament\Resources\Pages\Schemas\PageBlockBuilder;
 use App\Models\Page;
+use BackedEnum;
 use Filament\Forms\Components\Builder;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Form;
-use BackedEnum;
 use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables;
-use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Table;
-use App\Filament\Concerns\HasPermission;
 use Illuminate\Support\Str;
 
 class PageResource extends Resource
@@ -37,33 +34,31 @@ class PageResource extends Resource
 
     protected static ?string $navigationLabel = 'Pages';
 
-    protected static ?string $modelLabel    = 'Page';
-
-    /*public static function form(Schema $schema): Schema
-    {
-        return PageForm::configure($schema);
-    }*/
+    protected static ?string $modelLabel = 'Page';
 
     public static function form(Schema $schema): Schema
     {
         $locales = config('locales.supported', ['en']);
         $default = config('locales.default', 'en');
 
-        return $schema->schema([
+        // FIX: was $schema->schema([) — Filament API is ->components()
+        return $schema->components([
 
-            // ── Shared (non-translatable) ─────────────────────────────────
             TextInput::make('slug')
                 ->label('Slug (shared across locales)')
-                ->required()->maxLength(255)
+                ->required()
+                ->maxLength(255)
                 ->unique(ignoreRecord: true)
                 ->regex('/^[a-z0-9]+(?:[\/\-][a-z0-9]+)*$/')
                 ->helperText('Example: cookie-policy  or  who-we-are/sustainability')
                 ->live(onBlur: true)
                 ->afterStateUpdated(fn ($state, callable $set) => $set('slug', Str::slug($state, '-'))),
 
-            Toggle::make('is_active')->label('Published')->default(true),
+            // FIX: was 'is_active' — PageController and all other code use 'is_published'
+            Toggle::make('is_published')
+                ->label('Published')
+                ->default(true),
 
-            // ── Translatable meta fields ──────────────────────────────────
             Tabs::make('PageTranslations')
                 ->persistTabInQueryString()
                 ->columnSpanFull()
@@ -78,25 +73,20 @@ class PageResource extends Resource
                             TextInput::make("meta_title.{$locale}")
                                 ->label("SEO title ({$lbl})")
                                 ->maxLength(60),
-                            \Filament\Forms\Components\Textarea::make("meta_description.{$locale}")
+                            Textarea::make("meta_description.{$locale}")
                                 ->label("SEO description ({$lbl})")
-                                ->rows(2)->maxLength(160),
+                                ->rows(2)
+                                ->maxLength(160),
                         ]);
                     })->values()->all()
                 ),
 
-            // ── Block builder ─────────────────────────────────────────────
             Builder::make('blocks')
                 ->label('Page blocks')
                 ->collapsible()
                 ->blocks(PageBlockBuilder::blocks()),
         ]);
     }
-
-    /*public static function table(Table $table): Table
-    {
-        return PagesTable::configure($table);
-    }*/
 
     public static function table(Table $table): Table
     {
@@ -110,19 +100,19 @@ class PageResource extends Resource
                     ->searchable(query: fn ($query, $search) =>
                         $query->whereRaw("JSON_SEARCH(LOWER(title), 'one', LOWER(?)) IS NOT NULL", ["%{$search}%"])
                     ),
-                Tables\Columns\IconColumn::make('is_active')->boolean()->label('Published'),
+                Tables\Columns\IconColumn::make('is_published')->boolean()->label('Published'),
                 Tables\Columns\TextColumn::make('updated_at')->dateTime()->sortable(),
             ])
             ->defaultSort('updated_at', 'desc')
             ->actions([Tables\Actions\EditAction::make()])
-            ->bulkActions([Tables\Actions\BulkActionGroup::make([Tables\Actions\DeleteBulkAction::make()])]);
+            ->bulkActions([Tables\Actions\BulkActionGroup::make([
+                Tables\Actions\DeleteBulkAction::make(),
+            ])]);
     }
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array

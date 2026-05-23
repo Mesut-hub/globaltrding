@@ -2,26 +2,23 @@
 
 namespace App\Filament\Resources\HomeSections;
 
+use App\Filament\Concerns\HasPermission;
 use App\Filament\Resources\HomeSections\Pages\CreateHomeSection;
 use App\Filament\Resources\HomeSections\Pages\EditHomeSection;
 use App\Filament\Resources\HomeSections\Pages\ListHomeSections;
-use App\Filament\Resources\HomeSections\Schemas\HomeSectionForm;
-use App\Filament\Resources\HomeSections\Tables\HomeSectionsTable;
 use App\Filament\Resources\Pages\Schemas\PageBlockBuilder;
 use App\Models\HomeSection;
 use BackedEnum;
 use Filament\Forms\Components\Builder;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables;
 use Filament\Tables\Table;
-use App\Filament\Concerns\HasPermission;
 
 class HomeSectionResource extends Resource
 {
@@ -35,28 +32,33 @@ class HomeSectionResource extends Resource
 
     protected static ?string $navigationLabel = 'Home sections';
 
-    protected static ?string $modelLabel     = 'Home section';
-
-    /*public static function form(Schema $schema): Schema
-    {
-        return HomeSectionForm::configure($schema);
-    }*/
+    protected static ?string $modelLabel = 'Home section';
 
     public static function form(Schema $schema): Schema
     {
         $locales = config('locales.supported', ['en']);
         $default = config('locales.default', 'en');
 
-        return $form->schema([
+        // FIX 1: was "$form->schema([" — $form is undefined, parameter is $schema
+        // FIX 2: Filament API is ->components(), not ->schema()
+        return $schema->components([
             TextInput::make('key')
                 ->label('Section key (internal identifier)')
-                ->required()->maxLength(64)->unique(ignoreRecord: true),
+                ->required()
+                ->maxLength(64)
+                ->unique(ignoreRecord: true),
 
-            TextInput::make('sort')
-                ->label('Display order')->numeric()->default(0),
+            // FIX 3: was 'sort' — DB column is 'sort_order'
+            TextInput::make('sort_order')
+                ->label('Display order')
+                ->numeric()
+                ->default(0),
 
-            Toggle::make('is_active')->label('Active')->default(true),
+            Toggle::make('is_active')
+                ->label('Active')
+                ->default(true),
 
+            // Translatable title (requires the migration above to be run)
             Tabs::make('HomeSectionTranslations')
                 ->columnSpanFull()
                 ->tabs(
@@ -65,7 +67,6 @@ class HomeSectionResource extends Resource
                         return Tab::make($lbl)->schema([
                             TextInput::make("title.{$locale}")
                                 ->label("Section title ({$lbl})")
-                                ->required($locale === $default)
                                 ->maxLength(255),
                         ]);
                     })->values()->all()
@@ -77,11 +78,6 @@ class HomeSectionResource extends Resource
                 ->blocks(PageBlockBuilder::blocks()),
         ]);
     }
-    
-        /*public static function table(Table $table): Table
-    {
-        return HomeSectionsTable::configure($table);
-    }*/
 
     public static function table(Table $table): Table
     {
@@ -90,29 +86,28 @@ class HomeSectionResource extends Resource
                 Tables\Columns\TextColumn::make('key')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('title')
                     ->getStateUsing(fn ($r) => data_get($r->title, app()->getLocale())
-                        ?: data_get($r->title, config('locales.default', 'en')) ?: '—'),
-                Tables\Columns\TextColumn::make('sort')->sortable(),
+                        ?: data_get($r->title, config('locales.default', 'en'))
+                        ?: '—'),
+                // FIX: was 'sort'
+                Tables\Columns\TextColumn::make('sort_order')->sortable(),
                 Tables\Columns\IconColumn::make('is_active')->boolean(),
             ])
-            ->defaultSort('sort')
-            ->reorderable('sort')
+            ->defaultSort('sort_order')    // FIX: was 'sort'
+            ->reorderable('sort_order')    // FIX: was 'sort'
             ->actions([Tables\Actions\EditAction::make()]);
     }
-    
-        public static function getRelations(): array
+
+    public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => ListHomeSections::route('/'),
+            'index'  => ListHomeSections::route('/'),
             'create' => CreateHomeSection::route('/create'),
-            'edit' => EditHomeSection::route('/{record}/edit'),
+            'edit'   => EditHomeSection::route('/{record}/edit'),
         ];
     }
-    
 }

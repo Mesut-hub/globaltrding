@@ -10,7 +10,7 @@ class HomeSection extends Model
         'key',
         'title',
         'blocks',
-        'sort',
+        'sort_order',
         'is_active',
     ];
 
@@ -19,7 +19,7 @@ class HomeSection extends Model
         return [
             'title'     => 'array',
             'blocks'    => 'array',
-            'sort'      => 'integer',
+            'sort_order'      => 'integer',
             'is_active' => 'boolean',
         ];
     }

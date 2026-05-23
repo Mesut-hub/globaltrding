@@ -740,7 +740,8 @@
         $leftHtml   = $th($data['left_html']  ?? '', $locale, $fallback);
         $rightTitle = $t($data['right_title'] ?? '', $locale, $fallback);
         $rightHtml  = $th($data['right_html'] ?? '', $locale, $fallback);
-        $ctaLabel   = $t($data['cta_label']   ?? '', $locale, $fallback);
+        $ctaLabell   = $t($data['cta_label_l']   ?? '', $locale, $fallback);
+        $ctaLabelr   = $t($data['cta_label_r']   ?? '', $locale, $fallback);
         $ctalUrl    = $data['ctaL_url'] ?? null;
         $ctarUrl    = $data['ctaR_url'] ?? null;
 
@@ -760,14 +761,14 @@
             <div class="gt-twoCols__col" style="background: {{ $cardBg }};">
                 @if ($leftTitle) <h3 class="gt-twoCols__h" style="color: {{ $Html }};">{{ $leftTitle }}</h3>                              @endif
                 @if ($leftHtml)  <div class="prose1 prose-slate max-w-none" style="color: {{ $Html }};">{!! $leftHtml !!}</div>           @endif
-                @if ($ctaLabel && $ctalUrl)
+                @if ($ctaLabell && $ctalUrl)
                     <div class="gt-twoCols__cta">
                         @if ($blockLockedl)
                             <span class="gt-btn gt-btn--primary is-disabled" aria-disabled="true"
-                                style="background: {{ $ctaBg }}; color: {{ $Text }};">{{ $ctaLabel }}</span>
+                                style="background: {{ $ctaBg }}; color: {{ $Text }};">{{ $ctaLabell }}</span>
                         @else
                             <a class="gt-btn gt-btn--primary" href="{{ $ctalUrl }}"
-                            style="background: {{ $ctaBg }}; color: {{ $Text }};">{{ $ctaLabel }}</a>
+                            style="background: {{ $ctaBg }}; color: {{ $Text }};">{{ $ctaLabell }}</a>
                         @endif
                     </div>
                 @endif
@@ -777,14 +778,14 @@
                 <div class="gt-twoCols__col" style="background: {{ $cardBg }};">
                     @if ($rightTitle) <h3 class="gt-twoCols__h" style="color: {{ $Html }};">{{ $rightTitle }}</h3>                            @endif
                     @if ($rightHtml)  <div class="prose1 prose-slate max-w-none" style="color: {{ $Html }};">{!! $rightHtml !!}</div>         @endif
-                    @if ($ctaLabel && $ctarUrl)
+                    @if ($ctaLabelr && $ctarUrl)
                         <div class="gt-twoCols__cta">
                             @if ($blockLockedr)
                                 <span class="gt-btn gt-btn--primary is-disabled" aria-disabled="true"
-                                    style="background: {{ $ctaBg }}; color: {{ $Text }};">{{ $ctaLabel }}</span>
+                                    style="background: {{ $ctaBg }}; color: {{ $Text }};">{{ $ctaLabelr }}</span>
                             @else
                                 <a class="gt-btn gt-btn--primary" href="{{ $ctarUrl }}"
-                                style="background: {{ $ctaBg }}; color: {{ $Text }};">{{ $ctaLabel }}</a>
+                                style="background: {{ $ctaBg }}; color: {{ $Text }};">{{ $ctaLabelr }}</a>
                             @endif
                         </div>
                     @endif

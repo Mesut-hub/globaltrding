@@ -36,24 +36,24 @@
 
 @push('structured_data')
     <script type="application/ld+json">
-    {!! json_encode([
-        '@context' => 'https://schema.org',
-        '@type' => 'BreadcrumbList',
-        'itemListElement' => [
-            [
-                '@type' => 'ListItem',
-                'position' => 1,
-                'name' => 'Home',
-                'item' => rtrim((string) config('app.url'), '/') . "/{$locale}",
+        {!! json_encode([
+            '@context' => 'https://schema.org',
+            '@type' => 'BreadcrumbList',
+            'itemListElement' => [
+                [
+                    '@type' => 'ListItem',
+                    'position' => 1,
+                    'name' => 'Home',
+                    'item' => rtrim((string) config('app.url'), '/') . "/{$locale}",
+                ],
+                [
+                    '@type' => 'ListItem',
+                    'position' => 2,
+                    'name' => $title,
+                    'item' => rtrim((string) config('app.url'), '/') . "/{$locale}/pages/{$page->slug}",
+                ],
             ],
-            [
-                '@type' => 'ListItem',
-                'position' => 2,
-                'name' => $title,
-                'item' => rtrim((string) config('app.url'), '/') . "/{$locale}/pages/{$page->slug}",
-            ],
-        ],
-    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
     </script>
 @endpush
 
