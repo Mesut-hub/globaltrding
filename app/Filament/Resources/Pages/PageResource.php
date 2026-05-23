@@ -20,6 +20,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Actions;
 use Illuminate\Support\Str;
 
 class PageResource extends Resource
@@ -58,6 +59,22 @@ class PageResource extends Resource
             Toggle::make('is_published')
                 ->label('Published')
                 ->default(true),
+
+            Toggle::make('show_in_company')
+                ->label('Show in Company column')
+                ->default(false),
+
+            Toggle::make('show_in_products')
+                ->label('Show in Products column')
+                ->default(false),
+
+            Toggle::make('show_in_information')
+                ->label('Show in Information column')
+                ->default(false),
+
+            Toggle::make('show_in_service')
+                ->label('Show in Service column')
+                ->default(false),
 
             Tabs::make('PageTranslations')
                 ->persistTabInQueryString()
@@ -104,9 +121,9 @@ class PageResource extends Resource
                 Tables\Columns\TextColumn::make('updated_at')->dateTime()->sortable(),
             ])
             ->defaultSort('updated_at', 'desc')
-            ->actions([Tables\Actions\EditAction::make()])
-            ->bulkActions([Tables\Actions\BulkActionGroup::make([
-                Tables\Actions\DeleteBulkAction::make(),
+            ->actions([Actions\EditAction::make()])
+            ->bulkActions([Actions\BulkActionGroup::make([
+                Actions\DeleteBulkAction::make(),
             ])]);
     }
 

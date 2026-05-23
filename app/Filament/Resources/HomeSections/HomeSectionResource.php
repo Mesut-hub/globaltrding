@@ -19,6 +19,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Actions;
 
 class HomeSectionResource extends Resource
 {
@@ -85,16 +86,19 @@ class HomeSectionResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('key')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('title')
-                    ->getStateUsing(fn ($r) => data_get($r->title, app()->getLocale())
-                        ?: data_get($r->title, config('locales.default', 'en'))
-                        ?: '—'),
+                    ->getStateUsing(function ( $record ) {
+                        if (! $record) return '—';
+                        return data_get($record->title, app()->getLocale())
+                            ?: data_get($record->title, config('locales.default', 'en'))
+                            ?: '—';
+                    }),
                 // FIX: was 'sort'
                 Tables\Columns\TextColumn::make('sort_order')->sortable(),
                 Tables\Columns\IconColumn::make('is_active')->boolean(),
             ])
             ->defaultSort('sort_order')    // FIX: was 'sort'
             ->reorderable('sort_order')    // FIX: was 'sort'
-            ->actions([Tables\Actions\EditAction::make()]);
+            ->recordActions([Actions\EditAction::make()]);
     }
 
     public static function getRelations(): array
