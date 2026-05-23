@@ -3,12 +3,10 @@
 namespace App\Filament\Resources\Products\Schemas;
 
 use App\Models\Brand;
-use App\Support\Filament\MultiLangKeyValue;
 use Filament\Forms\Components\Builder;
 use Filament\Forms\Components\Builder\Block;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -68,14 +66,13 @@ class ProductForm
 
             TextInput::make('display_url')
                 ->label('Product name URL (related page)')
-                ->helperText('Example: /en/pages/my-product or https://...')
                 ->maxLength(2048),
 
             TextInput::make('prd_number')
                 ->label('PRD Number')
                 ->maxLength(64),
 
-            // ── PDP access controls (non-translatable) ───────────────────────
+            // ── PDP access controls ──────────────────────────────────────────
             Grid::make(2)->schema([
                 Toggle::make('pdp_public_overview')
                     ->label('Overview visible before login')
@@ -87,61 +84,59 @@ class ProductForm
                     ->label('Properties visible before login')
                     ->default(false),
                 Toggle::make('pdp_public_documents')
-                    ->label('Documents section visible before login')
+                    ->label('Documents visible before login')
                     ->default(false),
             ]),
 
             Select::make('pdp_documents_logged_out_mode')
-                ->label('When logged out: Documents behavior')
+                ->label('Documents — logged-out behaviour')
                 ->options([
-                    'list_disabled' => 'A) Show documents list, disable downloads',
-                    'hide_all'      => 'B) Hide documents content (show notice only)',
+                    'list_disabled' => 'A) Show list, disable downloads',
+                    'hide_all'      => 'B) Hide content entirely (notice only)',
                 ])
-                ->default('list_disabled')
-                ->helperText('Only applies when Documents section is not public.'),
+                ->default('list_disabled'),
 
-            // ── Translatable fields (one tab per locale) ─────────────────────
+            // ── Translatable top-level fields (one tab per locale) ───────────
             Tabs::make('Translations')
                 ->persistTabInQueryString()
                 ->tabs(
                     collect($locales)->map(function (string $locale) use ($default) {
-                        $label = strtoupper($locale);
+                        $lbl = strtoupper($locale);
 
-                        return Tab::make($label)->schema([
+                        return Tab::make($lbl)->schema([
 
                             Grid::make(2)->schema([
-                                TextInput::make("display_name.$locale")
-                                    ->label("Product name ($label)")
+                                TextInput::make("display_name.{$locale}")
+                                    ->label("Product name ({$lbl})")
                                     ->required($locale === $default)
                                     ->maxLength(255),
 
-                                TextInput::make("industry_label.$locale")
-                                    ->label("Industry ($label)")
+                                TextInput::make("industry_label.{$locale}")
+                                    ->label("Industry ({$lbl})")
                                     ->maxLength(255),
                             ]),
 
                             Grid::make(2)->schema([
-                                TextInput::make("seo.title.$locale")
-                                    ->label("SEO Title ($label)")
+                                TextInput::make("seo.title.{$locale}")
+                                    ->label("SEO Title ({$lbl})")
                                     ->maxLength(60),
-                                Textarea::make("seo.description.$locale")
-                                    ->label("SEO Description ($label)")
+                                Textarea::make("seo.description.{$locale}")
+                                    ->label("SEO Description ({$lbl})")
                                     ->rows(3)
                                     ->maxLength(160),
                             ]),
 
-                            // Finder filter tags (one value per line, stored as locale→string[])
                             Grid::make(2)->schema([
-                                Textarea::make("industries.$locale")
-                                    ->label("Industries — one per line ($label)")
+                                Textarea::make("industries.{$locale}")
+                                    ->label("Industries — one per line ({$lbl})")
                                     ->rows(4)
                                     ->formatStateUsing(fn ($state) => is_array($state) ? implode("\n", $state) : '')
                                     ->dehydrateStateUsing(fn ($state) => array_values(array_filter(
                                         array_map('trim', preg_split("/\r\n|\n|\r/", (string) $state))
                                     ))),
 
-                                Textarea::make("applications.$locale")
-                                    ->label("Applications — one per line ($label)")
+                                Textarea::make("applications.{$locale}")
+                                    ->label("Applications — one per line ({$lbl})")
                                     ->rows(4)
                                     ->formatStateUsing(fn ($state) => is_array($state) ? implode("\n", $state) : '')
                                     ->dehydrateStateUsing(fn ($state) => array_values(array_filter(
@@ -150,16 +145,16 @@ class ProductForm
                             ]),
 
                             Grid::make(2)->schema([
-                                Textarea::make("product_groups.$locale")
-                                    ->label("Products Group — one per line ($label)")
+                                Textarea::make("product_groups.{$locale}")
+                                    ->label("Product Groups — one per line ({$lbl})")
                                     ->rows(4)
                                     ->formatStateUsing(fn ($state) => is_array($state) ? implode("\n", $state) : '')
                                     ->dehydrateStateUsing(fn ($state) => array_values(array_filter(
                                         array_map('trim', preg_split("/\r\n|\n|\r/", (string) $state))
                                     ))),
 
-                                Textarea::make("processes.$locale")
-                                    ->label("Processes — one per line ($label)")
+                                Textarea::make("processes.{$locale}")
+                                    ->label("Processes — one per line ({$lbl})")
                                     ->rows(4)
                                     ->formatStateUsing(fn ($state) => is_array($state) ? implode("\n", $state) : '')
                                     ->dehydrateStateUsing(fn ($state) => array_values(array_filter(
@@ -168,16 +163,16 @@ class ProductForm
                             ]),
 
                             Grid::make(2)->schema([
-                                Textarea::make("sustainability_tags.$locale")
-                                    ->label("Sustainability — one per line ($label)")
+                                Textarea::make("sustainability_tags.{$locale}")
+                                    ->label("Sustainability — one per line ({$lbl})")
                                     ->rows(4)
                                     ->formatStateUsing(fn ($state) => is_array($state) ? implode("\n", $state) : '')
                                     ->dehydrateStateUsing(fn ($state) => array_values(array_filter(
                                         array_map('trim', preg_split("/\r\n|\n|\r/", (string) $state))
                                     ))),
 
-                                Textarea::make("regulatory_tags.$locale")
-                                    ->label("Regulatory — one per line ($label)")
+                                Textarea::make("regulatory_tags.{$locale}")
+                                    ->label("Regulatory — one per line ({$lbl})")
                                     ->rows(4)
                                     ->formatStateUsing(fn ($state) => is_array($state) ? implode("\n", $state) : '')
                                     ->dehydrateStateUsing(fn ($state) => array_values(array_filter(
@@ -185,25 +180,22 @@ class ProductForm
                                     ))),
                             ]),
 
-                            // PDP section HTML (per locale)
-                            Textarea::make("pdp_overview_html.$locale")
-                                ->label("PDP — Overview HTML ($label)")
+                            Textarea::make("pdp_overview_html.{$locale}")
+                                ->label("PDP — Overview HTML ({$lbl})")
                                 ->rows(8),
 
-                            Textarea::make("pdp_properties_html.$locale")
-                                ->label("PDP — Properties HTML ($label)")
+                            Textarea::make("pdp_properties_html.{$locale}")
+                                ->label("PDP — Properties HTML ({$lbl})")
                                 ->rows(8),
 
-                            Textarea::make("pdp_sustainability_html.$locale")
-                                ->label("PDP — Sustainability HTML ($label)")
+                            Textarea::make("pdp_sustainability_html.{$locale}")
+                                ->label("PDP — Sustainability HTML ({$lbl})")
                                 ->rows(8),
-
                         ]);
                     })->values()->all()
-                )->columnSpanFull(),
+                ),
 
-            // ── PDP Builders (block structure is language-neutral;
-            //    multilingual text lives inside KeyValue fields) ──────────────
+            // ── PDP Block builders ───────────────────────────────────────────
             Builder::make('pdp_overview_blocks')
                 ->label('PDP — Overview blocks')
                 ->collapsed()
@@ -227,56 +219,49 @@ class ProductForm
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Shared KeyValue helper — all KeyValue multilingual fields go through here
+    // Private helpers
     // ─────────────────────────────────────────────────────────────────────────
 
     /**
-     * Build a standardised multilingual KeyValue component.
+     * Generate per-locale Tabs containing text fields for use inside a Block.
      *
-     * NOTE: We use ONLY ->formatStateUsing + ->dehydrateStateUsing.
+     * $fields is an array of field definitions:
+     *   ['name' => 'left_title',  'label' => 'Left title',  'type' => 'text']
+     *   ['name' => 'left_html',   'label' => 'Left HTML',   'type' => 'html',  'rows' => 8]
+     *   ['name' => 'excerpt',     'label' => 'Excerpt',     'type' => 'text',  'rows' => 3]
      *
-     * DO NOT add ->afterStateHydrated here.
-     * Reason: afterStateHydrated fires AFTER KeyValueStateCast::get() already
-     * ran. If a null state reaches the cast it crashes before afterStateHydrated
-     * can guard it. The null-safety is handled upstream in
-     * EditProduct::mutateFormDataBeforeFill() which normalises all block data
-     * before Filament ever touches it.
+     * Renders as locale-tabbed TextInput (type=text) or Textarea (type=html/textarea).
+     * This replaces KeyValue components — values are stored as {"en": "...", "tr": "..."}.
      */
-    private static function mlKeyValue(
-        string $fieldName,
-        string $label,
-        ?string $valueLabelOverride = null,
-        bool $required = false,
-    ): KeyValue {
-        $default = config('locales.default', 'en');
+    private static function blockLocaleTabs(string $tabsId, array $fields): Tabs
+    {
+        $locales = config('locales.supported', ['en']);
 
-        $component = KeyValue::make($fieldName)
-            ->label($label)
-            ->default([])
-            ->keyLabel('Locale')
-            ->valueLabel($valueLabelOverride ?? 'Value')
-            ->formatStateUsing(fn ($state) => MultiLangKeyValue::normalize($state))
-            ->dehydrateStateUsing(fn ($state) => MultiLangKeyValue::dehydrate($state));
+        return Tabs::make($tabsId)
+            ->columnSpanFull()
+            ->tabs(
+                collect($locales)->map(function (string $locale) use ($fields): Tab {
+                    $lbl = strtoupper($locale);
 
-        if ($required) {
-            $component->rules([
-                function () use ($default, $label) {
-                    return function (string $attribute, mixed $value, \Closure $fail) use ($default, $label) {
-                        $arr = MultiLangKeyValue::normalize($value);
-                        if (trim((string) ($arr[$default] ?? '')) === '') {
-                            $fail("{$label} must have a non-empty '{$default}' value.");
-                        }
-                    };
-                },
-            ]);
-        }
+                    $schema = collect($fields)->map(function (array $field) use ($locale, $lbl) {
+                        $name  = $field['name'];
+                        $label = ($field['label'] ?? ucwords(str_replace('_', ' ', $name))) . " ({$lbl})";
+                        $type  = $field['type'] ?? 'text';
+                        $rows  = (int) ($field['rows'] ?? 4);
 
-        return $component;
+                        return match ($type) {
+                            'html', 'textarea' => Textarea::make("{$name}.{$locale}")
+                                ->label($label)
+                                ->rows($rows),
+                            default => TextInput::make("{$name}.{$locale}")
+                                ->label($label),
+                        };
+                    })->all();
+
+                    return Tab::make($lbl)->schema($schema);
+                })->values()->all()
+            );
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // PDP block definitions
-    // ─────────────────────────────────────────────────────────────────────────
 
     private static function pdpBlocks(): array
     {
@@ -286,19 +271,28 @@ class ProductForm
         ];
     }
 
+    // ── Two Columns block ─────────────────────────────────────────────────────
+
     private static function twoColsBlock(): Block
     {
         return Block::make('twoCols')
             ->label('Two columns (Text / Text or Text / Media)')
             ->schema([
+                // Non-translatable
                 ColorPicker::make('bg')->label('Background')->default('#ffffff'),
+                ColorPicker::make('card_bg')->label('Card background')->default('#ffffff'),
+                ColorPicker::make('cta_bg')->label('CTA button background')->default('#0f172a'),
+                ColorPicker::make('text')->label('Text colour')->default('#0f172a'),
+                ColorPicker::make('html')->label('HTML content colour')->default('#0f172a'),
 
-                Toggle::make('public_visible')
-                    ->label('Visible when logged out (if section is public)')
-                    ->default(true),
-                Toggle::make('public_clickable')
-                    ->label('CTA clickable when logged out')
-                    ->default(false),
+                Grid::make(2)->schema([
+                    Toggle::make('public_visible')
+                        ->label('Visible when logged out')
+                        ->default(true),
+                    Toggle::make('public_clickable')
+                        ->label('CTA clickable when logged out')
+                        ->default(false),
+                ]),
 
                 Select::make('layout')
                     ->label('Layout')
@@ -313,14 +307,15 @@ class ProductForm
                 Select::make('media_type')
                     ->label('Media type')
                     ->options(['image' => 'Image', 'video' => 'Video'])
-                    ->default('image'),
+                    ->default('image')
+                    ->visible(fn ($get) => $get('layout') !== 'text_text'),
 
                 FileUpload::make('image')
                     ->label('Image')
                     ->disk('public')
                     ->directory('products/pdp/two-cols')
                     ->image()
-                    ->visible(fn ($get) => in_array($get('layout'), ['text_media', 'media_text'], true)
+                    ->visible(fn ($get) => $get('layout') !== 'text_text'
                         && $get('media_type') === 'image'),
 
                 FileUpload::make('video')
@@ -328,7 +323,7 @@ class ProductForm
                     ->disk('public')
                     ->directory('products/pdp/two-cols')
                     ->acceptedFileTypes(['video/mp4', 'video/webm'])
-                    ->visible(fn ($get) => in_array($get('layout'), ['text_media', 'media_text'], true)
+                    ->visible(fn ($get) => $get('layout') !== 'text_text'
                         && $get('media_type') === 'video'),
 
                 FileUpload::make('poster')
@@ -336,47 +331,80 @@ class ProductForm
                     ->disk('public')
                     ->directory('products/pdp/two-cols')
                     ->image()
-                    ->visible(fn ($get) => in_array($get('layout'), ['text_media', 'media_text'], true)
+                    ->visible(fn ($get) => $get('layout') !== 'text_text'
                         && $get('media_type') === 'video'),
 
-                self::mlKeyValue('left_title',  'Left column title (multilingual)',  'Title'),
-                self::mlKeyValue('left_html',   'Left column HTML (multilingual)',   'HTML'),
-                self::mlKeyValue('right_title', 'Right column title (multilingual)', 'Title'),
-                self::mlKeyValue('right_html',  'Right column HTML (multilingual)',  'HTML'),
-                self::mlKeyValue('cta_label',   'CTA label (multilingual)',          'Label'),
+                // ── Translatable text fields ──────────────────────────────
+                self::blockLocaleTabs('twoCols_lang', [
+                    ['name' => 'left_title', 'label' => 'Left title',  'type' => 'text'],
+                    ['name' => 'left_html',  'label' => 'Left HTML',   'type' => 'html', 'rows' => 8],
+                    ['name' => 'right_title','label' => 'Right title', 'type' => 'text'],
+                    ['name' => 'right_html', 'label' => 'Right HTML',  'type' => 'html', 'rows' => 8],
+                    ['name' => 'cta_label_l',  'label' => 'CTA label Left',   'type' => 'text'],
+                    ['name' => 'cta_label_r',  'label' => 'CTA label Right',   'type' => 'text'],
+                ]),
 
-                TextInput::make('cta_url')->label('CTA URL'),
+                TextInput::make('ctaL_url')->label('Left CTA URL'),
+                TextInput::make('ctaR_url')
+                    ->label('Right CTA URL')
+                    ->visible(fn ($get) => $get('layout') === 'text_text'),
+
+                Grid::make(2)->schema([
+                    Toggle::make('public_clickable_l')
+                        ->label('CTA clickable Left')
+                        ->default(false),
+                    Toggle::make('public_clickable_r')
+                        ->label('CTA clickable Right')
+                        ->visible(fn ($get) => $get('layout') === 'text_text')
+                        ->default(false),
+                ]),
             ]);
     }
+
+    // ── PD Cards block ────────────────────────────────────────────────────────
 
     private static function pdCardsBlock(): Block
     {
         return Block::make('pdcards')
             ->label('Cards (2+) — Media top + text + CTA')
             ->schema([
-                ColorPicker::make('bg')->label('Background')->default('#ffffff'),
+                // Non-translatable
+                ColorPicker::make('bg')->label('Section background')->default('#ffffff'),
 
-                Toggle::make('public_visible')
-                    ->label('Visible when logged out (if section is public)')
-                    ->default(true),
-                Toggle::make('public_clickable')
-                    ->label('CTA clickable when logged out')
-                    ->default(false),
+                Grid::make(2)->schema([
+                    Toggle::make('public_visible')
+                        ->label('Visible when logged out')
+                        ->default(true),
+                    Toggle::make('public_clickable')
+                        ->label('CTA clickable when logged out')
+                        ->default(false),
+                ]),
 
-                self::mlKeyValue('heading', 'Heading (multilingual)', 'Heading'),
+                // Section heading — translatable
+                self::blockLocaleTabs('pdcards_heading_lang', [
+                    ['name' => 'heading', 'label' => 'Section heading', 'type' => 'text'],
+                ]),
 
+                // ── Cards ─────────────────────────────────────────────────
                 Repeater::make('items')
                     ->label('Cards')
                     ->minItems(2)
                     ->schema([
-                        ColorPicker::make('bg')->label('Card background')->default('#ffffff'),
+                        // Non-translatable per card
+                        ColorPicker::make('card_bg')->label('Card background')->default('#ffffff'),
+                        ColorPicker::make('cta_bg')->label('CTA background')->default('#0f172a'),
+                        ColorPicker::make('text')->label('Text colour')->default('#0f172a'),
+                        ColorPicker::make('html')->label('HTML colour')->default('#0f172a'),
+                        ColorPicker::make('exrt')->label('Excerpt colour')->default('#475569'),
 
-                        Toggle::make('public_visible')
-                            ->label('Visible when logged out')
-                            ->default(true),
-                        Toggle::make('public_clickable')
-                            ->label('CTA clickable when logged out')
-                            ->default(false),
+                        Grid::make(2)->schema([
+                            Toggle::make('public_visible')
+                                ->label('Visible when logged out')
+                                ->default(true),
+                            Toggle::make('public_clickable')
+                                ->label('CTA clickable when logged out')
+                                ->default(false),
+                        ]),
 
                         Select::make('media_type')
                             ->options(['image' => 'Image', 'video' => 'Video'])
@@ -400,45 +428,55 @@ class ProductForm
                             ->image()
                             ->visible(fn ($get) => $get('media_type') === 'video'),
 
-                        self::mlKeyValue('title',    'Title (multilingual)',    'Title',   required: true),
-                        self::mlKeyValue('excerpt',  'Excerpt (multilingual)',  'Excerpt'),
-                        self::mlKeyValue('body_html','Body HTML (multilingual)','HTML'),
-                        self::mlKeyValue('cta_label','CTA label (multilingual)','Label'),
+                        // Translatable card text
+                        self::blockLocaleTabs('card_lang', [
+                            ['name' => 'title',     'label' => 'Title',    'type' => 'text'],
+                            ['name' => 'excerpt',   'label' => 'Excerpt',  'type' => 'textarea', 'rows' => 3],
+                            ['name' => 'body_html', 'label' => 'Body HTML','type' => 'html',     'rows' => 8],
+                            ['name' => 'cta_label', 'label' => 'CTA label','type' => 'text'],
+                        ]),
 
                         TextInput::make('cta_url')->label('CTA URL'),
                     ])
-                    ->columns(2),
+                    ->columns(1),
             ]);
     }
 
+    // ── Doc Dropdown block ────────────────────────────────────────────────────
+
     private static function docDropdownBlock(): Block
     {
-        $default = config('locales.default', 'en');
-
         return Block::make('docDropdown')
             ->label('Documents dropdown list')
             ->schema([
-                self::mlKeyValue('heading', 'Heading (multilingual)', 'Heading'),
+                // Section heading — translatable
+                self::blockLocaleTabs('docDropdown_heading_lang', [
+                    ['name' => 'heading', 'label' => 'Section heading', 'type' => 'text'],
+                ]),
 
                 Repeater::make('rows')
                     ->label('Document rows')
                     ->minItems(1)
                     ->schema([
-                        self::mlKeyValue('title', 'File name (multilingual)', 'Title', required: true),
-
                         TextInput::make('url')
                             ->label('Document URL')
                             ->required(),
 
-                        Toggle::make('downloadable')
-                            ->label('Downloadable when logged out (if Documents is public)')
-                            ->default(false),
+                        Grid::make(2)->schema([
+                            Toggle::make('downloadable')
+                                ->label('Downloadable when logged out')
+                                ->default(false),
+                            Select::make('target')
+                                ->options(['_blank' => '_blank', '_self' => '_self'])
+                                ->default('_blank'),
+                        ]),
 
-                        Select::make('target')
-                            ->options(['_blank' => '_blank', '_self' => '_self'])
-                            ->default('_blank'),
+                        // File name — translatable
+                        self::blockLocaleTabs('doc_row_lang', [
+                            ['name' => 'title', 'label' => 'File name', 'type' => 'text'],
+                        ]),
                     ])
-                    ->columns(2),
+                    ->columns(1),
             ]);
     }
 }

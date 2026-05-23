@@ -12,9 +12,13 @@ class Page extends Model
     protected $fillable = [
         'slug',
         'title',
+        'meta_title',
+        'meta_description',
         'content',
         'blocks',
         'seo',
+        'is_active',
+        'template',
         'is_published',
         'show_in_footer',
         'show_in_company',
@@ -23,18 +27,24 @@ class Page extends Model
         'show_in_service',
     ];
 
-    protected $casts = [
+    protected function casts(): array 
+    {
+        return [
         'title' => 'array',
+        'meta_title'       => 'array',
+        'meta_description' => 'array',
         'content' => 'array',
         'blocks' => 'array',
         'seo' => 'array',
+        'is_active'        => 'boolean',
         'is_published' => 'boolean',
         'show_in_footer' => 'boolean',
         'show_in_company' => 'boolean',
         'show_in_products' => 'boolean',
         'show_in_information' => 'boolean',
         'show_in_service' => 'boolean',
-    ];
+        ];
+    }
 
     public function searchableAs(): string
     {

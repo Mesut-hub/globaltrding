@@ -8,13 +8,19 @@ class HomeSection extends Model
 {
     protected $fillable = [
         'key',
-        'is_active',
-        'sort_order',
+        'title',
         'blocks',
+        'sort',
+        'is_active',
     ];
 
-    protected $casts = [
-        'is_active' => 'boolean',
-        'blocks' => 'array',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'title'     => 'array',
+            'blocks'    => 'array',
+            'sort'      => 'integer',
+            'is_active' => 'boolean',
+        ];
+    }
 }

@@ -4,19 +4,19 @@
     $locale = app()->getLocale();
     $fallback = config('locales.default', 'en');
 
-    $title = data_get($page->title, $locale) ?: data_get($page->title, $fallback) ?: $page->slug;
+    $title = data_get($page->title, $locale) ?: data_get($page->title, $fallback) ?: '' ?: $page->slug;
 
     // SEO
-    $metaTitle = data_get($page->seo, "title.$locale")
-        ?: data_get($page->seo, "title.$fallback")
+    $metaTitle = data_get($page->meta_title, $locale)
+        ?: data_get($page->meta_title, $fallback)
         ?: $title;
 
-    $metaDescription = data_get($page->seo, "description.$locale")
-        ?: data_get($page->seo, "description.$fallback")
+    $metaDescription = data_get($page->meta_description, $locale)
+        ?: data_get($page->meta_description, $fallback)
         ?: '';
 
     $content = data_get($page->content, $locale) ?: data_get($page->content, $fallback) ?: null;
-    $blocks = $page->blocks ?? [];
+    $blocks = is_array($page->blocks ?? null) ? $page->blocks : [];
 
     // detect if first block is hero
     $firstBlockType = is_array($blocks) && count($blocks) ? ($blocks[0]['type'] ?? null) : null;
