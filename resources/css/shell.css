@@ -230,7 +230,17 @@ body.nav-overlay-open #siteHeader .header-icons {
 }
 
 body.nav-overlay-open #siteHeader .main-nav{
-  padding-left: max(24px, calc((100vw - 1320px) / 2 + 80px));
+  padding-left: max(24px, calc((100vw - 1320px) / 10 + 30px));
+}
+
+body.nav-overlay-open .site-header {
+  position: fixed;
+  top: 42px;
+  left: 160px;
+  width: 90%;
+  z-index: 1000;
+  transition: all 0.35s ease;
+  pointer-events: none;
 }
 
 body.nav-overlay-open .site-header,
@@ -257,7 +267,7 @@ body.nav-overlay-open .site-header.scrolled .header-logo-box {
   width: 360px;
   padding: 0 24px;
   overflow: visible;
-  background: rgba(6, 12, 20, 0.86);   /* blend with overlay */
+  background: linear-gradient(145deg, #000000 0%, #575c63 38%, #000000 60%, #7f8897 100%);
   box-shadow: none;
   mask-image: none;
   -webkit-mask-image: none;
