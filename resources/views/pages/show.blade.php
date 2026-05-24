@@ -4,15 +4,18 @@
     $locale = app()->getLocale();
     $fallback = config('locales.default', 'en');
 
-    $title = data_get($page->title, $locale) ?: data_get($page->title, $fallback) ?: '' ?: $page->slug;
+    // Unified title resolution — seo.title wins, then page title
+    $title = data_get($page->seo, "title.{$locale}")
+        ?: data_get($page->seo, "title.{$fallback}")
+        ?: data_get($page->title, $locale)
+        ?: data_get($page->title, $fallback)
+        ?: $page->slug;
 
     // SEO
-    $metaTitle = data_get($page->meta_title, $locale)
-        ?: data_get($page->meta_title, $fallback)
-        ?: $title;
+    $metaTitle = $title;
 
-    $metaDescription = data_get($page->meta_description, $locale)
-        ?: data_get($page->meta_description, $fallback)
+    $metaDescription = data_get($page->seo, "description.{$locale}")
+        ?: data_get($page->seo, "description.{$fallback}")
         ?: '';
 
     $content = data_get($page->content, $locale) ?: data_get($page->content, $fallback) ?: null;

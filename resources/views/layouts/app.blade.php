@@ -48,108 +48,84 @@
         <meta property="article:modified_time" content="@yield('article_modified_time')">
     @endif
 
-    <title>{{ $metaTitle }}</title>
-    <meta name="description" content="{{ $metaDescription }}">
     @php
-        $isProd = app()->environment('production');
+        $seoService = app(\App\Services\SeoService::class);
+        // $seoMeta is injected by controllers; fallback to empty
+        $seoMeta = $seoMeta ?? [];
+        $seoTitle       = $seoMeta['title']       ?? trim((string) View::yieldContent('meta_title', config('app.name')));
+        $seoDescription = $seoMeta['description'] ?? trim((string) View::yieldContent('meta_description', ''));
+        $seoOgImage     = $seoMeta['ogImage']     ?? trim((string) View::yieldContent('og_image', $appUrl . '/images/og-default.png'));
+        $seoOgType      = $seoMeta['ogType']      ?? trim((string) View::yieldContent('og_type', 'website'));
+        $seoRobots      = $seoMeta['robots']      ?? '';
+        $seoCanonical   = $seoMeta['canonical']   ?? '';
+        $publishedTime  = trim((string) View::yieldContent('article_published_time', ''));
+        $modifiedTime   = trim((string) View::yieldContent('article_modified_time', ''));
     @endphp
 
-    <meta name="robots" content="{{ $isProd ? 'index,follow' : 'noindex,nofollow' }}">
-
-    {{-- Canonical --}}
-    <link rel="canonical" href="{{ $currentUrl }}">
-
-    {{-- hreflang alternates (all locales) --}}
-    @php
-        $supportedLocales = config('locales.supported', ['en']);
-        $defaultLocale = config('locales.default', 'en');
-
-        // current path without query string, e.g. /en/products/rotok-valve
-        $path = '/' . ltrim(request()->path(), '/');
-
-        // Replace first path segment locale with "{loc}"
-        // If path is just "/en" then remainder becomes empty.
-        $parts = explode('/', trim($path, '/'));
-        $currentLocale = $parts[0] ?? $defaultLocale;
-        $rest = implode('/', array_slice($parts, 1));
-    @endphp
-
-    @foreach ($supportedLocales as $loc)
-        @php
-            $altPath = $rest !== '' ? "/{$loc}/{$rest}" : "/{$loc}";
-            $altUrl = $appUrl . $altPath;
-        @endphp
-        <link rel="alternate" hreflang="{{ $loc }}" href="{{ $altUrl }}">
-    @endforeach
-
-    <link rel="alternate" hreflang="x-default" href="{{ $appUrl }}/{{ $defaultLocale }}{{ $rest !== '' ? '/' . $rest : '' }}">
-
-    {{-- OpenGraph --}}
-    <meta property="og:site_name" content="Globaltrding">
-    <meta property="og:type" content="{{ $ogType }}">
-    <meta property="og:title" content="{{ $ogTitle }}">
-    <meta property="og:description" content="{{ $ogDescription }}">
-    <meta property="og:url" content="{{ $currentUrl }}">
-
-    @if ($ogImage !== '')
-        <meta property="og:image" content="{{ $ogImage }}">
-        <meta property="og:image:width" content="@yield('og_image_width', '1200')">
-        <meta property="og:image:height" content="@yield('og_image_height', '630')">
-        <meta property="og:image:alt" content="@yield('og_image_alt', $ogTitle)">
-    @endif
-    
-    {{-- OpenGraph locale / alternates --}}
-    @php
-        $supportedLocales = config('locales.supported', ['en']);
-        $defaultLocale = config('locales.default', 'en');
-
-        // Minimal mapping. Adjust if you target specific regions.
-        $ogLocaleMap = [
-            'en' => 'en_US',
-            'tr' => 'tr_TR',
-            'ar' => 'ar_AR',
-            'fr' => 'fr_FR',
-        ];
-
-        $currentLocale = app()->getLocale();
-        $ogLocale = $ogLocaleMap[$currentLocale] ?? ($ogLocaleMap[$defaultLocale] ?? 'en_US');
-    @endphp
-
-    <meta property="og:locale" content="{{ $ogLocale }}">
-    @foreach ($supportedLocales as $loc)
-        @continue($loc === $currentLocale)
-        @php $alt = $ogLocaleMap[$loc] ?? null; @endphp
-        @if ($alt)
-            <meta property="og:locale:alternate" content="{{ $alt }}">
-        @endif
-    @endforeach
-
-    {{-- Twitter --}}
-    <meta name="twitter:card" content="{{ $twitterCard }}">
-    <meta name="twitter:title" content="{{ $ogTitle }}">
-    <meta name="twitter:description" content="{{ $ogDescription }}">
-    @if ($ogImage !== '')
-        <meta name="twitter:image" content="{{ $ogImage }}">
-    @endif
-    @if ($ogImage !== '')
-        <meta name="twitter:image" content="{{ $ogImage }}">
-        <meta name="twitter:image:alt" content="@yield('og_image_alt', $ogTitle)">
-    @endif
+    <x-seo-head
+        :title="$seoTitle"
+        :description="$seoDescription"
+        :og-image="$seoOgImage"
+        :og-type="$seoOgType"
+        :robots="$seoRobots ?: ($isProd ? 'index,follow' : 'noindex,nofollow')"
+        :canonical="$seoCanonical"
+        :published-time="$publishedTime ?: null"
+        :modified-time="$modifiedTime ?: null"
+        :locale="$locale"
+    />
     <meta name="twitter:site" content="@Globaltrding">
     <meta name="twitter:creator" content="@Globaltrding">
 
     <link rel="icon" href="{{ rtrim(config('app.url', 'https://globaltrding.com'), '/') }}/images/favicon.ico">
     <link rel="apple-touch-icon" href="{{ rtrim(config('app.url', 'https://globaltrding.com'), '/') }}/images/logo.png">
 
-    {{-- JSON-LD: Organization (site-wide) --}}
+    {{-- JSON-LD: Organization + WebSite (site-wide) --}}
     <script type="application/ld+json">
-    {!! json_encode([
-        '@context' => 'https://schema.org',
-        '@type' => 'Organization',
-        'name' => 'Globaltrding',
-        'url' => rtrim(config('app.url', 'https://globaltrding.com'), '/'),
-        'logo' => rtrim(config('app.url', 'https://globaltrding.com'), '/') . '/images/logo.png',
-    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+        {!! json_encode([
+            '@context' => 'https://schema.org',
+            '@graph'   => [
+                [
+                    '@type'            => 'Organization',
+                    '@id'              => rtrim(config('app.url'), '/') . '/#organization',
+                    'name'             => 'Globaltrding',
+                    'url'              => rtrim(config('app.url'), '/'),
+                    'logo'             => [
+                        '@type'           => 'ImageObject',
+                        'url'             => rtrim(config('app.url'), '/') . '/images/logo.png',
+                        'width'           => 200,
+                        'height'          => 60,
+                    ],
+                    'sameAs'           => array_filter([
+                        $siteSettings['linkedin_url']  ?? null,
+                        $siteSettings['instagram_url'] ?? null,
+                        $siteSettings['x_url']         ?? null,
+                        $siteSettings['youtube_url']   ?? null,
+                    ]),
+                    'contactPoint'     => [
+                        '@type'           => 'ContactPoint',
+                        'contactType'     => 'customer service',
+                        'email'           => config('departments.admin.inbox', 'info@globaltrding.com'),
+                        'availableLanguage' => ['English', 'Turkish', 'Arabic', 'French'],
+                    ],
+                ],
+                [
+                    '@type'            => 'WebSite',
+                    '@id'              => rtrim(config('app.url'), '/') . '/#website',
+                    'url'              => rtrim(config('app.url'), '/'),
+                    'name'             => 'Globaltrding',
+                    'publisher'        => ['@id' => rtrim(config('app.url'), '/') . '/#organization'],
+                    'inLanguage'       => config('locales.supported', ['en']),
+                    'potentialAction'  => [
+                        '@type'         => 'SearchAction',
+                        'target'        => [
+                            '@type'     => 'EntryPoint',
+                            'urlTemplate' => rtrim(config('app.url'), '/') . '/' . $locale . '/search?q={search_term_string}',
+                        ],
+                        'query-input'   => 'required name=search_term_string',
+                    ],
+                ],
+            ],
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) !!}
     </script>
 
     @stack('structured_data')

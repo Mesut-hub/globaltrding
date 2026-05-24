@@ -87,17 +87,37 @@ class PageResource extends Resource
                                 ->label("Page title ({$lbl})")
                                 ->required($locale === $default)
                                 ->maxLength(255),
-                            TextInput::make("meta_title.{$locale}")
+                            TextInput::make("seo.title.{$locale}")
                                 ->label("SEO title ({$lbl})")
-                                ->maxLength(60),
-                            Textarea::make("meta_description.{$locale}")
+                                ->maxLength(70)
+                                ->helperText('Ideal: 50–70 chars. Leave empty to use page title.'),
+                            Textarea::make("seo.description.{$locale}")
                                 ->label("SEO description ({$lbl})")
                                 ->rows(2)
-                                ->maxLength(160),
+                                ->maxLength(160)
+                                ->helperText('Ideal: 120–160 chars.'),
                         ]);
                     })->values()->all()
                 ),
 
+            // Add before the Builder::make('blocks') in PageResource::form()
+            \Filament\Forms\Components\FileUpload::make('seo.og_image_upload')
+                ->label('SEO / OG Image (overrides default)')
+                ->disk('public')
+                ->directory('seo/og')
+                ->image()
+                ->helperText('Recommended: 1200×630px. Leave empty to auto-generate from content.')
+                ->dehydrateStateUsing(function ($state) {
+                    if (!$state) return null;
+                    return \Illuminate\Support\Facades\Storage::disk('public')->url($state);
+                })
+                ->afterStateHydrated(function ($component, $state, $record) {
+                    // Show current og_image path if it's a storage path
+                    if ($record && $ogImg = data_get($record->seo, 'og_image')) {
+                        // Only show in uploader if it's a local path
+                    }
+                }),
+            
             Builder::make('blocks')
                 ->label('Page blocks')
                 ->collapsible()

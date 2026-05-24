@@ -141,6 +141,25 @@ class IndustryForm
                         ]),
                 ]),
 
+            // Add SEO section
+            \Filament\Schemas\Components\Section::make('SEO')
+                ->schema(
+                    collect(config('locales.supported', ['en']))->flatMap(function (string $locale) use ($default) {
+                        $lbl = strtoupper($locale);
+                        return [
+                            \Filament\Forms\Components\TextInput::make("seo.title.{$locale}")
+                                ->label("SEO Title ({$lbl})")
+                                ->maxLength(70),
+                            \Filament\Forms\Components\Textarea::make("seo.description.{$locale}")
+                                ->label("SEO Description ({$lbl})")
+                                ->rows(2)
+                                ->maxLength(160),
+                        ];
+                    })->all()
+                )
+                ->collapsible()
+                ->collapsed(),
+            
             Toggle::make('is_published')
                 ->required()
                 ->default(true),

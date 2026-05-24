@@ -18,6 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'search.throttle' => RateLimitSearch::class,
         ]);
+        $middleware->prependToGroup(
+            'filament', \App\Http\Middleware\NoIndexAdminPages::class
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

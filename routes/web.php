@@ -24,81 +24,130 @@ Route::get('/sitemap.xml', function () {
     if ($base === '' || str_contains($base, '127.0.0.1') || str_contains($base, 'localhost')) {
         $base = rtrim(request()->getSchemeAndHttpHost(), '/');
     }
-    $locales = config('locales.supported', ['en']);
+    $locales  = config('locales.supported', ['en']);
+    $entries  = [];
 
-    // Static routes (no lastmod)
-    $staticPaths = [
-        '' => '', // home
-        'products' => 'products',
-        'industries' => 'industries',
-        'news' => 'news',
-        'market' => 'market',
-        'collaboration' => 'collaboration',
-    ];
+    $add = function (string $url, ?string $lastmod, float $priority, string $changefreq, ?string $imageUrl = null, ?string $imageTitle = null) use (&$entries) {
+        $entries[$url] = compact('url', 'lastmod', 'priority', 'changefreq', 'imageUrl', 'imageTitle');
+    };
 
-    // Collect entries as: ['loc' => url, 'lastmod' => 'YYYY-MM-DD'|null]
-    $entries = [];
-
+    // Home
     foreach ($locales as $loc) {
-        foreach ($staticPaths as $path) {
-            $url = $path === '' ? "{$base}/{$loc}" : "{$base}/{$loc}/{$path}";
-            $entries[] = ['loc' => $url, 'lastmod' => null];
-        }
+        $add("{$base}/{$loc}", now()->toDateString(), 1.0, 'daily');
     }
 
-    // Dynamic: Products
-    foreach (Product::query()->where('is_published', true)->get(['slug', 'updated_at']) as $p) {
+    // Static high-priority
+    $statics = [
+        'products'     => [0.9, 'daily'],
+        'industries'   => [0.8, 'weekly'],
+        'news'         => [0.8, 'daily'],
+        'market'       => [0.7, 'daily'],
+        'collaboration'=> [0.6, 'monthly'],
+        'inquiry'      => [0.5, 'monthly'],
+    ];
+    foreach ($statics as $path => [$priority, $freq]) {
         foreach ($locales as $loc) {
-            $entries[] = [
-                'loc' => "{$base}/{$loc}/products/{$p->slug}",
-                'lastmod' => optional($p->updated_at)->toDateString(),
-            ];
+            $add("{$base}/{$loc}/{$path}", null, $priority, $freq);
         }
     }
 
-    // Dynamic: Industries
-    foreach (Industry::query()->where('is_published', true)->get(['slug', 'updated_at']) as $i) {
-        foreach ($locales as $loc) {
-            $entries[] = [
-                'loc' => "{$base}/{$loc}/industries/{$i->slug}",
-                'lastmod' => optional($i->updated_at)->toDateString(),
-            ];
-        }
-    }
+    // Products
+    \App\Models\Product::query()
+        ->where('is_published', true)
+        ->get(['slug', 'updated_at', 'display_name', 'seo'])
+        ->each(function ($p) use (&$add, $base, $locales) {
+            foreach ($locales as $loc) {
+                $add(
+                    "{$base}/{$loc}/products/{$p->slug}",
+                    optional($p->updated_at)->toDateString(),
+                    0.8,
+                    'weekly'
+                );
+            }
+        });
 
-    // Dynamic: News
-    foreach (NewsPost::query()->where('is_published', true)->get(['slug', 'updated_at']) as $n) {
-        foreach ($locales as $loc) {
-            $entries[] = [
-                'loc' => "{$base}/{$loc}/news/{$n->slug}",
-                'lastmod' => optional($n->updated_at)->toDateString(),
-            ];
-        }
-    }
+    // Industries
+    \App\Models\Industry::query()
+        ->where('is_published', true)
+        ->get(['slug', 'updated_at', 'cover_image_path', 'title'])
+        ->each(function ($i) use (&$add, $base, $locales) {
+            $imgUrl = $i->cover_image_path
+                ? \Illuminate\Support\Facades\Storage::disk('public')->url($i->cover_image_path)
+                : null;
+            $imgTitle = is_array($i->title) ? (reset($i->title) ?: '') : (string)($i->title ?? '');
+            foreach ($locales as $loc) {
+                $add(
+                    "{$base}/{$loc}/industries/{$i->slug}",
+                    optional($i->updated_at)->toDateString(),
+                    0.75,
+                    'weekly',
+                    $imgUrl,
+                    $imgTitle
+                );
+            }
+        });
 
-    // Dynamic: Pages (once you start creating them)
-    foreach (Page::query()->where('is_published', true)->get(['slug', 'updated_at']) as $pg) {
-        foreach ($locales as $loc) {
-            $entries[] = [
-                'loc' => "{$base}/{$loc}/pages/{$pg->slug}",
-                'lastmod' => optional($pg->updated_at)->toDateString(),
-            ];
-        }
-    }
+    // News
+    \App\Models\NewsPost::query()
+        ->where('is_published', true)
+        ->get(['slug', 'updated_at', 'cover_image_path', 'title'])
+        ->each(function ($n) use (&$add, $base, $locales) {
+            $imgUrl = $n->cover_image_path
+                ? \Illuminate\Support\Facades\Storage::disk('public')->url($n->cover_image_path)
+                : null;
+            $imgTitle = is_array($n->title) ? (reset($n->title) ?: '') : (string)($n->title ?? '');
+            foreach ($locales as $loc) {
+                $add(
+                    "{$base}/{$loc}/news/{$n->slug}",
+                    optional($n->updated_at)->toDateString(),
+                    0.7,
+                    'weekly',
+                    $imgUrl,
+                    $imgTitle
+                );
+            }
+        });
 
-    // De-dup by loc
-    $byLoc = [];
-    foreach ($entries as $e) {
-        $byLoc[$e['loc']] = $e;
-    }
-    $entries = array_values($byLoc);
+    // Pages
+    \App\Models\Page::query()
+        ->where('is_published', true)
+        ->get(['slug', 'updated_at'])
+        ->each(function ($pg) use (&$add, $base, $locales) {
+            foreach ($locales as $loc) {
+                $add(
+                    "{$base}/{$loc}/pages/{$pg->slug}",
+                    optional($pg->updated_at)->toDateString(),
+                    0.6,
+                    'monthly'
+                );
+            }
+        });
 
-    $xml = view('sitemap.xml', ['entries' => $entries])->render();
+    $xml = view('sitemap.xml', ['entries' => array_values($entries)])->render();
 
-    return Response::make($xml, 200, ['Content-Type' => 'application/xml; charset=UTF-8']);
+    return \Illuminate\Support\Facades\Response::make($xml, 200, [
+        'Content-Type'  => 'application/xml; charset=UTF-8',
+        'Cache-Control' => 'public, max-age=3600',
+    ]);
 });
 
 Route::redirect('/', '/en', 301);
+
+Route::get('/robots.txt', function () {
+    $appUrl  = rtrim(config('app.url'), '/');
+    $isProd  = app()->environment('production');
+
+    $content = "User-agent: *\n";
+    $content .= $isProd ? "Allow: /\n" : "Disallow: /\n";
+    $content .= "\n";
+    $content .= "# Filament Admin - block crawlers\n";
+    $content .= "Disallow: /adminhmt/\n";
+    $content .= "Disallow: /editor/\n";
+    $content .= "\n";
+    $content .= "Sitemap: {$appUrl}/sitemap.xml\n";
+
+    return response($content, 200, ['Content-Type' => 'text/plain']);
+});
 
 Route::prefix('{locale}')
     ->whereIn('locale', config('locales.supported'))

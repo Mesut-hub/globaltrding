@@ -12,6 +12,7 @@ class Industry extends Model
     protected $fillable = [
         'slug',
         'title',
+        'seo',
         'excerpt',
         'cover_image_path',
         'blocks',
@@ -21,6 +22,7 @@ class Industry extends Model
 
     protected $casts = [
         'title' => 'array',
+        'seo' => 'array',
         'excerpt' => 'array',
         'blocks' => 'array',
         'is_published' => 'boolean',

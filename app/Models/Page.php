@@ -12,8 +12,6 @@ class Page extends Model
     protected $fillable = [
         'slug',
         'title',
-        'meta_title',
-        'meta_description',
         'content',
         'blocks',
         'seo',
@@ -30,20 +28,28 @@ class Page extends Model
     protected function casts(): array 
     {
         return [
-        'title' => 'array',
-        'meta_title'       => 'array',
-        'meta_description' => 'array',
-        'content' => 'array',
-        'blocks' => 'array',
-        'seo' => 'array',
-        'is_active'        => 'boolean',
-        'is_published' => 'boolean',
+        'title'          => 'array',
+        'content'        => 'array',
+        'blocks'         => 'array',
+        'seo'            => 'array',
+        'is_active'      => 'boolean',
+        'is_published'   => 'boolean',
         'show_in_footer' => 'boolean',
-        'show_in_company' => 'boolean',
-        'show_in_products' => 'boolean',
+        'show_in_company'     => 'boolean',
+        'show_in_products'    => 'boolean',
         'show_in_information' => 'boolean',
-        'show_in_service' => 'boolean',
+        'show_in_service'     => 'boolean',
         ];
+    }
+
+    public function getMetaTitleAttribute(): ?array
+    {
+        return data_get($this->seo, 'title');
+    }
+
+    public function getMetaDescriptionAttribute(): ?array
+    {
+        return data_get($this->seo, 'description');
     }
 
     public function searchableAs(): string
