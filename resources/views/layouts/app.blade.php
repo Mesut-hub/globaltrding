@@ -3,10 +3,12 @@
 <html
     lang="{{ app()->getLocale() }}"
     dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}"
+    data-ga-id="{{ config('services.google_analytics.id', '') }}"
 >
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     @php
         $locale = app()->getLocale();
@@ -277,18 +279,6 @@
             </section>
         </div>
     </div>
-    <div id="cookieBanner" class="cookie-banner hidden" aria-live="polite">
-        <div class="cookie-banner__inner">
-            <div class="cookie-banner__text">
-                We use cookies to improve your experience and to measure site usage (Google Analytics).
-                Read our <a href="/{{ app()->getLocale() }}/pages/cookie-policy">Cookie Policy</a>.
-            </div>
-            <div class="cookie-banner__actions">
-                <button type="button" id="cookieReject" class="cookie-btn cookie-btn--secondary">Reject all</button>
-                <button type="button" id="cookieAcceptSocial" class="cookie-btn cookie-btn--secondary">Accept social only</button>
-                <button type="button" id="cookieAccept" class="cookie-btn cookie-btn--primary">Accept all</button>
-            </div>
-        </div>
-    </div>
+    <x-cookie-consent />
 </body>
 </html>

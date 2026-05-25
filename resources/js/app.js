@@ -12,3 +12,5 @@ import './market-belt';
 import './layout';
 
 import './pdp-docdd';
+
+import './cookie-consent';

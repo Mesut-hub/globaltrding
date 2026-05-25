@@ -23,5 +23,6 @@ class DatabaseSeeder extends Seeder
         ]);
         $this->call(\Database\Seeders\MarketInstrumentSeeder::class);
         $this->call(\Database\Seeders\LegalPagesSeeder::class);
+        $this->call(CookieConsentSeeder::class);
     }
 }

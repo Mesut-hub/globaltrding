@@ -7,6 +7,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductAuthController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\CollaborationController;
+use App\Http\Controllers\CookieConsentController;
 use App\Http\Controllers\MarketController;
 use App\Http\Controllers\IndustryController;
 use App\Http\Controllers\SearchController;
@@ -198,4 +199,10 @@ Route::prefix('{locale}')
             // If someone opens /en/reset-password directly, send them to login
             return redirect("/{$locale}/login");
         })->name('password.reset.landing');
+
+        // Cookie Consent (API-style endpoints, locale-prefixed)
+        Route::post('/cookie-consent', [CookieConsentController::class, 'store'])
+            ->name('cookie.consent.store');
+        Route::get('/cookie-consent/payload', [CookieConsentController::class, 'payload'])
+            ->name('cookie.consent.payload');
     });

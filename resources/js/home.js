@@ -176,26 +176,29 @@ document.addEventListener('DOMContentLoaded', () => {
   // LinkedIn / other external: gated until social cookie accepted.
   //
   // Uses .needs-consent class (not .is-allowed) to match updated CSS.
+  // ─── Social consent gate (driven by new cookie system) ───────────────
   const applySocialGate = () => {
-    const consent  = window.__cookieConsent?.read?.() ?? {};
-    const socialOk = consent.social === true;
-
-    document.querySelectorAll('[data-social-card]').forEach((card) => {
-      const src = (card.getAttribute('data-source') || '').toLowerCase().trim();
-      if (src ==='instagram') { card.classList.remove('needs-consent'); return; }
-      card.classList.toggle('needs-consent', !socialOk);
+    const hasConsent = window.GtCookieConsent?.hasConsent('social') ?? false;
+    document.querySelectorAll('[data-social-card]').forEach(card => {
+      const src = (card.getAttribute('data-source') || '').toLowerCase();
+      if (src === 'instagram') {
+        card.classList.remove('needs-consent');
+      } else {
+        card.classList.toggle('needs-consent', !hasConsent);
+      }
     });
   };
 
-  applySocialGate(); // run immediately so Instagram cards are never blocked
-  window.addEventListener('cookie-consent:changed', applySocialGate);
+  // Run immediately and on consent change
+  applySocialGate();
+  window.addEventListener('gt:consent:changed', applySocialGate);
+  window.addEventListener('gt:consent:ready', applySocialGate);
 
-  // Individual "Accept" buttons inside each gated card
-  document.querySelectorAll('[data-social-accept]').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
+  // Remove old consent accept buttons (now handled by modal)
+  document.querySelectorAll('[data-social-accept]').forEach(btn => {
+    btn.addEventListener('click', e => {
       e.preventDefault();
-      window.__cookieConsent?.write?.({ social: true });
-      // applySocialGate fires via cookie-consent:changed event above
+      window.GtCookieConsent?.showModal?.();
     });
   });
 
