@@ -13,6 +13,7 @@
         $navPayload = app(\App\Services\NavService::class)->payload();
         $siteSettings = class_exists(\App\Models\SiteSetting::class) ? \App\Models\SiteSetting::getCached() : [];
         $headerLogoPath = $siteSettings['header_logo_path'] ?? '/images/logo.png';
+        $isProd = app()->environment('production');
     @endphp
 
     <script type="application/json" id="gt-nav-data">
