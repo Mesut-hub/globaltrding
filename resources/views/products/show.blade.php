@@ -59,7 +59,7 @@
     <section class="gt-pdp">
         <div class="gt-pdp__inner">
 
-            <a href="/{{ $locale }}/products" class="gt-pdp__back">‹ {{ __('Go Back') }}</a>
+            <a href="/{{ $locale }}/products" class="gt-pdp__back">‹ {{ __('pdp.back_default') }}</a>
 
             <div class="gt-pdp__top">
                 <div>
@@ -67,12 +67,12 @@
                     <div class="gt-pdp__metaLine">
                         @if ($prd)
                             <span class="gt-pdp__meta">
-                                <span class="gt-pdp__metaKey">{{ __('PRD Number') }}:</span> {{ $prd }}
+                                <span class="gt-pdp__metaKey">{{ __('pdp.prd_number') }}:</span> {{ $prd }}
                             </span>
                         @endif
                         @if ($industry)
                             <span class="gt-pdp__meta">
-                                <span class="gt-pdp__metaKey">{{ __('Industry') }}</span> {{ $industry }}
+                                <span class="gt-pdp__metaKey">{{ __('pdp.industry') }}</span> {{ $industry }}
                             </span>
                         @endif
                     </div>
@@ -83,7 +83,7 @@
                         onclick="navigator.share
                             ? navigator.share({title: document.title, url: location.href})
                             : navigator.clipboard.writeText(location.href)">
-                        {{ __('Share') }}
+                        {{ __('pdp.share') }}
                     </button>
                 </div>
             </div>
@@ -92,25 +92,25 @@
                 <div class="gt-pdp__gate">
                     <div class="gt-pdp__gateIcon" aria-hidden="true">🔒</div>
                     <div class="gt-pdp__gateText">
-                        {{ __('You are not logged in. Log in to access more information such as additional product details, pricing, properties, documents.') }}
-                        <a class="gt-pdp__gateLink" href="{{ $loginUrl }}">{{ __('Login') }}</a>
-                        <a class="gt-pdp__gateLink" href="{{ $registerUrl }}">{{ __('Register') }}</a>
+                        {{ __('pdp.gate_notice') }}
+                        <a class="gt-pdp__gateLink" href="{{ $loginUrl }}">{{ __('pdp.login') }}</a>
+                        <a class="gt-pdp__gateLink" href="{{ $registerUrl }}">{{ __('pdp.register') }}</a>
                     </div>
                 </div>
             @endif
 
             <nav class="gt-pdp__tabs" aria-label="{{ __('Product tabs') }}">
-                <a class="gt-pdp__tab is-active" href="#overview">{{ __('Overview') }}</a>
-                <a class="gt-pdp__tab {{ $hasAccess ? '' : 'is-locked' }}" href="#properties">{{ __('Properties') }}</a>
-                <a class="gt-pdp__tab {{ $hasAccess ? '' : 'is-locked' }}" href="#documents">{{ __('Documents') }}</a>
-                <a class="gt-pdp__tab {{ $hasAccess ? '' : 'is-locked' }}" href="#sustainability">{{ __('Sustainability') }}</a>
+                <a class="gt-pdp__tab is-active" href="#overview">{{ __('pdp.tab_overview') }}</a>
+                <a class="gt-pdp__tab {{ $hasAccess ? '' : 'is-locked' }}" href="#properties">{{ __('pdp.tab_properties') }}</a>
+                <a class="gt-pdp__tab {{ $hasAccess ? '' : 'is-locked' }}" href="#documents">{{ __('pdp.tab_documents') }}</a>
+                <a class="gt-pdp__tab {{ $hasAccess ? '' : 'is-locked' }}" href="#sustainability">{{ __('pdp.tab_sustainability') }}</a>
             </nav>
 
             {{-- ── Overview ── --}}
             <div class="gt-pdp__section" id="overview">
-                <h2 class="gt-pdp__h2">{{ __('Overview') }}</h2>
+                <h2 class="gt-pdp__h2">{{ __('pdp.tab_overview') }}</h2>
                 @if (! $showOverview)
-                    <div class="gt-pdp__notice">{{ __('Please login to access overview.') }}</div>
+                    <div class="gt-pdp__notice">{{ __('pdp.locked_overview') }}</div>
                 @else
                     @foreach ($overviewBlocks as $block)
                         @include('shared.blocks.render', ['block' => $block, 'hasProductAccess' => $hasAccess])
@@ -120,9 +120,9 @@
 
             {{-- ── Properties ── --}}
             <div class="gt-pdp__section" id="properties">
-                <h2 class="gt-pdp__h2">{{ __('Properties') }}</h2>
+                <h2 class="gt-pdp__h2">{{ __('pdp.tab_properties') }}</h2>
                 @if (! $showProps)
-                    <div class="gt-pdp__notice">{{ __('Please login to access properties.') }}</div>
+                    <div class="gt-pdp__notice">{{ __('pdp.locked_properties') }}</div>
                 @else
                     @foreach ($propsBlocks as $block)
                         @include('shared.blocks.render', ['block' => $block, 'hasProductAccess' => $hasAccess])
@@ -132,24 +132,24 @@
 
             {{-- ── Documents ── --}}
             <div class="gt-pdp__section" id="documents">
-                <h2 class="gt-pdp__h2">{{ __('Documents') }}</h2>
+                <h2 class="gt-pdp__h2">{{ __('pdp.tab_documents') }}</h2>
 
                 @if (! $hasAccess)
                     @if ($publicDocsEnabled)
                         <div class="gt-pdp__notice gt-pdp__notice--warn">
-                            {{ __('Some documents may require login to download.') }}
+                            {{ __('pdp.docs_partial_notice') }}
                         </div>
 
                         <div class="gt-docdd__toolbar" data-docdd-toolbar>
                             <button type="button" class="gt-docdd__toolLink"
                                     data-docdd-toggle aria-pressed="false">
-                                {{ __('Expand all') }}
+                                {{ __('pdp.expand_all') }}
                             </button>
                             <select class="gt-docdd__toolSelect" data-docdd-lang>
-                                <option value="">{{ __('documents.language') }}</option>
+                                <option value="">{{ __('pdp.documents_language') }}</option>
                             </select>
                             <input class="gt-docdd__toolSearch" type="search"
-                                placeholder="{{ __('documents.search') }}"
+                                placeholder="{{ __('pdp.documents_search') }}"
                                 data-docdd-search>
                         </div>
 
@@ -165,7 +165,7 @@
                         </div>
                     @else
                         <div class="gt-pdp__notice gt-pdp__notice--warn">
-                            {{ __('Please login to download documents') }}
+                            {{ __('pdp.locked_documents') }}
                         </div>
                     @endif
                 @else
@@ -173,13 +173,13 @@
                     <div class="gt-docdd__toolbar" data-docdd-toolbar>
                         <button type="button" class="gt-docdd__toolLink"
                                 data-docdd-toggle aria-pressed="false">
-                            {{ __('Expand all') }}
+                            {{ __('pdp.expand_all') }}
                         </button>
                         <select class="gt-docdd__toolSelect" data-docdd-lang>
-                            <option value="">{{ __('documents.language') }}</option>
+                            <option value="">{{ __('pdp.documents_language') }}</option>
                         </select>
                         <input class="gt-docdd__toolSearch" type="search"
-                            placeholder="{{ __('documents.search') }}"
+                            placeholder="{{ __('pdp.documents_search') }}"
                             data-docdd-search>
                     </div>
 
@@ -198,9 +198,9 @@
 
             {{-- ── Sustainability ── --}}
             <div class="gt-pdp__section" id="sustainability">
-                <h2 class="gt-pdp__h2">{{ __('Sustainability') }}</h2>
+                <h2 class="gt-pdp__h2">{{ __('pdp.tab_sustainability') }}</h2>
                 @if (! $showSustain)
-                    <div class="gt-pdp__notice">{{ __('Please login to access sustainability information.') }}</div>
+                    <div class="gt-pdp__notice">{{ __('pdp.locked_sustainability') }}</div>
                 @else
                     @foreach ($sustainBlocks as $block)
                         @include('shared.blocks.render', ['block' => $block, 'hasProductAccess' => $hasAccess])

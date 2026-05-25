@@ -13,3 +13,40 @@
 }
 
 @import "./cookie-consent.css";
+
+/* ── RTL logical properties ── */
+[dir="rtl"] .site-header .main-nav {
+    padding-left:  34px;
+    padding-right: max(24px, calc((100vw - 1320px) / 2 + 60px));
+}
+
+[dir="rtl"] .gt-hero__content {
+    transform: translate(calc(-1 * var(--hero-offset-x, 140px)), var(--hero-offset-y, -90px));
+}
+
+[dir="rtl"] .nav-overlay__content {
+    direction: rtl;
+    text-align: right;
+}
+
+[dir="rtl"] .gt-pf__grid {
+    direction: rtl;
+}
+
+[dir="rtl"] .gt-pdp__tabs {
+    direction: rtl;
+}
+
+/* Arabic typography */
+:lang(ar) {
+    font-family: 'Cairo', 'Tajawal', 'Noto Sans Arabic', ui-sans-serif, system-ui, sans-serif;
+    line-height: 1.8;
+    letter-spacing: 0;
+}
+
+:lang(ar) .gt-hero__title,
+:lang(ar) .gt-pdp__h1,
+:lang(ar) .gt-pf__title {
+    font-family: 'Cairo', 'Tajawal', sans-serif;
+    font-weight: 700;
+}

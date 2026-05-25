@@ -18,6 +18,7 @@ class SetLocaleFromPath
         $locale = in_array($segment, $supported, true) ? $segment : $default;
 
         App::setLocale($locale);
+        \Carbon\Carbon::setLocale($locale);
 
         return $next($request);
     }

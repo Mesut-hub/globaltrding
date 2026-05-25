@@ -82,6 +82,15 @@
     <link rel="icon" href="{{ rtrim(config('app.url', 'https://globaltrding.com'), '/') }}/images/favicon.ico">
     <link rel="apple-touch-icon" href="{{ rtrim(config('app.url', 'https://globaltrding.com'), '/') }}/images/logo.png">
 
+    @if(app()->getLocale() === 'ar')
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    @else
+        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700,800" rel="stylesheet">
+    @endif
+
     {{-- JSON-LD: Organization + WebSite (site-wide) --}}
     <script type="application/ld+json">
         {!! json_encode([
@@ -229,7 +238,7 @@
             <div class="search-overlay__inner">
                 <input id="siteSearchInput"
                         type="search"
-                        placeholder="Search..."
+                        placeholder="{{ __('ui.search_placeholder') }}"
                         class="site-search-input"
                         autocomplete="off" />
 
@@ -240,18 +249,21 @@
             </div>
         </div>
         <div class="search-results-wrap">
-            <div id="searchHint" class="search-hint">Type at least 3 characters…</div>
+            <div id="searchHint" class="search-hint"
+                data-hint-default="{{ __('ui.search_type_hint') }}"
+                data-hint-searching="{{ __('ui.search_searching') }}"
+                data-hint-no-results="{{ __('ui.search_no_results') }}">
+                {{ __('ui.search_type_hint') }}
+            </div>
             <div id="searchResults" class="search-results"></div>
         </div>
 
         <div class="search-overlay__content">
             <div class="search-overlay__panel">
-                <div class="search-overlay__h">Product Finder</div>
-                <div class="search-overlay__p">Looking for products?</div>
-                <div class="search-overlay__p">
-                    Use our Product Finder to browse and discover the right product for your needs.
-                </div>
-                <a href="/{{ app()->getLocale() }}/products" class="search-overlay__btn">Find products</a>
+                <div class="search-overlay__h">{{ __('ui.search_product_finder') }}</div>
+                <div class="search-overlay__p">{{ __('ui.search_products_cta') }}</div>
+                <div class="search-overlay__p">{{ __('ui.search_products_body') }}</div>
+                <a href="/{{ app()->getLocale() }}/products" class="search-overlay__btn">{{ __('ui.search_find_products') }}</a>
             </div>
         </div>
     </div>

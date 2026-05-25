@@ -14,7 +14,7 @@
     $selectedSlug = $selected?->slug ?? '';
 @endphp
 
-@section('meta_title', $selectedName . ' - Market')
+@section('meta_title', $selectedName . __('market.title'))
 
 @section('content')
     <section class="mx-auto max-w-7xl px-4 py-12"
@@ -23,9 +23,9 @@
              data-belt-slugs="{{ $instruments->pluck('slug')->implode(',') }}">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-                <h1 class="text-4xl font-semibold tracking-tight">Market</h1>
+                <h1 class="text-4xl font-semibold tracking-tight">{{ __('market.title') }}</h1>
                 <p class="mt-2 text-slate-600">
-                    Select an instrument and time period to view changes.
+                    {{ __('market.subtitle') }}
                 </p>
             </div>
 
@@ -35,7 +35,7 @@
         <div class="mt-8 grid gap-4 lg:grid-cols-12">
             <div class="lg:col-span-4">
                 <div class="rounded-xl border border-slate-200 bg-white p-4">
-                    <label class="text-sm font-medium text-slate-700">Instrument</label>
+                    <label class="text-sm font-medium text-slate-700">{{ __('market.instrument') }}</label>
 
                     <select id="instrumentSelect" class="mt-2 w-full rounded-md border border-slate-300 px-3 py-2">
                         @foreach ($instruments as $inst)
@@ -49,7 +49,7 @@
                     </select>
 
                     <div class="mt-4">
-                        <label class="text-sm font-medium text-slate-700">Period</label>
+                        <label class="text-sm font-medium text-slate-700">{{ __('market.period') }}</label>
                         <div class="mt-2 flex flex-wrap gap-2">
                             <button data-period="1m" class="periodBtn rounded-md border border-slate-300 px-3 py-1.5 text-sm">1M</button>
                             <button data-period="3m" class="periodBtn rounded-md border border-slate-300 px-3 py-1.5 text-sm">3M</button>
@@ -71,16 +71,16 @@
                         </div>
 
                         <button id="applyCustom" class="mt-3 w-full rounded-md bg-slate-900 px-4 py-2 text-white hover:bg-slate-800">
-                            Apply
+                            {{ __('market.apply') }}
                         </button>
                     </div>
 
                     <div class="mt-4 text-xs text-slate-500">
-                        Data source: TCMB EVDS (will populate after sync).
+                        {{ __('market.data_source') }}
                     </div>
 
                     <div class="mt-4 rounded-lg border border-slate-100 overflow-hidden" id="latestTable">
-                        <div class="bg-slate-50 px-3 py-2 text-xs font-medium text-slate-600">Latest values</div>
+                        <div class="bg-slate-50 px-3 py-2 text-xs font-medium text-slate-600">{{ __('market.latest_values') }}</div>
                         <div class="divide-y divide-slate-100">
                             @foreach ($instruments as $inst)
                                 @php
@@ -114,7 +114,7 @@
                         </div>
 
                         <div class="text-right">
-                            <div class="text-sm text-slate-500">Latest</div>
+                            <div class="text-sm text-slate-500">{{ __('market.latest') }}</div>
                             <div class="text-xl font-semibold" id="latestText">—</div>
                         </div>
                     </div>
@@ -124,7 +124,7 @@
                     </div>
 
                     <div id="emptyHint" class="mt-4 hidden rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900 text-sm">
-                        No data found for this range. Run the sync command after adding your EVDS key, or insert points.
+                        {{ __('market.no_data') }}
                     </div>
                 </div>
             </div>

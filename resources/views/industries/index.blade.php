@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('meta_title', 'Industries - Globaltrding')
-@section('meta_description', 'Explore the industries Globaltrding serves with industrial equipment sourcing and tailored solutions.')
+@section('meta_title', __('industries.meta_title'))
+@section('meta_description', __('industries.meta_description'))
 @section('og_type', 'website')
 @section('og_title', 'Industries - Globaltrding')
 @section('og_description', 'Explore the industries Globaltrding serves with industrial equipment sourcing and tailored solutions.')
@@ -39,7 +39,7 @@
     <section class="mx-auto max-w-7xl px-4 py-12">
         <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
-                <h1 class="text-4xl font-semibold tracking-tight">Industries</h1>
+                <h1 class="text-4xl font-semibold tracking-tight">{{ __('industries.meta_title') }}</h1>
                 <p class="mt-2 text-slate-600">
                     Solutions for your industry. Explore our focus areas and sourcing capabilities.
                 </p>

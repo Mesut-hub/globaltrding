@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // optional: keep previous search text; if you prefer clearing, uncomment:
       // if (input) input.value = '';
       if (resultsEl) resultsEl.innerHTML = '';
-      if (hintEl) hintEl.textContent = 'Type at least 3 characters…';
+      if (hintEl) hintEl.textContent = hintEl.dataset.hintDefault || 'Type at least 3 characters…';
     } else {
       setTimeout(() => input?.focus(), 50);
     }
@@ -236,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    hintEl.textContent = 'Searching…';
+    hintEl.textContent = hintEl.dataset.hintSearching || 'Searching…';
     timer = setTimeout(() => doSearch(q), 250);
   });
 

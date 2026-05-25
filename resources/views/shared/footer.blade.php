@@ -35,7 +35,7 @@
     {{-- Row 1: Social --}}
     <div class="mx-auto max-w-7xl px-4 py-6 flex items-center justify-between gap-6">
         <div class="text-sm font-bold text-slate-900 tracking-tight">
-            {{ __('Follow Us') }}
+            {{ __('ui.follow_us') }}
         </div>
 
         <div class="flex items-center gap-3">
