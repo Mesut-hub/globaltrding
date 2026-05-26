@@ -1,5 +1,7 @@
 <?php
 return [
+    'meta_title' => 'المنتجات',
+    'meta_description' => 'استكشف الصناعات التي تخدمها Global Trading من خلال توريد المنتجات الصناعية والحلول المصممة خصيصًا.',
     'finder_title'      => 'الباحث عن المنتجات',
     'search_placeholder'=> 'أدخل كلمة مفتاحية، منتج ...',
     'results'           => 'النتائج',

@@ -1,5 +1,7 @@
 <?php
 return [
+    'meta_title' => 'Products',
+    'meta_description' => 'Explore the industries Global Trading serves with industrial products sourcing and tailored solutions.',
     'finder_title'      => 'Product Finder',
     'search_placeholder'=> 'Enter keyword, Product ...',
     'results'           => 'Results',

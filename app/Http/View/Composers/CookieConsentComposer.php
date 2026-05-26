@@ -14,6 +14,13 @@ class CookieConsentComposer
         $locale   = app()->getLocale();
         $fallback = config('locales.default', 'en');
 
-        $view->with('cookiePayload', $this->service->buildFrontendPayload($locale, $fallback));
+        try {
+            $payload = $this->service->buildFrontendPayload($locale, $fallback);
+        } catch (\Throwable $e) {
+            // Never break page rendering due to cookie service failure
+            $payload = ['categories' => [], 'version' => '1.0', 'position' => 'bottom'];
+        }
+
+        $view->with('cookiePayload', $payload);
     }
 }

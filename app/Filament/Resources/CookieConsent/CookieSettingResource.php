@@ -30,53 +30,64 @@ class CookieSettingResource extends Resource
     public static function form(Schema $schema): Schema
     {
         $locales = config('locales.supported', ['en']);
-
-        // Determine if this is a multilingual text field
         $multilingualKeys = ['banner_title', 'banner_description'];
+        $booleanKeys      = ['show_reject_all', 'show_manage'];
 
         return $schema->components([
             Select::make('key')
                 ->options([
                     'banner_title'       => 'Banner Title',
                     'banner_description' => 'Banner Description',
-                    'consent_version'    => 'Consent Version (bump to re-ask)',
+                    'consent_version'    => 'Consent Version (bump to force re-consent)',
                     'policy_url_suffix'  => 'Privacy Policy URL Suffix',
                     'show_reject_all'    => 'Show Reject All Button',
                     'show_manage'        => 'Show Manage Preferences Button',
-                    'position'           => 'Banner Position',
+                    'position'           => 'Banner Position (bottom / bottom-left / bottom-right)',
                 ])
                 ->required()
                 ->unique(ignoreRecord: true)
                 ->reactive(),
 
-            // Multilingual text settings
+            // Multilingual fields
             Tabs::make('Translations')
                 ->columnSpanFull()
                 ->visible(fn ($get) => in_array($get('key'), $multilingualKeys, true))
-                ->tabs(collect($locales)->map(function (string $locale) {
-                    $lbl = strtoupper($locale);
-                    return Tab::make($lbl)->schema([
+                ->tabs(
+                    collect($locales)->map(fn (string $locale) => Tab::make(strtoupper($locale))->schema([
                         Textarea::make("value.{$locale}")
-                            ->label("Value ({$lbl})")
+                            ->label("Value (" . strtoupper($locale) . ")")
                             ->rows(3),
-                    ]);
-                })->values()->all()),
+                    ]))->values()->all()
+                ),
 
-            // Scalar settings
-            TextInput::make('value.scalar')
-                ->label('Value')
-                ->visible(fn ($get) => !in_array($get('key'), $multilingualKeys, true)
-                    && !in_array($get('key'), ['show_reject_all', 'show_manage'], true))
-                ->dehydrateStateUsing(fn ($state, $get) => $state)
-                ->afterStateHydrated(function ($component, $state, $record) {
-                    if ($record && !is_array($record->value)) {
-                        $component->state((string) $record->value);
-                    }
-                }),
-
-            Toggle::make('value.bool')
+            // Boolean toggle
+            Toggle::make('value_bool')
                 ->label('Enabled')
-                ->visible(fn ($get) => in_array($get('key'), ['show_reject_all', 'show_manage'], true)),
+                ->visible(fn ($get) => in_array($get('key'), $booleanKeys, true))
+                ->afterStateHydrated(function ($component, $state, $record) {
+                    if ($record) {
+                        $v = $record->value;
+                        $component->state(
+                            is_bool($v) ? $v : (is_array($v) ? false : (bool)$v)
+                        );
+                    }
+                })
+                ->dehydrated(false), // handled below
+
+            // Scalar string value
+            TextInput::make('value_scalar')
+                ->label('Value')
+                ->visible(fn ($get) =>
+                    !in_array($get('key'), $multilingualKeys, true) &&
+                    !in_array($get('key'), $booleanKeys, true)
+                )
+                ->afterStateHydrated(function ($component, $state, $record) {
+                    if ($record) {
+                        $v = $record->value;
+                        $component->state(is_array($v) ? ($v['en'] ?? '') : (string)($v ?? ''));
+                    }
+                })
+                ->dehydrated(false), // handled below
         ]);
     }
 

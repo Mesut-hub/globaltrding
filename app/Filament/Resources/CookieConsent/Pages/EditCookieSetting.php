@@ -14,4 +14,9 @@ class EditCookieSetting extends EditRecord
     {
         return [DeleteAction::make()];
     }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        return \App\Filament\Resources\CookieConsent\Pages\CreateCookieSetting::resolveValueField($data);
+    }
 }

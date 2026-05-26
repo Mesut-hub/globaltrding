@@ -1,5 +1,7 @@
 <?php
 return [
+    'meta_title' => 'Produits',
+    'meta_description' => 'Explorez les industries desservis par Global Trading grâce à l’approvisionnement en produits industriels et à des solutions sur mesure.',
     'finder_title'      => 'Recherche de Produits',
     'search_placeholder'=> 'Entrez un mot-clé, Produit ...',
     'results'           => 'Résultats',

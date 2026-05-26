@@ -180,27 +180,27 @@ document.addEventListener('DOMContentLoaded', () => {
   const applySocialGate = () => {
     const hasConsent = window.GtCookieConsent?.hasConsent('social') ?? false;
     document.querySelectorAll('[data-social-card]').forEach(card => {
-      const src = (card.getAttribute('data-source') || '').toLowerCase();
-      if (src === 'instagram') {
-        card.classList.remove('needs-consent');
-      } else {
-        card.classList.toggle('needs-consent', !hasConsent);
-      }
+        const src = (card.getAttribute('data-source') || '').toLowerCase();
+        if (src === 'instagram') {
+            card.classList.remove('needs-consent');
+        } else {
+            card.classList.toggle('needs-consent', !hasConsent);
+        }
     });
-  };
+};
 
-  // Run immediately and on consent change
-  applySocialGate();
-  window.addEventListener('gt:consent:changed', applySocialGate);
-  window.addEventListener('gt:consent:ready', applySocialGate);
+applySocialGate();
+window.addEventListener('gt:consent:changed', applySocialGate);
+window.addEventListener('gt:consent:ready', applySocialGate);
 
   // Remove old consent accept buttons (now handled by modal)
   document.querySelectorAll('[data-social-accept]').forEach(btn => {
     btn.addEventListener('click', e => {
-      e.preventDefault();
-      window.GtCookieConsent?.showModal?.();
+        e.preventDefault();
+        e.stopPropagation();
+        window.GtCookieConsent?.showModal?.();
     });
-  });
+});
 
   // ── Scroll-down button inside cards ───────────────────────────────────────
   // Hides the button when scroller reaches the bottom

@@ -5,10 +5,10 @@
     $fallback = config('locales.default', 'en');
 @endphp
 
-@section('meta_title',       __('Products') . ' - Globaltrding')
-@section('meta_description', __('Use Product Finder to discover the right product for your needs.'))
+@section('meta_title',       __('products.meta_title'))
+@section('meta_description', __('products.meta_description'))
 @section('og_type',          'website')
-@section('og_title',         __('Products') . ' - Globaltrding')
+@section('og_title',         'Products - Globaltrding')
 @section('og_description',   __('Use Product Finder to discover the right product for your needs.'))
 
 @section('content')

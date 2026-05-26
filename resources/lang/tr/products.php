@@ -1,5 +1,7 @@
 <?php
 return [
+    'meta_title' => 'Ürünler',
+    'meta_description' => "Global Trading'in endüstriyel ürün tedariği ve özel çözümlerle hizmet verdiği sektörleri keşfedin.",
     'finder_title'      => 'Ürün Bulucu',
     'search_placeholder'=> 'Anahtar kelime, Ürün girin ...',
     'results'           => 'Sonuçlar',

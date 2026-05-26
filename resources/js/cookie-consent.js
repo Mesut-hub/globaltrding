@@ -1,47 +1,67 @@
 /**
- * GT Cookie Consent Manager
- * Enterprise-grade GDPR-compliant consent management
+ * GT Cookie Consent Manager v2
+ * Enterprise GDPR-compliant consent management
  *
- * Storage key: gt_cc_v{version} (bumped by consent_version setting)
- * Consent object: { v: "1.0", ts: 1234567890, consents: { necessary: true, analytics: false, ... } }
+ * Key fix: uses .gt-cc-visible / .gt-cc-hidden CSS classes
+ * instead of Tailwind's .hidden to avoid display:none !important conflicts.
  */
 
 const CC = (() => {
-  // ── Constants ──────────────────────────────────────────────────────
-  const STORAGE_PREFIX = 'gt_cc_';
-  const EVENT_CHANGED  = 'gt:consent:changed';
-  const EVENT_READY    = 'gt:consent:ready';
+  // ── Constants ──────────────────────────────────────────────────
+  const STORAGE_PREFIX  = 'gt_cc_';
+  const EVENT_CHANGED   = 'gt:consent:changed';
+  const EVENT_READY     = 'gt:consent:ready';
+  const CLASS_VISIBLE   = 'gt-cc-visible';   // shows element
+  const CLASS_HIDDEN    = 'gt-cc-hidden';    // hides element
 
-  // ── State ──────────────────────────────────────────────────────────
-  let payload    = null;  // from <script id="gt-cookie-payload">
-  let consents   = {};    // current resolved consent state
-  let storageKey = STORAGE_PREFIX + 'v1';
+  // ── State ──────────────────────────────────────────────────────
+  let payload    = null;
+  let consents   = {};
+  let storageKey = `${STORAGE_PREFIX}v1`;
 
-  // ── DOM refs ───────────────────────────────────────────────────────
+  // ── DOM refs (populated in init) ───────────────────────────────
   let banner, modal, modalPanel, categoriesEl;
 
-  // ── Helpers ────────────────────────────────────────────────────────
+  // ── Helpers ────────────────────────────────────────────────────
+  const show = (el) => {
+    if (!el) return;
+    el.classList.remove(CLASS_HIDDEN);
+    el.classList.add(CLASS_VISIBLE);
+    el.removeAttribute('aria-hidden');
+  };
+
+  const hide = (el) => {
+    if (!el) return;
+    el.classList.remove(CLASS_VISIBLE);
+    el.classList.add(CLASS_HIDDEN);
+    el.setAttribute('aria-hidden', 'true');
+  };
+
+  const isVisible = (el) => el && el.classList.contains(CLASS_VISIBLE);
+
   const readStorage = () => {
     try {
       const raw = localStorage.getItem(storageKey);
       if (!raw) return null;
       const parsed = JSON.parse(raw);
-      if (!parsed || typeof parsed !== 'object') return null;
-      return parsed;
+      return parsed && typeof parsed === 'object' ? parsed : null;
     } catch { return null; }
   };
 
   const writeStorage = (data) => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(data));
-    } catch { /* storage full or private mode */ }
+    try { localStorage.setItem(storageKey, JSON.stringify(data)); }
+    catch { /* quota exceeded / private mode */ }
   };
 
-  const dispatch = (eventName, detail) => {
-    window.dispatchEvent(new CustomEvent(eventName, { detail }));
-  };
+  const dispatch = (name, detail) =>
+    window.dispatchEvent(new CustomEvent(name, { detail }));
 
-  // ── Script loader: deferred loading for consented scripts ──────────
+  const esc = (s) => String(s ?? '').replace(
+    /[&<>"']/g,
+    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])
+  );
+
+  // ── Script loader for consented third-party scripts ────────────
   const loadScript = (src, id) => {
     if (document.getElementById(id)) return;
     const s = document.createElement('script');
@@ -51,24 +71,27 @@ const CC = (() => {
     document.head.appendChild(s);
   };
 
-  // ── Apply consent: trigger side effects ───────────────────────────
+  // ── Apply consent side-effects ─────────────────────────────────
   const applyConsent = (c) => {
     consents = c;
 
-    // Analytics (GA4)
+    // Google Analytics 4
     const gaId = document.documentElement.dataset.gaId;
     if (c.analytics && gaId) {
-      loadScript(`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gaId)}`, 'gt-ga4-script');
-      if (!window.dataLayer) {
-        window.dataLayer = [];
-        window.gtag = function () { window.dataLayer.push(arguments); };
+      loadScript(
+        `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gaId)}`,
+        'gt-ga4-script'
+      );
+      if (!window.gtag) {
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = (...args) => window.dataLayer.push(args);
         window.gtag('js', new Date());
-        window.gtag('config', gaId);
+        window.gtag('config', gaId, { anonymize_ip: true });
       }
     }
 
-    // Social consent: ungate trending topics cards
-    document.querySelectorAll('[data-social-card]').forEach(card => {
+    // Social media consent gate (Trending Topics cards)
+    document.querySelectorAll('[data-social-card]').forEach((card) => {
       const src = (card.getAttribute('data-source') || '').toLowerCase();
       if (src === 'instagram') {
         card.classList.remove('needs-consent');
@@ -77,13 +100,10 @@ const CC = (() => {
       }
     });
 
-    // Marketing: future integrations (HotJar, etc.) go here
-    // if (c.marketing) { ... }
-
     dispatch(EVENT_CHANGED, { consents: c });
   };
 
-  // ── Persist + server-log ──────────────────────────────────────────
+  // ── Persist consent and log to server ─────────────────────────
   const persistConsent = (c) => {
     const stored = {
       v:        payload?.version ?? '1.0',
@@ -92,171 +112,173 @@ const CC = (() => {
     };
     writeStorage(stored);
 
-    // Server-side GDPR audit log (fire and forget)
-    const locale = document.documentElement.lang || 'en';
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+    // Fire-and-forget GDPR audit log
+    const locale     = document.documentElement.lang || 'en';
+    const csrfToken  = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+
     fetch(`/${locale}/cookie-consent`, {
-      method:  'POST',
-      headers: {
+      method:   'POST',
+      headers:  {
         'Content-Type': 'application/json',
         'Accept':       'application/json',
         'X-CSRF-TOKEN': csrfToken,
       },
-      body: JSON.stringify({ consents: c }),
+      body:      JSON.stringify({ consents: c }),
       keepalive: true,
-    }).catch(() => { /* non-critical */ });
+    }).catch(() => {});
   };
 
-  // ── Banner visibility ─────────────────────────────────────────────
-  const showBanner = () => {
-    if (!banner) return;
-    banner.setAttribute('data-initialized', '');
-    banner.classList.remove('hidden');
-    banner.removeAttribute('aria-hidden');
-  };
-
-  const hideBanner = () => {
-    if (!banner) return;
-    banner.classList.add('hidden');
-    banner.setAttribute('aria-hidden', 'true');
-  };
-
-  // ── Modal ─────────────────────────────────────────────────────────
-  const buildCategoryHTML = (cat, checked) => {
-    const isRequired = cat.required;
-    const toggleId   = `gt-toggle-${cat.key}`;
-
-    return `
-      <div class="gt-cookie-category" data-category="${cat.key}">
-        <div class="gt-cookie-category__header" role="button" tabindex="0"
-             aria-expanded="false" data-cat-toggle>
-          <div class="gt-cookie-category__info">
-            <div class="gt-cookie-category__name">
-              ${escHtml(cat.label)}
-              ${isRequired ? `<span class="gt-cookie-category__badge">${escHtml(window.__cookieAlwaysActive || 'Always active')}</span>` : ''}
-            </div>
-            <div class="gt-cookie-category__desc-toggle">${escHtml(cat.description)}</div>
-          </div>
-          ${isRequired
-            ? `<label class="gt-cookie-toggle">
-                 <input type="checkbox" id="${toggleId}" checked disabled aria-label="${escHtml(cat.label)}">
-                 <span class="gt-cookie-toggle__track" aria-hidden="true"></span>
-               </label>`
-            : `<label class="gt-cookie-toggle" onclick="event.stopPropagation()">
-                 <input type="checkbox" id="${toggleId}" name="${cat.key}"
-                        ${checked ? 'checked' : ''}
-                        aria-label="${escHtml(cat.label)}">
-                 <span class="gt-cookie-toggle__track" aria-hidden="true"></span>
-               </label>`}
-        </div>
-        <div class="gt-cookie-category__body">${escHtml(cat.description)}</div>
-      </div>`;
-  };
-
-  const renderCategories = (currentConsents) => {
-    if (!categoriesEl || !payload) return;
-
-    categoriesEl.innerHTML = (payload.categories || [])
-      .map(cat => buildCategoryHTML(cat, currentConsents[cat.key] !== false))
-      .join('');
-
-    // Accordion expand/collapse
-    categoriesEl.querySelectorAll('[data-cat-toggle]').forEach(header => {
-      const row = header.closest('.gt-cookie-category');
-      const expand = () => {
-        const open = row.classList.toggle('is-open');
-        header.setAttribute('aria-expanded', open ? 'true' : 'false');
-      };
-      header.addEventListener('click', expand);
-      header.addEventListener('keydown', e => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); expand(); }
-      });
-    });
-  };
-
-  const showModal = () => {
-    if (!modal) return;
-    renderCategories(consents);
-    modal.classList.remove('hidden');
-    modal.removeAttribute('aria-hidden');
-    hideBanner();
-    trapFocus(modalPanel);
-    modalPanel?.focus();
-  };
-
-  const hideModal = () => {
-    if (!modal) return;
-    modal.classList.add('hidden');
-    modal.setAttribute('aria-hidden', 'true');
-    releaseFocus();
-    showBanner();
-  };
-
-  // ── Collect toggles from modal ────────────────────────────────────
-  const collectModalConsents = () => {
-    const c = { necessary: true };
-    if (!categoriesEl) return c;
-    categoriesEl.querySelectorAll('input[name]').forEach(input => {
-      c[input.name] = input.checked;
-    });
-    return c;
-  };
-
-  // ── Accept / Reject helpers ───────────────────────────────────────
+  // ── Build all consents to a single value (true/false) ──────────
   const buildConsentsAll = (value) => {
     const c = { necessary: true };
-    (payload?.categories || []).forEach(cat => {
+    (payload?.categories ?? []).forEach((cat) => {
       c[cat.key] = cat.required ? true : value;
     });
     return c;
   };
 
+  // ── Collect toggle values from the modal form ──────────────────
+  const collectModalConsents = () => {
+    const c = { necessary: true };
+    categoriesEl?.querySelectorAll('input[name]').forEach((input) => {
+      c[input.name] = input.checked;
+    });
+    return c;
+  };
+
+  // ── Action handlers ────────────────────────────────────────────
   const acceptAll = () => {
     const c = buildConsentsAll(true);
     persistConsent(c);
     applyConsent(c);
-    hideBanner();
-    hideModal();
+    hide(banner);
+    hide(modal);
   };
 
   const rejectAll = () => {
     const c = buildConsentsAll(false);
     persistConsent(c);
     applyConsent(c);
-    hideBanner();
+    hide(banner);
   };
 
   const savePreferences = () => {
     const c = collectModalConsents();
     persistConsent(c);
     applyConsent(c);
-    hideModal();
-    hideBanner();
+    hide(modal);
+    hide(banner);
+    releaseFocus();
   };
 
-  // ── Focus trap ────────────────────────────────────────────────────
-  let _focusTrapEl = null;
-  let _prevFocused = null;
+  // ── Modal render ───────────────────────────────────────────────
+  const buildCategoryHTML = (cat, checked) => {
+    const alwaysActive = window.__cookieAlwaysActive || 'Always active';
+
+    return `
+      <div class="gt-cookie-category" data-category="${esc(cat.key)}">
+        <div class="gt-cookie-category__header"
+             role="button"
+             tabindex="0"
+             aria-expanded="false"
+             data-cat-toggle>
+          <div class="gt-cookie-category__info">
+            <div class="gt-cookie-category__name">
+              ${esc(cat.label)}
+              ${cat.required
+                ? `<span class="gt-cookie-category__badge">${esc(alwaysActive)}</span>`
+                : ''}
+            </div>
+            <div class="gt-cookie-category__preview">${esc(cat.description)}</div>
+          </div>
+
+          ${cat.required
+            ? `<label class="gt-cookie-toggle">
+                 <input type="checkbox" id="gc-${esc(cat.key)}" checked disabled
+                        aria-label="${esc(cat.label)}">
+                 <span class="gt-cookie-toggle__track" aria-hidden="true"></span>
+               </label>`
+            : `<label class="gt-cookie-toggle" onclick="event.stopPropagation()">
+                 <input type="checkbox" id="gc-${esc(cat.key)}" name="${esc(cat.key)}"
+                        ${checked ? 'checked' : ''}
+                        aria-label="${esc(cat.label)}">
+                 <span class="gt-cookie-toggle__track" aria-hidden="true"></span>
+               </label>`
+          }
+        </div>
+        <div class="gt-cookie-category__body"
+             id="gc-desc-${esc(cat.key)}"
+             role="region"
+             aria-labelledby="gc-header-${esc(cat.key)}">
+          ${esc(cat.description)}
+        </div>
+      </div>`;
+  };
+
+  const renderCategories = (currentConsents) => {
+    if (!categoriesEl || !payload) return;
+
+    categoriesEl.innerHTML = (payload.categories ?? [])
+      .map((cat) => buildCategoryHTML(cat, currentConsents[cat.key] !== false))
+      .join('');
+
+    // Accordion interaction
+    categoriesEl.querySelectorAll('[data-cat-toggle]').forEach((header) => {
+      const row = header.closest('.gt-cookie-category');
+      const toggle = () => {
+        const open = row.classList.toggle('is-open');
+        header.setAttribute('aria-expanded', String(open));
+      };
+      header.addEventListener('click', toggle);
+      header.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+      });
+    });
+  };
+
+  // ── Modal show/hide ────────────────────────────────────────────
+  const showModal = () => {
+    if (!modal) return;
+    renderCategories(consents);
+    show(modal);
+    hide(banner);
+    trapFocus(modalPanel);
+    modalPanel?.focus();
+  };
+
+  const hideModal = () => {
+    if (!modal) return;
+    hide(modal);
+    releaseFocus();
+    // Re-show banner only if no consent recorded yet
+    const stored = readStorage();
+    if (!stored?.consents) show(banner);
+  };
+
+  // ── Focus trap ─────────────────────────────────────────────────
+  let _trapEl  = null;
+  let _prevFocus = null;
 
   const trapFocus = (el) => {
-    _prevFocused = document.activeElement;
-    _focusTrapEl = el;
-    document.addEventListener('keydown', onFocusTrapKeydown);
+    _prevFocus = document.activeElement;
+    _trapEl    = el;
+    document.addEventListener('keydown', onTrapKeydown);
   };
 
   const releaseFocus = () => {
-    document.removeEventListener('keydown', onFocusTrapKeydown);
-    _focusTrapEl = null;
-    _prevFocused?.focus?.();
+    document.removeEventListener('keydown', onTrapKeydown);
+    _trapEl = null;
+    _prevFocus?.focus?.();
   };
 
-  const onFocusTrapKeydown = (e) => {
-    if (!_focusTrapEl) return;
-    if (e.key !== 'Tab') return;
+  const onTrapKeydown = (e) => {
+    if (!_trapEl || e.key !== 'Tab') return;
 
-    const focusable = Array.from(_focusTrapEl.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    )).filter(el => !el.disabled && el.offsetParent !== null);
+    const focusable = Array.from(
+      _trapEl.querySelectorAll(
+        'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+    ).filter((el) => el.offsetParent !== null);
 
     if (!focusable.length) { e.preventDefault(); return; }
 
@@ -270,39 +292,33 @@ const CC = (() => {
     }
   };
 
-  // ── Escape handler ─────────────────────────────────────────────────
-  const onEscapeKey = (e) => {
-    if (e.key === 'Escape') {
-      if (!modal?.classList.contains('hidden')) hideModal();
-    }
+  // ── Keyboard escape ────────────────────────────────────────────
+  const onEscape = (e) => {
+    if (e.key === 'Escape' && isVisible(modal)) hideModal();
   };
 
-  // ── Sanitize helper ───────────────────────────────────────────────
-  const escHtml = (str) =>
-    String(str ?? '').replace(/[&<>"']/g, m =>
-      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m])
-    );
-
-  // ── Init ─────────────────────────────────────────────────────────
+  // ── Init ───────────────────────────────────────────────────────
   const init = () => {
-    // Read server-rendered payload
     const payloadEl = document.getElementById('gt-cookie-payload');
-    if (!payloadEl) return;
+    if (!payloadEl) return; // component not on this page
 
     try {
       payload = JSON.parse(payloadEl.textContent || '{}');
-    } catch { return; }
+    } catch (err) {
+      console.warn('[GtCookieConsent] Failed to parse payload:', err);
+      return;
+    }
 
-    // Set storage key based on version
-    storageKey = STORAGE_PREFIX + 'v' + (payload.version || '1').replace(/\./g, '_');
+    // Derive storage key from consent version (bump to force re-consent)
+    storageKey = `${STORAGE_PREFIX}v${(payload.version || '1').replace(/\./g, '_')}`;
 
     // DOM refs
-    banner      = document.getElementById('gtCookieBanner');
-    modal       = document.getElementById('gtCookieModal');
-    modalPanel  = document.getElementById('gtCookieModal')?.querySelector('.gt-cookie-modal__panel');
+    banner       = document.getElementById('gtCookieBanner');
+    modal        = document.getElementById('gtCookieModal');
+    modalPanel   = document.getElementById('gtCookieModalPanel');
     categoriesEl = document.getElementById('gtCookieCategories');
 
-    // Wire buttons
+    // Wire up buttons
     document.getElementById('gtCookieAcceptBtn')?.addEventListener('click', acceptAll);
     document.getElementById('gtCookieAcceptAllModalBtn')?.addEventListener('click', acceptAll);
     document.getElementById('gtCookieRejectBtn')?.addEventListener('click', rejectAll);
@@ -311,46 +327,43 @@ const CC = (() => {
     document.getElementById('gtCookieModalClose')?.addEventListener('click', hideModal);
     document.getElementById('gtCookieModalBackdrop')?.addEventListener('click', hideModal);
 
-    document.addEventListener('keydown', onEscapeKey);
+    document.addEventListener('keydown', onEscape);
 
-    // Check existing consent
-    const stored = readStorage();
-    const versionMatches = stored?.v === payload.version;
+    // Evaluate existing consent
+    const stored        = readStorage();
+    const versionMatch  = stored?.v === payload.version;
 
-    if (stored && stored.consents && versionMatches) {
-      // Previously consented — silently apply
-      consents = stored.consents;
-      applyConsent(consents);
+    if (stored?.consents && versionMatch) {
+      // Silently re-apply prior consent
+      applyConsent(stored.consents);
     } else {
-      // No consent or version bumped — show banner
-      // Build defaults (necessary = true, others = null/not set)
+      // No valid consent recorded → show banner
       consents = { necessary: true };
-      showBanner();
+      show(banner);
     }
 
     dispatch(EVENT_READY, { consents });
   };
 
-  // ── Public API (window.GtCookieConsent) ───────────────────────────
+  // ── Public API ─────────────────────────────────────────────────
   return {
     init,
     acceptAll,
     rejectAll,
     showModal,
     hideModal,
-    hasConsent: (category) => consents[category] === true,
-    getConsents: () => ({ ...consents }),
-    on: (event, handler) => window.addEventListener(event, handler),
-    off: (event, handler) => window.removeEventListener(event, handler),
+    hasConsent:  (key) => consents[key] === true,
+    getConsents: ()    => ({ ...consents }),
+    on:          (ev, fn) => window.addEventListener(ev, fn),
+    off:         (ev, fn) => window.removeEventListener(ev, fn),
     EVENT_CHANGED,
     EVENT_READY,
   };
 })();
 
-// Expose globally for external integrations
 window.GtCookieConsent = CC;
 
-// Auto-init on DOM ready
+// Auto-init
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => CC.init());
 } else {
