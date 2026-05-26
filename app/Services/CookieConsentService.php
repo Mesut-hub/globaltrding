@@ -50,8 +50,8 @@ class CookieConsentService
         return [
             'version'     => (string) ($settings['consent_version'] ?? '1.0'),
             'position'    => (string) ($settings['position'] ?? 'bottom'),
-            'showReject'  => (bool) ($settings['show_reject_all'] ?? true),
-            'showManage'  => (bool) ($settings['show_manage'] ?? true),
+            'showReject'  => filter_var($settings['show_reject_all'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            'showManage'  => filter_var($settings['show_manage'] ?? true, FILTER_VALIDATE_BOOLEAN),
             'policyUrl'   => '/' . $locale . '/' . ($settings['policy_url_suffix'] ?? 'pages/privacy-policy'),
             'title'       => $pick($settings['banner_title'] ?? []),
             'description' => $pick($settings['banner_description'] ?? []),

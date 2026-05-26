@@ -71,8 +71,7 @@ class CookieSettingResource extends Resource
                             is_bool($v) ? $v : (is_array($v) ? false : (bool)$v)
                         );
                     }
-                })
-                ->dehydrated(false), // handled below
+                }),
 
             // Scalar string value
             TextInput::make('value_scalar')
@@ -86,8 +85,7 @@ class CookieSettingResource extends Resource
                         $v = $record->value;
                         $component->state(is_array($v) ? ($v['en'] ?? '') : (string)($v ?? ''));
                     }
-                })
-                ->dehydrated(false), // handled below
+                }),
         ]);
     }
 

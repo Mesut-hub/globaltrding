@@ -20,7 +20,7 @@ class CookieSetting extends Model
     public static function getCached(): array
     {
         return Cache::remember('cookie_settings_v2', 3600, function () {
-            return static::query()->pluck('value', 'key')->all();
+            return static::query()->get()->pluck('value', 'key')->all();
         });
     }
 }

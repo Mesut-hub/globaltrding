@@ -23,12 +23,12 @@
 >
     <div class="gt-cookie-banner__inner">
         <div class="gt-cookie-banner__content">
-            @if (!empty($payload['title']))
-                <p class="gt-cookie-banner__title">{{ $payload['title'] }}</p>
+            @if ($payload['banner_title'] ?? false)
+                <p class="gt-cookie-banner__title">{{ $payload['banner_title'] }}</p>
             @endif
             <p class="gt-cookie-banner__desc">
-                {{ $payload['description'] ?? '' }}
-                @if (!empty($payload['policyUrl']))
+                {{ $payload['banner_description'] ?? '' }}
+                @if ($payload['policyUrl'] ?? false)
                     <a
                         href="{{ $payload['policyUrl'] }}"
                         class="gt-cookie-banner__link"
@@ -40,7 +40,7 @@
         </div>
 
         <div class="gt-cookie-banner__actions" role="group" aria-label="Cookie consent options">
-            @if (!empty($payload['showManage']))
+            @if ($payload['showManage'] ?? false)
                 <button
                     type="button"
                     id="gtCookieManageBtn"
@@ -49,7 +49,7 @@
                 >{{ __('cookie.manage') }}</button>
             @endif
 
-            @if ($payload['showReject'])
+            @if ($payload['showReject'] ?? false)
                 <button
                     type="button"
                     id="gtCookieRejectBtn"
