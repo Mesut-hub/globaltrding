@@ -57,7 +57,7 @@
                 </p>
             @else
                 <p class="mt-6 text-slate-600">
-                    No news published yet.
+                    {{ __('news.no_posts') }}
                 </p>
             @endif
         </div>

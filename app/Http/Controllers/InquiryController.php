@@ -55,6 +55,6 @@ class InquiryController extends Controller
         );
 
         return redirect("/{$locale}/inquiry")
-            ->with('success', __('Your inquiry has been submitted. We will contact you soon.'));
+            ->with('success', __('forms.inquiry_success'));
     }
 }

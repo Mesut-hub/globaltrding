@@ -40,13 +40,11 @@
         <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
                 <h1 class="text-4xl font-semibold tracking-tight">{{ __('industries.meta_title') }}</h1>
-                <p class="mt-2 text-slate-600">
-                    Solutions for your industry. Explore our focus areas and sourcing capabilities.
-                </p>
+                <p class="mt-2 text-slate-600">{{ __('industries.subtitle') }}</p>
             </div>
 
             <a href="/{{ $locale }}/products" class="text-sm text-slate-600 hover:underline">
-                Product search →
+                {{ __('products.finder_title') }} →
             </a>
         </div>
 
@@ -68,7 +66,7 @@
                     <div class="p-4">
                         <div class="text-2xl font-light tracking-tight">{{ $title }}</div>
                         <div class="mt-2 text-sm text-slate-700 group-hover:underline">
-                            Discover more →
+                            {{ __('ui.discover_more') }} →
                         </div>
                     </div>
                 </a>

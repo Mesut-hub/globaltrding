@@ -33,7 +33,7 @@
 
 @section('content')
     <section class="mx-auto max-w-7xl px-4 py-12">
-        <h1 class="text-4xl font-semibold tracking-tight">News</h1>
+        <h1 class="text-4xl font-semibold tracking-tight">{{ __('news.meta_title') }}</h1>
 
         <div class="mt-8 space-y-6">
             @foreach ($news as $post)
@@ -53,7 +53,7 @@
 
                     @if ($post->published_at)
                         <div class="mt-1 text-sm text-slate-500">
-                            {{ $post->published_at->format('Y-m-d') }}
+                            {{ $post->published_at->isoFormat('LL') }}
                         </div>
                     @endif
 

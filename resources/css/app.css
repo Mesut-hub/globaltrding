@@ -50,3 +50,56 @@
     font-family: 'Cairo', 'Tajawal', sans-serif;
     font-weight: 700;
 }
+
+:lang(ar) .tabular-nums {
+    font-variant-numeric: normal;
+    font-feature-settings: normal;
+}
+
+/* RTL-aware market belt */
+[dir="rtl"] .gt-pf__grid {
+    direction: rtl;
+}
+
+/* RTL pagination */
+[dir="rtl"] .gt-pf__pager .pagination {
+    direction: rtl;
+}
+
+/* RTL footer columns */
+[dir="rtl"] .site-header .main-nav ul {
+    padding-right: max(24px, calc((100vw - 1320px) / 2 + 60px));
+    padding-left: 34px;
+}
+
+/* RTL cookie banner */
+[dir="rtl"] .gt-cookie-banner__actions {
+    flex-direction: row-reverse;
+}
+
+/* RTL form labels */
+[dir="rtl"] .gt-reg__form,
+[dir="rtl"] .gt-login__form {
+    text-align: right;
+}
+
+/* RTL checkboxes */
+[dir="rtl"] .gt-reg__check {
+    flex-direction: row-reverse;
+}
+
+/* RTL product filter */
+[dir="rtl"] .gt-pf__checkRow {
+    flex-direction: row-reverse;
+}
+
+/* RTL nav overlay */
+[dir="rtl"] .nav-overlay__content {
+    grid-template-columns: 340px 24px 260px 340px;
+    direction: rtl;
+}
+
+/* RTL search overlay */
+[dir="rtl"] .site-search-input {
+    text-align: right;
+}

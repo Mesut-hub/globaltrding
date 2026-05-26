@@ -76,13 +76,11 @@
                         style="width:44px;height:44px;object-fit:contain;">
                     <div class="text-sm font-semibold text-slate-900">{{ __('Global Trading') }}</div>
                 </div>
-                <p class="mt-3 text-sm text-slate-600 leading-relaxed max-w-sm">
-                    {{ __('We create value in industry with trusted sourcing, fast response times, and multilingual customer support.') }}
-                </p>
+                <p class="mt-3 text-sm text-slate-600 leading-relaxed max-w-sm">{{ __('footer.tagline') }}</p>
             </div>
 
             <div>
-                <div class="text-sm font-semibold text-slate-900">{{ __('Company') }}</div>
+                <div class="text-sm font-semibold text-slate-900">{{ __('footer.company') }}</div>
                 <ul class="mt-4 space-y-2 text-sm">
                     @foreach($companyPages as $p)
                         <li><a class="text-slate-600 hover:text-slate-900 hover:underline" href="{{ $pageUrl($p->slug) }}">{{ $t($p->title) ?: $p->slug }}</a></li>
@@ -91,10 +89,10 @@
             </div>
 
             <div>
-                <div class="text-sm font-semibold text-slate-900">{{ __('Products') }}</div>
+                <div class="text-sm font-semibold text-slate-900">{{ __('footer.products_col') }}</div>
                 <ul class="mt-4 space-y-2 text-sm">
-                    <li><a class="text-slate-600 hover:text-slate-900 hover:underline" href="/{{ $locale }}/products">{{ __('Product Finder') }}</a></li>
-                    <li><a class="text-slate-600 hover:text-slate-900 hover:underline" href="/{{ $locale }}/industries">{{ __('Industries') }}</a></li>
+                    <li><a class="text-slate-600 hover:text-slate-900 hover:underline" href="/{{ $locale }}/products">{{ __('products.finder_title') }}</a></li>
+                    <li><a class="text-slate-600 hover:text-slate-900 hover:underline" href="/{{ $locale }}/industries">{{ __('ui.industries') }}</a></li>
                     @foreach($productPages as $p)
                         <li><a class="text-slate-600 hover:text-slate-900 hover:underline" href="{{ $pageUrl($p->slug) }}">{{ $t($p->title) ?: $p->slug }}</a></li>
                     @endforeach
@@ -102,10 +100,10 @@
             </div>
 
             <div>
-                <div class="text-sm font-semibold text-slate-900">{{ __('Information') }}</div>
+                <div class="text-sm font-semibold text-slate-900">{{ __('footer.information') }}</div>
                 <ul class="mt-4 space-y-2 text-sm">
-                    <li><a class="text-slate-600 hover:text-slate-900 hover:underline" href="/{{ $locale }}/news">{{ __('Latest News') }}</a></li>
-                    <li><a class="text-slate-600 hover:text-slate-900 hover:underline" href="/{{ $locale }}/market">{{ __('Market') }}</a></li>
+                    <li><a class="text-slate-600 hover:text-slate-900 hover:underline" href="/{{ $locale }}/news">{{ __('ui.latest_news') }}</a></li>
+                    <li><a class="text-slate-600 hover:text-slate-900 hover:underline" href="/{{ $locale }}/market">{{ __('market.title') }}</a></li>
                     @foreach($infoPages as $p)
                         <li><a class="text-slate-600 hover:text-slate-900 hover:underline" href="{{ $pageUrl($p->slug) }}">{{ $t($p->title) ?: $p->slug }}</a></li>
                     @endforeach
@@ -113,7 +111,7 @@
             </div>
 
             <div>
-                <div class="text-sm font-semibold text-slate-900">{{ __('Service') }}</div>
+                <div class="text-sm font-semibold text-slate-900">{{ __('footer.service') }}</div>
                 <ul class="mt-4 space-y-2 text-sm">
                     @foreach($servicePages as $p)
                         <li><a class="text-slate-600 hover:text-slate-900 hover:underline" href="{{ $pageUrl($p->slug) }}">{{ $t($p->title) ?: $p->slug }}</a></li>
@@ -126,14 +124,14 @@
     {{-- Row 3: Legal --}}
     <div class="border-t border-slate-200">
         <div class="mx-auto max-w-7xl px-4 py-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div class="text-xs text-slate-500">© {{ $year }} Global Trading</div>
+            <div class="text-xs text-slate-500">{{ __('footer.copyright', ['year' => $year]) }}</div>
 
             <div class="flex flex-wrap gap-x-4 gap-y-2 text-xs">
-                <a class="text-slate-600 hover:text-slate-900 hover:underline" href="{{ $pageUrl('disclaimer') }}">{{ __('Disclaimer') }}</a>
-                <a class="text-slate-600 hover:text-slate-900 hover:underline" href="{{ $pageUrl('credits') }}">{{ __('Credits') }}</a>
-                <a class="text-slate-600 hover:text-slate-900 hover:underline" href="{{ $pageUrl('privacy-policy') }}">{{ __('Privacy Policy') }}</a>
-                <a class="text-slate-600 hover:text-slate-900 hover:underline" href="{{ $pageUrl('responsible-disclosure-statement') }}">{{ __('Responsible Disclosure') }}</a>
-                <a class="text-slate-600 hover:text-slate-900 hover:underline" href="{{ $pageUrl('contact') }}">{{ __('Contact') }}</a>
+                <a class="text-slate-600 hover:text-slate-900 hover:underline" href="{{ $pageUrl('disclaimer') }}">{{ __('footer.disclaimer') }}</a>
+                <a class="text-slate-600 hover:text-slate-900 hover:underline" href="{{ $pageUrl('credits') }}">{{ __('footer.credits') }}</a>
+                <a class="text-slate-600 hover:text-slate-900 hover:underline" href="{{ $pageUrl('privacy-policy') }}">{{ __('footer.privacy') }}</a>
+                <a class="text-slate-600 hover:text-slate-900 hover:underline" href="{{ $pageUrl('responsible-disclosure-statement') }}">{{ __('footer.disclosure') }}</a>
+                <a class="text-slate-600 hover:text-slate-900 hover:underline" href="{{ $pageUrl('contact') }}">{{ __('footer.contact') }}</a>
             </div>
         </div>
     </div>

@@ -99,7 +99,7 @@
                 </div>
             @endif
 
-            <nav class="gt-pdp__tabs" aria-label="{{ __('Product tabs') }}">
+            <nav class="gt-pdp__tabs" aria-label="{{ __('ui.products') }}">
                 <a class="gt-pdp__tab is-active" href="#overview">{{ __('pdp.tab_overview') }}</a>
                 <a class="gt-pdp__tab {{ $hasAccess ? '' : 'is-locked' }}" href="#properties">{{ __('pdp.tab_properties') }}</a>
                 <a class="gt-pdp__tab {{ $hasAccess ? '' : 'is-locked' }}" href="#documents">{{ __('pdp.tab_documents') }}</a>

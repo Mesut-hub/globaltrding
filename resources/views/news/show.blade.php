@@ -80,7 +80,7 @@
 @section('content')
     <section class="mx-auto max-w-7xl px-4 py-12">
         <a href="/{{ $locale }}/news" class="text-sm text-slate-600 hover:underline">
-            ← Back to News
+            {{ __('news.back_to_news') }}
         </a>
 
         <h1 class="mt-4 text-4xl font-semibold tracking-tight">{{ $title }}</h1>

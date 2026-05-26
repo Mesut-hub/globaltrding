@@ -29,7 +29,7 @@
                 </p>
             </div>
 
-            <a href="/{{ $locale }}/" class="text-sm text-slate-600 hover:underline">← Back to Home</a>
+            <a href="/{{ $locale }}/" class="text-sm text-slate-600 hover:underline">{{ __('ui.go_back') }}</a>
         </div>
 
         <div class="mt-8 grid gap-4 lg:grid-cols-12">

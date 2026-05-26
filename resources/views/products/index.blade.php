@@ -47,14 +47,14 @@
                     @endforeach
                 @endforeach
 
-                <button class="gt-pf__topBtn" type="submit" aria-label="{{ __('Search') }}"></button>
+                <button class="gt-pf__topBtn" type="submit" aria-label="{{ __('ui.search') }}"></button>
             </form>
         </div>
 
         <div class="gt-pf__grid">
 
             {{-- ── Left: filters ── --}}
-            <aside class="gt-pf__filters" aria-label="{{ __('Filters') }}">
+            <aside class="gt-pf__filters" aria-label="{{ __('ui.filters') }}">
                 <form method="GET" action="/{{ $locale }}/products" class="gt-pf__filtersForm">
                     <input type="hidden" name="q"    value="{{ $q }}">
                     <input type="hidden" name="sort" value="{{ $sort }}">

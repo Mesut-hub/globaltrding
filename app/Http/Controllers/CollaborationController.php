@@ -63,6 +63,6 @@ class CollaborationController extends Controller
         );
 
         return redirect("/{$locale}/collaboration")
-            ->with('success', 'Your request has been submitted. We will contact you soon.');
+            ->with('success', __('forms.success_generic'));
     }
 }

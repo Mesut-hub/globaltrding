@@ -72,9 +72,9 @@
       </div>
 
       <aside class="gt-reg__side">
-        <h3 class="gt-reg__sideTitle">Useful information</h3>
-        <a class="gt-reg__sideLink" href="/{{ $locale }}/pages/terms-of-use">Terms of Use</a>
-        <a class="gt-reg__sideLink" href="/{{ $locale }}/pages/privacy-policy">Privacy Policy</a>
+        <h3 class="gt-reg__sideTitle">{{ __('auth.useful_info') }}</h3>
+        <a class="gt-reg__sideLink" href="/{{ $locale }}/pages/terms-of-use">{{ __('auth.terms_link') }}</a>
+        <a class="gt-reg__sideLink" href="/{{ $locale }}/pages/privacy-policy">{{ __('auth.privacy_link') }}</a>
       </aside>
     </div>
   </div>

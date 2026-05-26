@@ -74,7 +74,7 @@
 
 @section('content')
     <section class="mx-auto max-w-7xl px-4 py-10">
-        <a href="/{{ $locale }}/industries" class="text-sm text-slate-600 hover:underline">← All industries</a>
+        <a href="/{{ $locale }}/industries" class="text-sm text-slate-600 hover:underline">{{ __('ui.back_to_industries') }}</a>
 
         <div class="mt-4 grid gap-8 lg:grid-cols-12 lg:items-start">
             <div class="lg:col-span-7">

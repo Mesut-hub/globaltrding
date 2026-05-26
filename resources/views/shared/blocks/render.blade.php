@@ -677,7 +677,7 @@
                         href="{{ $rowLinkUrl }}"
                         target="{{ $rowTarget }}"
                         @if ($rowTarget === '_blank') rel="noopener" @endif>
-                            {{ $rowLinkLabel ?: __('Learn more') }} →
+                            {{ $rowLinkLabel ?: __('ui.learn_more') }} →
                         </a>
                     @endif
                     @if ($hasInnerPanel)

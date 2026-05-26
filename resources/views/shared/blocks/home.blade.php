@@ -81,7 +81,7 @@ $posterUrl  = $posterPath ? Storage::disk('public')->url($posterPath) : null;
                         <span class="text-xs" data-change></span>
                     </a>
                 @endforeach
-                <a href="/{{ $locale }}/market" class="ml-auto text-sm text-slate-600 hover:underline">View market →</a>
+                <a href="/{{ $locale }}/market" class="ml-auto text-sm text-slate-600 hover:underline">{{ __('market.view_market') }} →</a>
             </div>
         </div>
     </section>
@@ -97,7 +97,7 @@ $posterUrl  = $posterPath ? Storage::disk('public')->url($posterPath) : null;
         <div class="flex items-end justify-between gap-4">
             <h2 class="text-2xl font-semibold tracking-tight">{{ $sectionTitle }}</h2>
             <div class="flex items-center gap-3">
-                <a href="{{ $viewAllUrl }}" class="text-sm text-slate-600 hover:underline">View all →</a>
+                <a href="{{ $viewAllUrl }}" class="text-sm text-slate-600 hover:underline">{{ __('ui.view_all') }} →</a>
             </div>
         </div>
         <div class="mt-6 overflow-hidden">
@@ -153,7 +153,7 @@ $posterUrl  = $posterPath ? Storage::disk('public')->url($posterPath) : null;
         <div class="flex items-end justify-between gap-4">
             @if ($title)<h2 class="text-2xl font-semibold tracking-tight">{{ $title }}</h2>@endif
             <div class="flex items-center gap-3">
-                <a href="{{ $viewAllUrl }}" class="text-sm text-slate-600 hover:underline">View all →</a>
+                <a href="{{ $viewAllUrl }}" class="text-sm text-slate-600 hover:underline">{{ __('ui.view_all') }} →</a>
             </div>
         </div>
         <div class="mt-6 overflow-hidden">
@@ -171,7 +171,7 @@ $posterUrl  = $posterPath ? Storage::disk('public')->url($posterPath) : null;
                     <div class="p-4">
                         <div class="text-lg font-semibold leading-snug">{{ $iTitle }}</div>
                         @if ($iText)<div class="mt-2 text-sm text-slate-600">{{ $iText }}</div>@endif
-                        <div class="mt-3 text-sm text-slate-700 group-hover:underline">Find out more →</div>
+                        <div class="mt-3 text-sm text-slate-700 group-hover:underline">{{ __('ui.find_out_more') }} →</div>
                     </div>
                 </a>
             @endforeach
@@ -211,12 +211,14 @@ $posterUrl  = $posterPath ? Storage::disk('public')->url($posterPath) : null;
         {{-- Confirm overlay --}}
         <div class="tt-confirm hidden" data-tt-confirm aria-hidden="true">
             <div class="tt-confirm__dialog" role="dialog" aria-modal="true">
-                <div class="tt-confirm__text">
-                    You will now be redirected to the selected social media channel.
+                <div class="tt-confirm__text" data-confirm-text>
+                    {{ __('nav.social_redirect') }}
                 </div>
                 <div class="tt-confirm__actions">
-                    <button type="button" class="tt-confirm__btn" data-tt-confirm-cancel>Cancel</button>
-                    <button type="button" class="tt-confirm__btn tt-confirm__btn--primary" data-tt-confirm-leave>Leave page</button>
+                    <button type="button" class="tt-confirm__btn" 
+                        data-tt-confirm-cancel>{{ __('ui.cancel') }}</button>
+                    <button type="button" class="tt-confirm__btn tt-confirm__btn--primary" 
+                        data-tt-confirm-leave>{{ __('nav.leave_page') }}</button>
                 </div>
             </div>
         </div>
@@ -249,8 +251,14 @@ $posterUrl  = $posterPath ? Storage::disk('public')->url($posterPath) : null;
                 <div class="tt-slot tt-slot--leftTop" data-slot="leftTop">
                     <article class="tt-card" data-social-card data-tt-card data-source="{{ $s0 }}">
                         <div class="tt-card__consent"><div class="tt-consent__box">
-                            <div class="tt-consent__text">I agree to the transmission of my personal data to {{ $s0==='instagram'?'Instagram':'LinkedIn' }} in order to be shown content provided by {{ $s0==='instagram'?'Instagram':'LinkedIn' }}. I have read the <a href="{{ $pr0 }}" target="_blank" rel="noopener">privacy policy</a>.</div>
-                            <a href="#" class="tt-consent__btn" data-social-accept>Accept</a>
+                            @php $platform0 = $s0 === 'instagram' ? 'Instagram' : 'LinkedIn'; @endphp
+                            <div class="tt-consent__text">
+                                {!! __('ui.social_consent_text', [
+                                    'platform' => $platform0,
+                                    'link' => '<a href="' . $pr0 . '" target="_blank" rel="noopener">' . __('ui.privacy_policy') . '</a>',
+                                ]) !!}
+                            </div>
+                            <a href="#" class="tt-consent__btn" data-social-accept>{{ __('cookie.accept_all') }}</a>
                         </div></div>
                         <div>
                             <div class="tt-card__badge {{ $s0==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s0==='instagram' ? 'IG' : 'in' }}</div>
@@ -269,7 +277,7 @@ $posterUrl  = $posterPath ? Storage::disk('public')->url($posterPath) : null;
                                 <div class="tt-card__meta"><span class="tt-card__profile">{{ $pf0 }}</span><span class="tt-card__time">{{ $tm0 }}</span></div>
                                 <div class="tt-card__scroll" data-tt-scroll>
                                     <div class="tt-card__text">{{ $tx0 }}</div>
-                                    <a class="tt-card__link" href="{{ $ti0 }}" target="_blank" rel="noopener" data-tt-original data-url="{{ $ti0 }}">Show original post</a>
+                                    <a class="tt-card__link" href="{{ $ti0 }}" target="_blank" rel="noopener" data-tt-original data-url="{{ $ti0 }}">{{ __('nav.show_original') }}</a>
                                 </div>
                                 <button type="button" class="tt-card__down" aria-label="Scroll down" data-tt-down><span class="tt-card__downIcon">&#8964;</span></button>
                             </div>
@@ -287,8 +295,14 @@ $posterUrl  = $posterPath ? Storage::disk('public')->url($posterPath) : null;
                 <div class="tt-slot tt-slot--leftBottom" data-slot="leftBottom">
                     <article class="tt-card" data-social-card data-tt-card data-source="{{ $s1 }}">
                         <div class="tt-card__consent"><div class="tt-consent__box">
-                            <div class="tt-consent__text">I agree to the transmission of my personal data to {{ $s1==='instagram'?'Instagram':'LinkedIn' }} in order to be shown content provided by {{ $s1==='instagram'?'Instagram':'LinkedIn' }}. I have read the <a href="{{ $pr1 }}" target="_blank" rel="noopener">privacy policy</a>.</div>
-                            <a href="#" class="tt-consent__btn" data-social-accept>Accept</a>
+                            @php $platform0 = $s0 === 'instagram' ? 'Instagram' : 'LinkedIn'; @endphp
+                            <div class="tt-consent__text">
+                                {!! __('ui.social_consent_text', [
+                                    'platform' => $platform0,
+                                    'link' => '<a href="' . $pr0 . '" target="_blank" rel="noopener">' . __('ui.privacy_policy') . '</a>',
+                                ]) !!}
+                            </div>
+                            <a href="#" class="tt-consent__btn" data-social-accept>{{ __('cookie.accept_all') }}</a>
                         </div></div>
                         <div>
                             <div class="tt-card__badge {{ $s1==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s1==='instagram' ? 'IG' : 'in' }}</div>
@@ -307,7 +321,7 @@ $posterUrl  = $posterPath ? Storage::disk('public')->url($posterPath) : null;
                                 <div class="tt-card__meta"><span class="tt-card__profile">{{ $pf1 }}</span><span class="tt-card__time">{{ $tm1 }}</span></div>
                                 <div class="tt-card__scroll" data-tt-scroll>
                                     <div class="tt-card__text">{{ $tx1 }}</div>
-                                    <a class="tt-card__link" href="{{ $ti1 }}" target="_blank" rel="noopener" data-tt-original data-url="{{ $ti1 }}">Show original post</a>
+                                    <a class="tt-card__link" href="{{ $ti1 }}" target="_blank" rel="noopener" data-tt-original data-url="{{ $ti1 }}">{{ __('nav.show_original') }}</a>
                                 </div>
                                 <button type="button" class="tt-card__down" aria-label="Scroll down" data-tt-down><span class="tt-card__downIcon">&#8964;</span></button>
                             </div>
@@ -326,8 +340,14 @@ $posterUrl  = $posterPath ? Storage::disk('public')->url($posterPath) : null;
                     <article class="tt-card" data-social-card data-tt-card data-source="{{$s2}}">
                         <div class="tt-card__consent">
                             <div class="tt-consent__box">
-                                <div class="tt-consent__text">I agree to the transmission of my personal data to LinkedIn in order to be shown content provided by LinkedIn. I have read the <a href="{{ $pr2 }}" target="_blank" rel="noopener">privacy policy</a>.</div>
-                                <a href="#" class="tt-consent__btn" data-social-accept>Accept</a>
+                                @php $platform0 = $s0 === 'instagram' ? 'Instagram' : 'LinkedIn'; @endphp
+                                <div class="tt-consent__text">
+                                    {!! __('ui.social_consent_text', [
+                                        'platform' => $platform0,
+                                        'link' => '<a href="' . $pr0 . '" target="_blank" rel="noopener">' . __('ui.privacy_policy') . '</a>',
+                                    ]) !!}
+                                </div>
+                                <a href="#" class="tt-consent__btn" data-social-accept>{{ __('cookie.accept_all') }}</a>
                             </div>
                         </div>
                         <div>
@@ -349,7 +369,7 @@ $posterUrl  = $posterPath ? Storage::disk('public')->url($posterPath) : null;
                                 @if($tt2)<div class="tt-card__title">{{ $tt2 }}</div>@endif
                                 <div class="tt-card__scroll" data-tt-scroll>
                                     <div class="tt-card__text tt-card__text--lg">{{ $tx2 }}</div>
-                                    <a class="tt-card__link" href="{{ $ti2 }}" target="_blank" rel="noopener" data-tt-original data-url="{{ $ti2 }}">Show original post</a>
+                                    <a class="tt-card__link" href="{{ $ti2 }}" target="_blank" rel="noopener" data-tt-original data-url="{{ $ti2 }}">{{ __('nav.show_original') }}</a>
                                 </div>
                                 <button type="button" class="tt-card__down" aria-label="Scroll down" data-tt-down><span class="tt-card__downIcon">&#8964;</span></button>
                             </div>
@@ -367,8 +387,14 @@ $posterUrl  = $posterPath ? Storage::disk('public')->url($posterPath) : null;
                 <div class="tt-slot tt-slot--rightTop" data-slot="rightTop">
                     <article class="tt-card" data-social-card data-tt-card data-source="{{ $s3 }}">
                         <div class="tt-card__consent"><div class="tt-consent__box">
-                            <div class="tt-consent__text">I agree to the transmission of my personal data to LinkedIn in order to be shown content provided by LinkedIn. I have read the <a href="{{ $pr3 }}" target="_blank" rel="noopener">privacy policy</a>.</div>
-                            <a href="#" class="tt-consent__btn" data-social-accept>Accept</a>
+                            @php $platform0 = $s0 === 'instagram' ? 'Instagram' : 'LinkedIn'; @endphp
+                            <div class="tt-consent__text">
+                                {!! __('ui.social_consent_text', [
+                                    'platform' => $platform0,
+                                    'link' => '<a href="' . $pr0 . '" target="_blank" rel="noopener">' . __('ui.privacy_policy') . '</a>',
+                                ]) !!}
+                            </div>
+                            <a href="#" class="tt-consent__btn" data-social-accept>{{ __('cookie.accept_all') }}</a>
                         </div></div>
                         <div>
                             <div class="tt-card__badge {{ $s3==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s3==='instagram' ? 'IG' : 'in' }}</div>
@@ -387,7 +413,7 @@ $posterUrl  = $posterPath ? Storage::disk('public')->url($posterPath) : null;
                                 <div class="tt-card__meta"><span class="tt-card__profile">{{ $pf3 }}</span><span class="tt-card__time">{{ $tm3 }}</span></div>
                                 <div class="tt-card__scroll" data-tt-scroll>
                                     <div class="tt-card__text">{{ $tx3 }}</div>
-                                    <a class="tt-card__link" href="{{ $ti3 }}" target="_blank" rel="noopener" data-tt-original data-url="{{ $ti3 }}">Show original post</a>
+                                    <a class="tt-card__link" href="{{ $ti3 }}" target="_blank" rel="noopener" data-tt-original data-url="{{ $ti3 }}">{{ __('nav.show_original') }}</a>
                                 </div>
                                 <button type="button" class="tt-card__down" aria-label="Scroll down" data-tt-down><span class="tt-card__downIcon">&#8964;</span></button>
                             </div>
@@ -406,8 +432,14 @@ $posterUrl  = $posterPath ? Storage::disk('public')->url($posterPath) : null;
                     <article class="tt-card" data-social-card data-tt-card data-source="{{ $s4 }}">
                         <div class="tt-card__consent">
                             <div class="tt-consent__box">
-                                <div class="tt-consent__text">I agree to the transmission of my personal data to LinkedIn in order to be shown content provided by LinkedIn. I have read the <a href="{{ $pr4 }}" target="_blank" rel="noopener">privacy policy</a>.</div>
-                                <a href="#" class="tt-consent__btn" data-social-accept>Accept</a>
+                                @php $platform0 = $s0 === 'instagram' ? 'Instagram' : 'LinkedIn'; @endphp
+                                <div class="tt-consent__text">
+                                    {!! __('ui.social_consent_text', [
+                                        'platform' => $platform0,
+                                        'link' => '<a href="' . $pr0 . '" target="_blank" rel="noopener">' . __('ui.privacy_policy') . '</a>',
+                                    ]) !!}
+                                </div>
+                                <a href="#" class="tt-consent__btn" data-social-accept>{{ __('cookie.accept_all') }}t</a>
                                 </div>
                             </div>
                         <div>
@@ -429,7 +461,7 @@ $posterUrl  = $posterPath ? Storage::disk('public')->url($posterPath) : null;
                                 <div class="tt-card__meta"><span class="tt-card__profile">{{ $pf4 }}</span><span class="tt-card__time">{{ $tm4 }}</span></div>
                                 <div class="tt-card__scroll" data-tt-scroll>
                                     <div class="tt-card__text">{{ $tx4 }}</div>
-                                    <a class="tt-card__link" href="{{ $ti4 }}" target="_blank" rel="noopener" data-tt-original data-url="{{ $ti4 }}">Show original post</a>
+                                    <a class="tt-card__link" href="{{ $ti4 }}" target="_blank" rel="noopener" data-tt-original data-url="{{ $ti4 }}">{{ __('nav.show_original') }}</a>
                                 </div>
                                 <button type="button" class="tt-card__down" aria-label="Scroll down" data-tt-down><span class="tt-card__downIcon">&#8964;</span></button>
                             </div>
@@ -516,7 +548,7 @@ $posterUrl  = $posterPath ? Storage::disk('public')->url($posterPath) : null;
             </div>
 
             @if($posts->isEmpty())
-                <p class="mt-6 text-slate-600">No featured news yet.</p>
+                <p class="mt-6 text-slate-600">{{ __('news.no_posts') }}</p>
             @endif
         </div>
     </section>

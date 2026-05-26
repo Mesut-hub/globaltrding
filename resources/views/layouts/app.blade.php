@@ -8,6 +8,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    @if(app()->getLocale() === 'ar')
+        <meta name="text-direction" content="rtl">
+    @endif
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     @php
@@ -142,6 +145,8 @@
 
     @stack('structured_data')
 
+    <script>window.__cookieAlwaysActive = "{{ __('cookie.always_active') }}";</script>
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-white text-slate-900 antialiased @stack('body_class')">
@@ -268,9 +273,16 @@
         </div>
     </div>
     <div id="navOverlay" class="nav-overlay hidden" aria-hidden="true">
-        <button type="button" id="navOverlayClose" class="nav-overlay__close" aria-label="Close menu">×</button>
+        <button type="button" id="navOverlayClose" class="nav-overlay__close" aria-label="{{ __('ui.close') }}">×</button>
 
-        <div class="nav-overlay__content" role="dialog" aria-modal="true" aria-label="Navigation">
+        <div class="nav-overlay__content" 
+            role="dialog" 
+            aria-modal="true" 
+            aria-label="{{ __('ui.global') }}"
+            data-i18n-menu="{{ __('ui.global') }}"
+            data-i18n-what="{{ __('nav.search_placeholder') }}"
+            data-i18n-cancel="{{ __('ui.cancel') }}"
+            data-i18n-leave="{{ __('nav.leave_page') }}">
             <aside class="nav-overlay__left">
                 <div class="nav-overlay__sectionTitle" id="navOverlayTitle">Menu</div>
                 <div class="nav-overlay__list" id="navOverlayList"></div>

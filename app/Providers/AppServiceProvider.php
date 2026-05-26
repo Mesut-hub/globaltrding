@@ -23,5 +23,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         View::composer('layouts.app', CookieConsentComposer::class);
+
+        // Localize pagination
+        \Illuminate\Pagination\Paginator::defaultView('pagination::tailwind');
+        \Illuminate\Pagination\Paginator::defaultSimpleView('pagination::simple-tailwind');
     }
 }
