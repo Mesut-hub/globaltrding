@@ -29,7 +29,7 @@
             <p class="gt-cookie-banner__desc">
                 {{ $payload['description'] ?? '' }}
                 @if (!empty($payload['policyUrl']))
-                    
+                    <a
                         href="{{ $payload['policyUrl'] }}"
                         class="gt-cookie-banner__link"
                         target="_blank"
@@ -49,7 +49,7 @@
                 >{{ __('cookie.manage') }}</button>
             @endif
 
-            @if (!empty($payload['showReject']))
+            @if ($payload['showReject'])
                 <button
                     type="button"
                     id="gtCookieRejectBtn"
