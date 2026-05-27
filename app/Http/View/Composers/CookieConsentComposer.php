@@ -18,12 +18,13 @@ class CookieConsentComposer
             $payload = $this->service->buildFrontendPayload($locale, $fallback);
         } catch (\Throwable $e) {
             // Never break page rendering due to cookie service failure
+            \Illuminate\Support\Facades\Log::warning('CookieConsent payload failed: ' . $e->getMessage());
             $payload = [
                 'categories' => [],
                 'version'    => '1.0',
                 'position'   => 'bottom',
-                'showReject' => false,
-                'showManage' => false,
+                'showReject' => true,
+                'showManage' => true,
                 'title'      => '',
                 'description'=> '',
                 'policyUrl'  => '/' . $locale . '/pages/privacy-policy',
