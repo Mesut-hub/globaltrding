@@ -303,6 +303,6 @@
             </section>
         </div>
     </div>
-    <x-cookie-consent />
+    @include('components.cookie-consent')
 </body>
 </html>

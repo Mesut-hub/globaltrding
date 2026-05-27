@@ -23,11 +23,11 @@
 >
     <div class="gt-cookie-banner__inner">
         <div class="gt-cookie-banner__content">
-            @if ($payload['banner_title'] ?? false)
-                <p class="gt-cookie-banner__title">{{ $payload['banner_title'] }}</p>
+            @if ($payload['title'] ?? false)
+                <p class="gt-cookie-banner__title">{{ $payload['title'] }}</p>
             @endif
             <p class="gt-cookie-banner__desc">
-                {{ $payload['banner_description'] ?? '' }}
+                {{ $payload['description'] ?? '' }}
                 @if ($payload['policyUrl'] ?? false)
                     <a
                         href="{{ $payload['policyUrl'] }}"
