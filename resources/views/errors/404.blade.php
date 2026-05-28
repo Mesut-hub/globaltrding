@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('meta_title', {{ __('forms.submit') }})
+@section('meta_title', __('forms.submit'))
 @section('meta_description', 'The page you requested could not be found.')
 
 @section('content')

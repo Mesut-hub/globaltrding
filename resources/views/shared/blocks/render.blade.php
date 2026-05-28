@@ -161,134 +161,265 @@
 {{-- ══════════════════════════════════════════════════════════════════ --}}
 @elseif ($type === 'insightsGrid')
     @php
-        $heading = $t($data['heading'] ?? '', $locale, $fallback) ?: 'Company insights';
-        $accent  = $data['accent'] ?? 'blue';
-
-        $panelClass = match($accent) {
-            'dark'  => 'bg-slate-900 text-white',
-            'slate' => 'bg-slate-700 text-white',
-            default => 'bg-sky-600 text-white',
-        };
-
-        $topImgPath = $data['top_left_image'] ?? null;
-        $topImgUrl  = $topImgPath ? Storage::disk('public')->url($topImgPath) : null;
-
-        $topKicker   = $t($data['top_right_kicker']    ?? '', $locale, $fallback);
-        $topTitle    = $t($data['top_right_title']     ?? '', $locale, $fallback);
-        $topText     = $t($data['top_right_text']      ?? '', $locale, $fallback);
-        $topCtaLabel = $t($data['top_right_cta_label'] ?? '', $locale, $fallback);
-        $topCtaUrl   = $data['top_right_cta_url'] ?? '';
-
-        $bottom         = is_array($data['bottom_tiles'] ?? null) ? $data['bottom_tiles'] : [];
+        $heading        = $t($data['heading'] ?? '', $locale, $fallback) ?: 'Company insights';
+        $accent         = $data['accent'] ?? 'blue';
         $panelTextColor = $data['panel_text_color'] ?? '#ffffff';
         $row2LinkColor  = $data['row2_link_color']  ?? '#0ea5e9';
+
+        $panelClass = match ($accent) {
+            'dark'  => 'bg-slate-900  text-white',
+            'slate' => 'bg-slate-700  text-white',
+            default => 'bg-sky-600    text-white',
+        };
+
+        // Top-row data
+        $topImgPath  = $data['top_left_image']     ?? null;
+        $topImgUrl   = $topImgPath ? Storage::disk('public')->url($topImgPath) : null;
+        $topKicker   = $t($data['top_right_kicker']     ?? '', $locale, $fallback);
+        $topTitle    = $t($data['top_right_title']      ?? '', $locale, $fallback);
+        $topText     = $t($data['top_right_text']       ?? '', $locale, $fallback);
+        $topCtaLabel = $t($data['top_right_cta_label']  ?? '', $locale, $fallback);
+        $topCtaUrl   = $data['top_right_cta_url'] ?? '';
+
+        // Bottom tiles
+        $bottomTiles = is_array($data['bottom_tiles'] ?? null) ? $data['bottom_tiles'] : [];
     @endphp
-    <section class="gt-insights">
+
+    <section class="gt-insights" aria-label="{{ $heading }}">
+
+        {{-- ── Heading ─────────────────────────────────────────────────── --}}
         <h2 class="gt-insights__heading">{{ $heading }}</h2>
 
-        {{-- Row 1 --}}
+        {{-- ── Row 1: Feature tile ─────────────────────────────────────── --}}
         <div class="gt-insights__row gt-insights__row--top">
-            <div class="gt-insights__tile gt-insights__tile--image1">
+
+            {{-- Left: large image --}}
+            <div class="gt-insights__tile gt-insights__tile--image1" aria-hidden="true">
                 @if ($topImgUrl)
-                    <img src="{{ $topImgUrl }}" alt="" class="gt-insights__img">
+                    <img
+                        src="{{ $topImgUrl }}"
+                        alt="{{ strip_tags($topKicker ?: $topTitle) }}"
+                        class="gt-insights__img"
+                        loading="lazy"
+                    >
+                @else
+                    <div class="gt-insights__placeholder-img"></div>
                 @endif
             </div>
-            <div class="gt-insights__tile gt-insights__tile--panel1 {{ $panelClass }}"
-                style="color: {{ $panelTextColor }};">
-                @if ($topKicker) <div class="gt-insights__kicker">{{ $topKicker }}</div> @endif
-                <div class="gt-insights__title">{{ $topTitle }}</div>
-                @if ($topText) <div class="gt-insights__text">{{ $topText }}</div> @endif
+
+            {{-- Right: text panel --}}
+            <div
+                class="gt-insights__tile gt-insights__tile--panel1 {{ $panelClass }}"
+                style="color: {{ $panelTextColor }};"
+            >
+                @if ($topKicker)
+                    <span class="gt-insights__kicker">{{ $topKicker }}</span>
+                @endif
+
+                @if ($topTitle)
+                    <h3 class="gt-insights__title">{{ $topTitle }}</h3>
+                @endif
+
+                @if ($topText)
+                    <p class="gt-insights__text">{{ $topText }}</p>
+                @endif
+
                 @if ($topCtaLabel && $topCtaUrl)
-                    <a href="{{ $topCtaUrl }}" class="gt-insights__cta">{{ $topCtaLabel }}</a>
-                @endif
-            </div>
-        </div>
-
-        {{-- Row 2 --}}
-        <div class="gt-insights__row gt-insights__row--bottom">
-            @foreach ($bottom as $tile)
-            @php
-                // FIX: was "$t = $tile['type']" which destroyed the $t closure
-                $tileType = $tile['type'] ?? 'image';
-                $tileImg  = $tile['image'] ?? null;
-                $tileImgUrl = $tileImg ? Storage::disk('public')->url($tileImg) : null;
-
-                $tileKicker   = $t($tile['kicker']    ?? '', $locale, $fallback);
-                $tileTitle    = $t($tile['title']     ?? '', $locale, $fallback);
-                $tileLead     = $t($tile['lead']      ?? '', $locale, $fallback);
-                $tileCtaLabel = $t($tile['cta_label'] ?? '', $locale, $fallback);
-                $tileCtaUrl   = $tile['cta_url'] ?? '';
-            @endphp
-
-            @if ($tileType === 'panel')
-            @php
-                $tileExcerpt = $t($tile['panel_excerpt'] ?? '', $locale, $fallback);
-                $tileBody    = $t($tile['panel_body']    ?? '', $locale, $fallback);
-                $showChart   = (bool) ($tile['show_chart'] ?? false);
-                $source      = $tile['chart_source'] ?? 'manual';
-                $pts = [];
-                if ($source === 'manual') {
-                    $pts = is_array($tile['chart_points'] ?? null) ? $tile['chart_points'] : [];
-                } elseif ($source === 'url_json') {
-                    $cUrl = (string) ($tile['chart_url'] ?? '');
-                    if ($cUrl !== '') $pts = app(\App\Services\ChartDataClient::class)->fromUrl($cUrl);
-                } elseif ($source === 'market_instrument') {
-                    $slug = (string) ($tile['chart_instrument'] ?? '');
-                    $days = max(5, min(120, (int) ($tile['chart_days'] ?? 14)));
-                    if ($slug !== '') {
-                        $inst = \App\Models\MarketInstrument::query()->where('slug', $slug)->first();
-                        if ($inst) {
-                            $pts = \App\Models\MarketPoint::query()
-                                ->where('market_instrument_id', $inst->id)
-                                ->orderBy('date', 'desc')->limit(12)->get(['value','date'])
-                                ->reverse()->values()
-                                ->map(fn ($r) => ['value' => (float) $r->value])->all();
-                        }
-                    }
-                }
-                $scale    = $tile['chart_scale']    ?? 'linear';
-                $mode     = $tile['chart_mode']     ?? 'absolute';
-                $auto     = (bool) ($tile['chart_auto_minmax'] ?? true);
-                $minFixed = $tile['chart_min'] ?? null;
-                $maxFixed = $tile['chart_max'] ?? null;
-            @endphp
-            <div class="gt-insights__tile gt-insights__tile--panel2 {{ $panelClass }}"
-                style="color: {{ $panelTextColor }};">
-                @if ($showChart)
-                    <div class="mb-3 opacity-90">
-                        @include('shared.blocks.partials.sparkline', [
-                            'points'   => $pts, 'scale' => $scale, 'mode' => $mode,
-                            'auto'     => $auto, 'minFixed' => $minFixed, 'maxFixed' => $maxFixed,
-                            'showGrid' => true, 'showAxes' => true, 'gridLines' => 3,
-                        ])
-                    </div>
-                @endif
-                @if ($tileTitle)    <div class="gt-insights__title">{{ $tileTitle }}</div>  @endif
-                @if ($tileExcerpt || $tileLead) <div class="gt-insights__text">{{ $tileExcerpt ?: $tileLead }}</div> @endif
-                @if ($tileBody)     <div class="gt-insights__text">{{ $tileBody }}</div>    @endif
-                @if ($tileCtaLabel && $tileCtaUrl)
-                    <a href="{{ $tileCtaUrl }}" class="gt-insights__cta">{{ $tileCtaLabel }}</a>
+                    <a href="{{ $topCtaUrl }}" class="gt-insights__cta">
+                        {{ $topCtaLabel }}
+                    </a>
                 @endif
             </div>
 
-            @else
-            <div class="gt-insights__tile gt-insights__tile--image gt-insights__tile--image2">
-                <div class="gt-insights__media">
-                    @if ($tileImgUrl) <img src="{{ $tileImgUrl }}" alt="" class="gt-insights__img"> @endif
-                </div>
-                <div class="gt-insights__below">
-                    @if ($tileKicker) <div class="gt-insights__belowKicker">{{ $tileKicker }}</div> @endif
-                    <div class="gt-insights__belowTitle">{{ $tileTitle }}</div>
-                    @if ($tileLead)   <div class="gt-insights__belowText">{{ $tileLead }}</div>     @endif
-                    @if ($tileCtaLabel && $tileCtaUrl)
-                        <a href="{{ $tileCtaUrl }}" class="gt-insights__belowCta"
-                        style="color: {{ $row2LinkColor }};">{{ $tileCtaLabel }}</a>
+        </div>{{-- /row--top --}}
+
+        {{-- ── Row 2: Three-column grid ────────────────────────────────── --}}
+        @if (count($bottomTiles))
+            <div class="gt-insights__row gt-insights__row--bottom">
+
+                @foreach ($bottomTiles as $tile)
+                    @php
+                        $tileType    = $tile['type'] ?? 'image';
+                        $tileImgPath = $tile['image'] ?? null;
+                        $tileImgUrl  = $tileImgPath ? Storage::disk('public')->url($tileImgPath) : null;
+
+                        $tileKicker   = $t($tile['kicker']    ?? '', $locale, $fallback);
+                        $tileTitle    = $t($tile['title']      ?? '', $locale, $fallback);
+                        $tileLead     = $t($tile['lead']       ?? '', $locale, $fallback);
+                        $tileCtaLabel = $t($tile['cta_label']  ?? '', $locale, $fallback);
+                        $tileCtaUrl   = (string) ($tile['cta_url'] ?? '');
+                    @endphp
+
+                    @if ($tileType === 'panel')
+                        {{-- ────────────────────────────────────────────────── --}}
+                        {{-- PREMIUM DATA PANEL TILE                            --}}
+                        {{-- ────────────────────────────────────────────────── --}}
+                        @php
+                            $tileExcerpt = $t($tile['panel_excerpt'] ?? '', $locale, $fallback);
+                            $tileBody    = $t($tile['panel_body']    ?? '', $locale, $fallback);
+                            $showChart   = (bool) ($tile['show_chart'] ?? false);
+                            $source      = $tile['chart_source'] ?? 'manual';
+
+                            // ── Resolve chart points ──────────────────────
+                            $pts = [];
+                            if ($showChart) {
+                                if ($source === 'manual') {
+                                    $pts = is_array($tile['chart_points'] ?? null)
+                                        ? $tile['chart_points'] : [];
+
+                                } elseif ($source === 'url_json') {
+                                    $cUrl = (string) ($tile['chart_url'] ?? '');
+                                    if ($cUrl !== '') {
+                                        try {
+                                            $pts = app(\App\Services\ChartDataClient::class)->fromUrl($cUrl);
+                                        } catch (\Throwable) { $pts = []; }
+                                    }
+
+                                } elseif ($source === 'market_instrument') {
+                                    $slug = (string) ($tile['chart_instrument'] ?? '');
+                                    $days = max(5, min(120, (int) ($tile['chart_days'] ?? 14)));
+                                    if ($slug !== '') {
+                                        try {
+                                            $inst = \App\Models\MarketInstrument::query()
+                                                ->where('slug', $slug)->first();
+                                            if ($inst) {
+                                                $pts = \App\Models\MarketPoint::query()
+                                                    ->where('market_instrument_id', $inst->id)
+                                                    ->orderBy('date', 'desc')
+                                                    ->limit($days + 2)
+                                                    ->get(['value', 'date'])
+                                                    ->reverse()->values()
+                                                    ->map(fn($r) => [
+                                                        'value' => (float) $r->value,
+                                                        'date'  => $r->date?->format('d M'),
+                                                    ])->all();
+                                            }
+                                        } catch (\Throwable) { $pts = []; }
+                                    }
+                                }
+                            }
+
+                            $scale    = $tile['chart_scale']       ?? 'linear';
+                            $mode     = $tile['chart_mode']        ?? 'absolute';
+                            $autoMm   = (bool) ($tile['chart_auto_minmax'] ?? true);
+                            $minFixed = $tile['chart_min']         ?? null;
+                            $maxFixed = $tile['chart_max']         ?? null;
+
+                            // Determine trend direction for supplementary badge
+                            $latestVal = !empty($pts)
+                                ? (float)(is_array(end($pts)) ? (end($pts)['value'] ?? 0) : end($pts))
+                                : null;
+                            $prevVal = count($pts) > 1
+                                ? (float)(is_array($pts[count($pts)-2]) ? ($pts[count($pts)-2]['value'] ?? 0) : $pts[count($pts)-2])
+                                : null;
+                            $hasTrend = $latestVal !== null && $prevVal !== null;
+                            $trendUp  = $hasTrend && $latestVal >= $prevVal;
+                        @endphp
+
+                        <div
+                            class="gt-insights__tile gt-insights__tile--panel2 {{ $panelClass }}"
+                            style="color: {{ $panelTextColor }};"
+                            role="region"
+                            aria-label="{{ $tileTitle }}"
+                        >
+                            {{-- ① Header ──────────────────────────────── --}}
+                            @if ($tileTitle)
+                                <div class="gt-insights__panel-header">
+                                    <div class="gt-insights__panel-title">{{ $tileTitle }}</div>
+                                </div>
+                            @endif
+
+                            {{-- ② Chart ──────────────────────────────── --}}
+                            @if ($showChart && count($pts) > 1)
+                                <div class="gt-insights__panel-chart" aria-hidden="true">
+                                    @include('shared.blocks.partials.sparkline', [
+                                        'points'    => $pts,
+                                        'scale'     => $scale,
+                                        'mode'      => $mode,
+                                        'auto'      => $autoMm,
+                                        'minFixed'  => $minFixed,
+                                        'maxFixed'  => $maxFixed,
+                                        'showGrid'  => true,
+                                        'showAxes'  => true,
+                                        'gridLines' => 3,
+                                        'premium'   => true,
+                                    ])
+                                </div>
+                            @endif
+
+                            {{-- ③ Data body ────────────────────────────── --}}
+                            @if ($tileExcerpt || $tileLead || $tileBody)
+                                <div class="gt-insights__panel-body">
+                                    @if ($tileExcerpt || $tileLead)
+                                        <div class="gt-insights__panel-excerpt">
+                                            {{ $tileExcerpt ?: $tileLead }}
+                                        </div>
+                                    @endif
+                                    @if ($tileBody)
+                                        <div class="gt-insights__panel-text">{{ $tileBody }}</div>
+                                    @endif
+                                </div>
+                            @endif
+
+                            {{-- ④ Footer CTA ──────────────────────────── --}}
+                            @if ($tileCtaLabel && $tileCtaUrl)
+                                <div class="gt-insights__panel-footer">
+                                    <a href="{{ $tileCtaUrl }}" class="gt-insights__panel-cta">
+                                        {{ $tileCtaLabel }}
+                                    </a>
+                                </div>
+                            @endif
+                        </div>
+
+                    @else
+                        {{-- ────────────────────────────────────────────────── --}}
+                        {{-- IMAGE CARD TILE                                     --}}
+                        {{-- ────────────────────────────────────────────────── --}}
+                        <div class="gt-insights__tile gt-insights__tile--image2">
+                            {{-- Image --}}
+                            <div class="gt-insights__media" aria-hidden="true">
+                                @if ($tileImgUrl)
+                                    <img
+                                        src="{{ $tileImgUrl }}"
+                                        alt="{{ strip_tags($tileTitle) }}"
+                                        class="gt-insights__img"
+                                        loading="lazy"
+                                    >
+                                @endif
+                            </div>
+
+                            {{-- Below-image content --}}
+                            <div class="gt-insights__below">
+                                @if ($tileKicker)
+                                    <span class="gt-insights__belowKicker">{{ $tileKicker }}</span>
+                                @endif
+
+                                @if ($tileTitle)
+                                    <h4 class="gt-insights__belowTitle">{{ $tileTitle }}</h4>
+                                @endif
+
+                                @if ($tileLead)
+                                    <p class="gt-insights__belowText">{{ $tileLead }}</p>
+                                @endif
+
+                                @if ($tileCtaLabel && $tileCtaUrl)
+                                    <a
+                                        href="{{ $tileCtaUrl }}"
+                                        class="gt-insights__belowCta"
+                                        style="color: {{ $row2LinkColor }};"
+                                    >
+                                        {{ $tileCtaLabel }}
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
                     @endif
-                </div>
-            </div>
-            @endif
-            @endforeach
-        </div>
+
+                @endforeach
+
+            </div>{{-- /row--bottom --}}
+        @endif
+
     </section>
 
 {{-- ══════════════════════════════════════════════════════════════════ --}}
