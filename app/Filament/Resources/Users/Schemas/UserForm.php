@@ -115,7 +115,9 @@ class UserForm
                             ->label('Customer Management')
                             ->helperText('Block, suspend, revoke access')
                             ->default(false),
-
+                        Toggle::make('limits.permissions.promotions')         // ← ADD
+                            ->label('Promotions (Advertisement Overlays)')    // ← ADD
+                            ->default(false),
                         Toggle::make('limits.permissions.users')->label('Users (not used)')->disabled()->default(false),
                     ]),
                 ]),

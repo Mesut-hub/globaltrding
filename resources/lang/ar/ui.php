@@ -69,6 +69,7 @@ return [
     // Accessibility / toolbar
     'accessibility'  => 'إمكانية الوصول',
     'language'       => 'اللغة',
+    'promotions' => 'العروض والإعلانات',
 
     // 404 / error pages
     '404_title'      => '404 — الصفحة غير موجودة',

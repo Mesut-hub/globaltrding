@@ -68,6 +68,7 @@ return [
     // Accessibility / toolbar
     'accessibility'  => 'Erişilebilirlik',
     'language'       => 'Dil',
+    'promotions' => 'Kampanyalar ve Duyurular',
 
     // 404 / error pages
     '404_title'      => '404 — Sayfa bulunamadı',

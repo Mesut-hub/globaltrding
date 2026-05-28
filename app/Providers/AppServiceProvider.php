@@ -2,9 +2,10 @@
 
 namespace App\Providers;
 
+use App\Http\View\Composers\CookieConsentComposer;
+use App\Http\View\Composers\PromotionComposer;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
-use App\Http\View\Composers\CookieConsentComposer;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -15,6 +16,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(\App\Services\SeoService::class);
         $this->app->singleton(\App\Services\CookieConsentService::class);
+        $this->app->singleton(\App\Services\PromotionService::class);
     }
 
     /**
@@ -23,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         View::composer('layouts.app', CookieConsentComposer::class);
-
+        View::composer('layouts.app', PromotionComposer::class);
         // Localize pagination
         \Illuminate\Pagination\Paginator::defaultView('pagination::tailwind');
         \Illuminate\Pagination\Paginator::defaultSimpleView('pagination::simple-tailwind');

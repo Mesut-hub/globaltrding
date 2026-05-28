@@ -1,0 +1,452 @@
+/* resources/css/promotion-overlay.css
+   Enterprise Advertisement Overlay System
+   Follows the same pattern as cookie-consent.css
+   ──────────────────────────────────────────── */
+
+:root {
+  --gp-z-backdrop:  4990;
+  --gp-z-overlay:   5000;
+  --gp-z-panel:     5010;
+  --gp-transition:  360ms cubic-bezier(0.22, 1, 0.36, 1);
+  --gp-radius:      18px;
+  --gp-shadow:
+    0 32px 80px rgba(0, 0, 0, 0.28),
+    0 8px 28px rgba(0, 0, 0, 0.14),
+    0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Overlay container ──────────────────────────────────────────── */
+
+.gt-promo-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--gp-z-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.gt-promo-overlay.is-open {
+  pointer-events: auto;
+  visibility: visible;
+}
+
+/* ── Backdrop ───────────────────────────────────────────────────── */
+
+.gt-promo-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--gp-z-backdrop);
+  background: rgba(6, 12, 22, 0.65);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  opacity: 0;
+  transition: opacity var(--gp-transition);
+}
+
+.gt-promo-overlay.is-open .gt-promo-backdrop {
+  opacity: 1;
+}
+
+/* ── Panel ──────────────────────────────────────────────────────── */
+
+.gt-promo-panel {
+  position: relative;
+  z-index: var(--gp-z-panel);
+  background: #ffffff;
+  border-radius: var(--gp-radius);
+  box-shadow: var(--gp-shadow);
+  width: 100%;
+  max-width: 560px;        /* default md; overridden by size modifiers */
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  outline: none;
+  /* Default animation state (slide_up) */
+  transform: translateY(48px) scale(0.97);
+  opacity: 0;
+  transition:
+    transform var(--gp-transition),
+    opacity   300ms ease;
+}
+
+.gt-promo-overlay.is-open .gt-promo-panel {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+/* ── Panel size variants ────────────────────────────────────────── */
+
+.gt-promo-panel--sm   { max-width: 400px; }
+.gt-promo-panel--md   { max-width: 560px; }
+.gt-promo-panel--lg   { max-width: 760px; }
+.gt-promo-panel--xl   { max-width: 960px; }
+.gt-promo-panel--full { max-width: min(calc(100vw - 32px), 1200px); }
+
+/* ── Position variants ──────────────────────────────────────────── */
+
+.gt-promo-overlay--bottom {
+  align-items: flex-end;
+  padding-bottom: 28px;
+}
+
+.gt-promo-overlay--bottom .gt-promo-panel {
+  border-radius: var(--gp-radius);
+}
+
+.gt-promo-overlay--bottom-left {
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: 0 0 28px 28px;
+}
+
+.gt-promo-overlay--bottom-right {
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 0 28px 28px 0;
+}
+
+/* ── Animation variants (set as data-animation on overlay) ──────── */
+
+/* Fade */
+.gt-promo-overlay[data-animation="fade"] .gt-promo-panel {
+  transform: none;
+  opacity: 0;
+}
+.gt-promo-overlay.is-open[data-animation="fade"] .gt-promo-panel {
+  transform: none;
+  opacity: 1;
+}
+
+/* Slide up (default) */
+.gt-promo-overlay[data-animation="slide_up"] .gt-promo-panel {
+  transform: translateY(72px);
+  opacity: 0;
+}
+.gt-promo-overlay.is-open[data-animation="slide_up"] .gt-promo-panel {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Slide down */
+.gt-promo-overlay[data-animation="slide_down"] .gt-promo-panel {
+  transform: translateY(-72px);
+  opacity: 0;
+}
+.gt-promo-overlay.is-open[data-animation="slide_down"] .gt-promo-panel {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Zoom */
+.gt-promo-overlay[data-animation="zoom"] .gt-promo-panel {
+  transform: scale(0.7);
+  opacity: 0;
+}
+.gt-promo-overlay.is-open[data-animation="zoom"] .gt-promo-panel {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* ── Close button ───────────────────────────────────────────────── */
+
+.gt-promo-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 20;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 0;
+  background: rgba(15, 23, 42, 0.08);
+  color: #475569;
+  cursor: pointer;
+  transition:
+    background  200ms ease,
+    color       200ms ease,
+    transform   200ms ease;
+  flex-shrink: 0;
+}
+
+.gt-promo-close svg {
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+}
+
+.gt-promo-close:hover {
+  background: rgba(15, 23, 42, 0.16);
+  color: #0f172a;
+  transform: scale(1.1) rotate(90deg);
+}
+
+.gt-promo-close:focus-visible {
+  outline: 3px solid #10a6df;
+  outline-offset: 2px;
+}
+
+[dir="rtl"] .gt-promo-close {
+  right: auto;
+  left: 14px;
+}
+
+/* ── Scrollable content wrapper ─────────────────────────────────── */
+
+.gt-promo-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,0,0,0.15) transparent;
+}
+
+.gt-promo-content::-webkit-scrollbar { width: 4px; }
+.gt-promo-content::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.15);
+  border-radius: 2px;
+}
+
+/* ── Media area ─────────────────────────────────────────────────── */
+
+.gt-promo-media {
+  width: 100%;
+  position: relative;
+  background: #f1f5f9;
+  overflow: hidden;
+  line-height: 0; /* remove phantom gap below inline elements */
+}
+
+.gt-promo-media img,
+.gt-promo-media video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  max-height: 400px;
+}
+
+/* ── Body ───────────────────────────────────────────────────────── */
+
+.gt-promo-body {
+  padding: 28px 32px 32px;
+}
+
+.gt-promo-title {
+  font-size: clamp(20px, 2.4vw, 26px);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  margin-bottom: 12px;
+}
+
+.gt-promo-text {
+  font-size: 15px;
+  line-height: 1.7;
+  opacity: 0.82;
+  margin-bottom: 24px;
+}
+
+/* ── CTA Button ─────────────────────────────────────────────────── */
+
+.gt-promo-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 32px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  border: 0;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition:
+    filter    200ms ease,
+    transform 200ms ease,
+    box-shadow 200ms ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.20);
+}
+
+/* Shimmer effect */
+.gt-promo-cta::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255,255,255,0.18) 50%,
+    transparent 70%
+  );
+  transform: translateX(-100%);
+  transition: transform 500ms ease;
+}
+
+.gt-promo-cta:hover {
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.26);
+}
+
+.gt-promo-cta:hover::after {
+  transform: translateX(100%);
+}
+
+.gt-promo-cta:focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 3px;
+}
+
+.gt-promo-cta:active {
+  transform: translateY(0);
+}
+
+/* ── Header trigger button ──────────────────────────────────────── */
+
+.gt-promo-trigger {
+  position: relative;
+  background: transparent;
+  border: 0;
+  color: #ffffff;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 200ms ease, transform 200ms ease;
+  font-size: inherit; /* inherits 28px from .header-icons */
+}
+
+.gt-promo-trigger svg {
+  width: 1.1em;
+  height: 1.1em;
+  display: block;
+}
+
+.gt-promo-trigger:hover {
+  opacity: 0.8;
+  transform: scale(1.08);
+}
+
+.gt-promo-trigger:focus-visible {
+  outline: 2px solid rgba(255,255,255,0.7);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* ── Pulsing badge indicator ────────────────────────────────────── */
+
+.gt-promo-trigger__badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #ef4444;
+  border: 2px solid rgba(87, 87, 87, 0.5);
+}
+
+.gt-promo-trigger__badge[hidden] {
+  display: none !important;
+}
+
+/* Ring animation (shown when badge is visible) */
+.gt-promo-trigger__badge::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.35);
+  animation: gtPromoRing 2s ease-in-out infinite;
+}
+
+@keyframes gtPromoRing {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50%       { transform: scale(1.6); opacity: 0; }
+}
+
+[dir="rtl"] .gt-promo-trigger__badge {
+  right: auto;
+  left: 0;
+}
+
+/* ── Scrolled header: adjust scrolled state size match ──────────── */
+.site-header.scrolled .gt-promo-trigger svg {
+  width: 1em;
+  height: 1em;
+}
+
+/* ── Responsive: mobile sheet ───────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .gt-promo-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .gt-promo-panel,
+  .gt-promo-panel--sm,
+  .gt-promo-panel--md,
+  .gt-promo-panel--lg,
+  .gt-promo-panel--xl,
+  .gt-promo-panel--full {
+    max-width: 100%;
+    border-radius: var(--gp-radius) var(--gp-radius) 0 0;
+    max-height: 88vh;
+  }
+  .gt-promo-overlay--bottom,
+  .gt-promo-overlay--bottom-left,
+  .gt-promo-overlay--bottom-right {
+    padding: 0;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .gt-promo-body {
+    padding: 22px 22px 28px;
+  }
+  /* On mobile, all animations resolve to slide-up */
+  .gt-promo-overlay[data-animation="slide_down"] .gt-promo-panel,
+  .gt-promo-overlay[data-animation="fade"] .gt-promo-panel,
+  .gt-promo-overlay[data-animation="zoom"] .gt-promo-panel {
+    transform: translateY(72px);
+    opacity: 0;
+  }
+  .gt-promo-overlay.is-open[data-animation="slide_down"] .gt-promo-panel,
+  .gt-promo-overlay.is-open[data-animation="fade"] .gt-promo-panel,
+  .gt-promo-overlay.is-open[data-animation="zoom"] .gt-promo-panel {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ── Reduced motion ──────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .gt-promo-panel,
+  .gt-promo-backdrop,
+  .gt-promo-close,
+  .gt-promo-cta,
+  .gt-promo-trigger,
+  .gt-promo-trigger__badge::before {
+    animation: none !important;
+    transition: opacity 150ms ease, visibility 150ms ease !important;
+  }
+  .gt-promo-panel {
+    transform: none !important;
+  }
+  .gt-promo-cta::after { display: none; }
+}

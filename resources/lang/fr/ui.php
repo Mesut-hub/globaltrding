@@ -69,6 +69,7 @@ return [
     // Accessibility / toolbar
     'accessibility'  => 'Accessibilité',
     'language'       => 'Langue',
+    'promotions' => 'Promotions et Annonces',
 
     // 404 / error pages
     '404_title'      => '404 — Page introuvable',

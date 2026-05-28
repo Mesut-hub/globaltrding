@@ -239,8 +239,26 @@
                             @endforeach
                         </div>
                     </div>
-                    <button type="button" aria-label="Accessibility" title="Accessibility"
-                            onclick="document.documentElement.classList.toggle('text-lg')">†</button>
+                    @if (!empty($promotionPayload))
+                    <button
+                        type="button"
+                        id="gtPromoTrigger"
+                        class="gt-promo-trigger"
+                        aria-label="{{ __('ui.promotions') }}"
+                        title="{{ __('ui.promotions') }}"
+                        aria-haspopup="dialog"
+                        aria-expanded="false"
+                    >
+                        {{-- Megaphone / announcement icon ──────────────────────────── --}}
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="1.9"
+                            stroke-linecap="round" stroke-linejoin="round"
+                            aria-hidden="true">
+                            <path d="M11 5.882V19.24a1.76 1.76 0 0 1-3.417.592l-2.147-6.15M18 13a3 3 0 1 0 0-6M5.436 13.683A4.001 4.001 0 0 0 17.032 8.5l-10.064-.634.468 5.817Z"/>
+                        </svg>
+                        <span class="gt-promo-trigger__badge" hidden aria-hidden="true"></span>
+                    </button>
+                    @endif
                 </div>
 
                 <a href="/{{ $locale }}/" class="header-logo-box" aria-label="Logo link">
@@ -328,5 +346,6 @@
         </div>
     </div>
     @include('components.cookie-consent')
+    @include('components.promotion-overlay')
 </body>
 </html>

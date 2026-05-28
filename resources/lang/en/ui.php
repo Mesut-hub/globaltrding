@@ -71,6 +71,7 @@ return [
     // Accessibility / toolbar
     'accessibility'  => 'Accessibility',
     'language'       => 'Language',
+    'promotions' => 'Promotions & Announcements',
 
     // 404 / error pages
     '404_title'      => '404 — Page not found',
