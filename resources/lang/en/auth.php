@@ -61,4 +61,17 @@ return [
     'reg_captcha_missing'  => 'reCAPTCHA site key is not configured.',
     'reg_captcha_fail'     => 'Anti-robot verification failed. Please try again.',
     'reg_not_robot'        => 'Please complete the "I\'m not a robot" verification.',
+    // Add these keys to resources/lang/en/auth.php
+    'remember_me'             => 'Keep me logged in',
+    'logged_out'              => 'You have been successfully logged out.',
+    'account_blocked'         => 'Your account has been blocked. Please contact support.',
+    'account_blocked_title'   => 'Account Blocked',
+    'account_suspended'       => 'Your account has been temporarily suspended.',
+    'account_suspended_title' => 'Account Suspended',
+    'suspended_until'         => 'Your account is suspended until :date.',
+    'access_revoked_title'    => 'Product Access Revoked',
+    'access_revoked'          => 'Your product access has been revoked.',
+    'contact_support'         => 'For assistance, please contact our support team.',
+    'not_approved'            => 'Your account is not yet approved for product access.',
+    'reason'                  => 'Reason',
 ];

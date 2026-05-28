@@ -152,6 +152,7 @@ Route::get('/robots.txt', function () {
 
 Route::prefix('{locale}')
     ->whereIn('locale', config('locales.supported'))
+    ->middleware(['customer.status'])
     ->group(function () {
         Route::get('/', HomeController::class)->name('home');
 

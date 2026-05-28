@@ -109,6 +109,13 @@ class UserForm
 
                         Toggle::make('limits.permissions.brands')->label('Brands')->default(false),
                         Toggle::make('limits.permissions.collaboration_requests')->label('Collaboration Requests')->default(false),
+                        Toggle::make('limits.permissions.inquiry_requests')->label('Inquiry Requests')->default(false),
+                        Toggle::make('limits.permissions.registration_requests')->label('Registration Requests')->default(false),
+                        Toggle::make('limits.permissions.customers')
+                            ->label('Customer Management')
+                            ->helperText('Block, suspend, revoke access')
+                            ->default(false),
+
                         Toggle::make('limits.permissions.users')->label('Users (not used)')->disabled()->default(false),
                     ]),
                 ]),

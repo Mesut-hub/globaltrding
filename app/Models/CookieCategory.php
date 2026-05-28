@@ -29,6 +29,14 @@ class CookieCategory extends Model
                 ->where('is_enabled', true)
                 ->orderBy('sort_order')
                 ->get()
+                ->map(fn (self $cat) => [
+                    'key'         => $cat->key,
+                    'label'       => $cat->label ?? [],
+                    'description' => $cat->description ?? [],
+                    'is_required' => (bool) $cat->is_required,
+                    'is_enabled'  => (bool) $cat->is_enabled,
+                    'sort_order'  => $cat->sort_order,
+                ])
                 ->all();
         });
     }

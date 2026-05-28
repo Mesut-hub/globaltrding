@@ -56,10 +56,10 @@ class CookieConsentService
             'title'       => $pick($settings['banner_title'] ?? []),
             'description' => $pick($settings['banner_description'] ?? []),
             'categories'  => collect($categories)->map(fn ($cat) => [
-                'key'         => $cat->key,
-                'label'       => $pick($cat->label),
-                'description' => $pick($cat->description),
-                'required'    => (bool) $cat->is_required,
+                'key'         => $cat['key'] ?? '',
+                'label'       => $pick($cat['label'] ?? []),
+                'description' => $pick($cat['description'] ?? []),
+                'required'    => (bool) ($cat['is_required'] ?? false),
             ])->values()->all(),
         ];
     }

@@ -3,8 +3,8 @@
 @section('meta_title', __('industries.meta_title'))
 @section('meta_description', __('industries.meta_description'))
 @section('og_type', 'website')
-@section('og_title', 'Industries - Globaltrding')
-@section('og_description', 'Explore the industries Globaltrding serves with industrial equipment sourcing and tailored solutions.')
+@section('og_title', 'Industries - Global Trading')
+@section('og_description', 'Explore the industries Global Trading serves with industrial products sourcing and tailored solutions.')
 
 @php $locale = app()->getLocale(); @endphp
 @push('structured_data')

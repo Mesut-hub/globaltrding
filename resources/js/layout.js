@@ -607,6 +607,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    const navOverlayContent = document.querySelector('.nav-overlay__content');
+
     const i18n = {
         menu:   navOverlayContent?.dataset.i18nMenu   || 'Menu',
         what:   navOverlayContent?.dataset.i18nWhat   || 'What are you looking for?',
@@ -617,8 +619,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderLeft() {
       const data = NAV_DATA[state.key];
       if (!data) return;
-
-      finderInput.placeholder = i18n.what;
 
       elTitle.textContent = data.title || 'Menu';
       clearChildren(elList);
@@ -650,7 +650,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const finderInput = document.createElement('input');
           finderInput.type = 'text';
           finderInput.className = 'nav-overlay__finderInput';
-          finderInput.placeholder = 'What are you looking for?';
+          finderInput.placeholder = i18n.what;
           finderInput.setAttribute('data-nav-find-input', '1');
 
           const finderBtn = document.createElement('button');

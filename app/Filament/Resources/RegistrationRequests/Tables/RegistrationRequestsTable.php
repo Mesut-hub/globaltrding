@@ -74,15 +74,27 @@ class RegistrationRequestsTable
                                 'email' => $r->email,
                                 'password' => Hash::make($random),
                                 'has_product_access' => true,
+                                'status'             => User::STATUS_ACTIVE,
                             ]);
                         } else {
-                            $user->update(['has_product_access' => true]);
+                            $user->update([
+                                'has_product_access' => true,
+                                'status'             => User::STATUS_ACTIVE,
+                            ]);
                         }
 
                         // Create password reset token and email link
                         $token = Password::createToken($user);
 
                         Mail::to($user->email)->send(new ProductAccessApprovedMail($user, $token));
+
+                        // Log the activity
+                        app(\App\Services\CustomerAccountService::class)->logActivity(
+                            $user,
+                            \App\Models\CustomerActivityLog::ACTION_ACCESS_GRANTED,
+                            ['via' => 'registration_approval', 'registration_request_id' => $r->id],
+                            Auth::user(),
+                        );
 
                         $r->update([
                             'status' => 'approved',

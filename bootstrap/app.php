@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\RateLimitSearch;
+use App\Http\Middleware\CheckCustomerStatus;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -15,9 +16,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\SetLocaleFromPath::class,
         ]);
+
         $middleware->alias([
-            'search.throttle' => RateLimitSearch::class,
+            'search.throttle'   => RateLimitSearch::class,
+            'customer.status'   => CheckCustomerStatus::class,  // ← new
         ]);
+
         $middleware->prependToGroup(
             'filament', \App\Http\Middleware\NoIndexAdminPages::class
         );

@@ -200,6 +200,30 @@
                         $restParts = in_array($first, $supported, true) ? array_slice($parts, 1) : $parts;
                         $rest = implode('/', $restParts); // e.g. products/rotok-valve (or empty)
                     @endphp
+                    
+                    {{-- ── Product user: name + logout ────────────────────────────────── --}}
+                    @auth('product')
+                    @php $productUser = auth()->guard('product')->user(); @endphp
+                    <div class="product-user-bar" style="display:inline-flex;align-items:center;gap:10px;">
+                        <span style="font-size:13px;font-weight:600;color:rgba(255,255,255,0.85);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                            title="{{ $productUser->email }}">
+                            {{ $productUser->name }}
+                        </span>
+                        <form method="POST" action="/{{ app()->getLocale() }}/logout" style="display:inline;">
+                            @csrf
+                            <button
+                                type="submit"
+                                style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:#fff;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:background .2s ease;"
+                                onmouseover="this.style.background='rgba(255,255,255,0.22)'"
+                                onmouseout="this.style.background='rgba(255,255,255,0.12)'"
+                                aria-label="Logout"
+                                title="Logout from product area"
+                            >
+                                Logout
+                            </button>
+                        </form>
+                    </div>
+                    @endauth
 
                     <div class="lang-dropdown" data-lang-dropdown>
                         <button type="button" class="lang-btn" data-lang-toggle aria-label="Language" title="Language">🌐</button>
