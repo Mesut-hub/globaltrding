@@ -81,7 +81,7 @@ $posterUrl  = $posterPath ? Storage::disk('public')->url($posterPath) : null;
                         <span class="text-xs" data-change></span>
                     </a>
                 @endforeach
-                <a href="/{{ $locale }}/market" class="ml-auto text-sm text-slate-600 hover:underline">{{ __('market.view_market') }} →</a>
+                <a href="/{{ $locale }}/market" class="ml-auto text-sm text-slate-600 hover:underline">{{ __('market.view_market') }}</a>
             </div>
         </div>
     </section>

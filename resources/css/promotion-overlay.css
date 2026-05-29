@@ -361,8 +361,8 @@
   border: 2px solid rgba(87, 87, 87, 0.5);
 }
 
-.gt-promo-trigger__badge[hidden] {
-  display: none !important;
+.gt-promo-trigger:not([data-has-promo="true"]) {
+    opacity: 0.55;
 }
 
 /* Ring animation (shown when badge is visible) */

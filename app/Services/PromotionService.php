@@ -11,28 +11,54 @@ class PromotionService
 {
     /**
      * Return the frontend-ready promotion payload for the given locale.
-     * Cached 1 hour; busted automatically by Promotion::booted().
+     *
+     * Cache strategy:
+     *  - Key incorporates a "bust version" stored by Promotion::booted().
+     *    Any save/delete bumps the version → all locale caches invalidated atomically.
+     *  - Non-empty payloads: cached 1 hour.
+     *  - Empty payloads: cached 30 seconds only (prevents 1-hour "ghost" blackout
+     *    after a promotion is deleted then recreated quickly).
      */
     public function getActivePayload(string $locale, string $fallback = 'en'): array
     {
-        $cacheKey = "gt_promotion_payload.{$locale}";
+        // Read the bust version; default 0 when no promotions have ever been saved.
+        $version  = (int) Cache::get('gt_promo_v', 0);
+        $cacheKey = "gt_promotion_payload.v{$version}.{$locale}";
 
-        return Cache::remember($cacheKey, 3600, function () use ($locale, $fallback): array {
-            $now = now();
+        // Check cache first.
+        $cached = Cache::get($cacheKey);
+        if ($cached !== null) {
+            return $cached;
+        }
 
-            $promotions = Promotion::query()
-                ->where('is_active', true)
-                ->where(fn ($q) => $q->whereNull('starts_at')->orWhere('starts_at', '<=', $now))
-                ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>=', $now))
-                ->orderByDesc('priority')
-                ->orderBy('id')
-                ->get();
+        // Cache miss — query the DB.
+        $payload = $this->buildPayload($locale, $fallback);
 
-            return $promotions
-                ->map(fn (Promotion $p) => $this->toFrontendArray($p, $locale, $fallback))
-                ->values()
-                ->all();
-        });
+        // Store with TTL appropriate to whether data exists.
+        $ttl = count($payload) > 0 ? 3600 : 30;
+        Cache::put($cacheKey, $payload, $ttl);
+
+        return $payload;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+
+    private function buildPayload(string $locale, string $fallback): array
+    {
+        $now = now();
+
+        $promotions = Promotion::query()
+            ->where('is_active', true)
+            ->where(fn ($q) => $q->whereNull('starts_at')->orWhere('starts_at', '<=', $now))
+            ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>=', $now))
+            ->orderByDesc('priority')
+            ->orderBy('id')
+            ->get();
+
+        return $promotions
+            ->map(fn (Promotion $p) => $this->toFrontendArray($p, $locale, $fallback))
+            ->values()
+            ->all();
     }
 
     // ─────────────────────────────────────────────────────────────────────
