@@ -148,6 +148,28 @@
     <script>window.__cookieAlwaysActive = {{ Js::from(__('cookie.always_active')) }};</script>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    {{-- Critical CSS guard: keeps the mobile drawer off-canvas and the
+         hamburger hidden even before responsive.css finishes loading,
+         preventing a flash of unstyled drawer content in the page flow. --}}
+    <style>
+        .mobile-menu-toggle { display: none; }
+        .mobile-nav {
+            position: fixed; top: 0; left: 0; z-index: 2000;
+            width: min(86vw, 360px); height: 100dvh;
+            transform: translateX(-100%);
+            display: flex; flex-direction: column;
+        }
+        .mobile-nav.is-open { transform: translateX(0); }
+        [dir="rtl"] .mobile-nav { left: auto; right: 0; transform: translateX(100%); }
+        [dir="rtl"] .mobile-nav.is-open { transform: translateX(0); }
+        .mobile-nav-backdrop {
+            position: fixed; inset: 0; z-index: 1990;
+            opacity: 0; visibility: hidden;
+        }
+        .mobile-nav-backdrop.is-open { opacity: 1; visibility: visible; }
+        .mobile-nav-backdrop[hidden] { display: none; }
+    </style>
 </head>
 <body class="min-h-screen bg-white text-slate-900 antialiased @stack('body_class')">
     {{-- Top bar / header placeholder --}}
