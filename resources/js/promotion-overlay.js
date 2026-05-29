@@ -145,7 +145,7 @@ const GtPromo = (() => {
       const ctaUrl   = promo.cta_url.replace('{locale}', document.documentElement.lang || 'en');
       const rel      = promo.cta_target === '_blank' ? ' rel="noopener noreferrer"' : '';
 
-      html += `
+      html += `<a
         class="gt-promo-cta"
         href="${esc(ctaUrl)}"
         target="${esc(promo.cta_target)}"
@@ -282,18 +282,15 @@ const GtPromo = (() => {
 
   const init = () => {
     const payloadEl = document.getElementById('gt-promo-payload');
-    if (!payloadEl) return; // No active promotions — nothing to do
 
     try {
-      promotions = JSON.parse(payloadEl.textContent || '[]');
+      promotions = payloadEl ? JSON.parse(payloadEl.textContent || '[]') : [];
     } catch (err) {
       console.warn('[GtPromo] Failed to parse payload:', err);
-      return;
+      promotions = [];
     }
 
-    if (!promotions.length) return;
-
-    // ── Resolve DOM refs
+    // ── Always resolve DOM refs and wire events ───────────────────────────
     $overlay  = document.getElementById('gtPromoOverlay');
     $panel    = document.getElementById('gtPromoPanel');
     $content  = document.getElementById('gtPromoContent');
@@ -301,56 +298,46 @@ const GtPromo = (() => {
     $backdrop = document.getElementById('gtPromoBackdrop');
     $trigger  = document.getElementById('gtPromoTrigger');
 
-    if (!$overlay) return;
-
-    // ── Wire close sources
     $closeBtn?.addEventListener('click', close);
-
     $backdrop?.addEventListener('click', () => {
       if (currentPromo?.close_on_backdrop) close();
     });
-
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && $overlay.classList.contains(CLASS_OPEN)) close();
+      if (e.key === 'Escape' && $overlay?.classList.contains(CLASS_OPEN)) close();
     });
 
-    // ── Wire header trigger button
+    // ── Wire trigger button (always visible, badge only if promo exists) ──
     if ($trigger) {
       const manualPromoForPage = promotions.find(
         (p) => p.display_mode === 'manual' && matchesCurrentPage(p)
       );
 
       if (manualPromoForPage) {
-        // Show the animated badge
         const badge = $trigger.querySelector('.gt-promo-trigger__badge');
         if (badge) badge.hidden = false;
-
-        $trigger.addEventListener('click', () => {
-          if ($overlay.classList.contains(CLASS_OPEN)) {
-            close();
-          } else {
-            // Re-check canShow: manual mode uses the promo's frequency rules
-            const promo = findBest('manual');
-            if (promo) {
-              open(promo);
-            } else {
-              // All manual promos exhausted for this frequency — show most recent anyway
-              open(manualPromoForPage);
-            }
-          }
-        });
-      } else {
-        // No manual promo for this page — hide button
-        $trigger.style.display = 'none';
       }
+
+      $trigger.addEventListener('click', () => {
+        if ($overlay?.classList.contains(CLASS_OPEN)) {
+          close();
+          return;
+        }
+        const promo = findBest('manual')
+          ?? promotions.find((p) => p.display_mode === 'manual' && matchesCurrentPage(p))
+          ?? null;
+        if (promo) open(promo);
+      });
     }
 
-    // ── Schedule auto-show
+    // ── Nothing else to do if no promotions are active ────────────────────
+    if (!promotions.length) return;
+
+    // ── Schedule auto-show ────────────────────────────────────────────────
     const autoPromo = findBest('auto');
     if (autoPromo) {
       const delay = Math.max(500, autoPromo.auto_show_delay_ms ?? 2500);
       autoTimer = setTimeout(() => {
-        if (!$overlay.classList.contains(CLASS_OPEN)) {
+        if (!$overlay?.classList.contains(CLASS_OPEN)) {
           open(autoPromo);
         }
       }, delay);
