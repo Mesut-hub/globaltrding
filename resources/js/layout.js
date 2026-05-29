@@ -882,4 +882,77 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.key === 'Enter') goSearch();*/
     });
   })();
+
+  // ===== MOBILE NAV DRAWER =====
+  // Registered AFTER the nav-overlay IIFE so the per-link overlay handlers
+  // (bound to [data-overlay-key]) fire before this delegated close handler.
+  (function () {
+    const toggle = document.getElementById('mobileMenuToggle');
+    const drawer = document.getElementById('mobileNav');
+    const backdrop = document.getElementById('mobileNavBackdrop');
+    const closeBtn = document.getElementById('mobileNavClose');
+    const navOverlay = document.getElementById('navOverlay');
+
+    if (!toggle || !drawer || !backdrop) return;
+
+    const isOverlayOpen = () =>
+      navOverlay && !navOverlay.classList.contains('hidden');
+
+    function openDrawer() {
+      backdrop.hidden = false;
+      // next frame so the transition runs
+      requestAnimationFrame(() => {
+        drawer.classList.add('is-open');
+        backdrop.classList.add('is-open');
+      });
+      drawer.setAttribute('aria-hidden', 'false');
+      toggle.setAttribute('aria-expanded', 'true');
+      document.body.classList.add('mobile-nav-open');
+    }
+
+    function closeDrawer() {
+      drawer.classList.remove('is-open');
+      backdrop.classList.remove('is-open');
+      drawer.setAttribute('aria-hidden', 'true');
+      toggle.setAttribute('aria-expanded', 'false');
+      // Keep the scroll lock if the mega overlay just took over.
+      if (!isOverlayOpen()) {
+        document.body.classList.remove('mobile-nav-open');
+      }
+      // Hide backdrop after the transition completes.
+      window.setTimeout(() => {
+        if (!drawer.classList.contains('is-open')) backdrop.hidden = true;
+      }, 320);
+    }
+
+    function isOpen() {
+      return drawer.classList.contains('is-open');
+    }
+
+    toggle.addEventListener('click', () => {
+      if (isOpen()) closeDrawer();
+      else openDrawer();
+    });
+
+    closeBtn?.addEventListener('click', closeDrawer);
+    backdrop.addEventListener('click', closeDrawer);
+
+    // Any link/button tapped inside the drawer closes it. For overlay
+    // triggers, the overlay's own handler has already run (it opens the
+    // mega menu), so closeDrawer() preserves the scroll lock.
+    drawer.addEventListener('click', (e) => {
+      if (e.target.closest('a, button') && e.target.closest('#mobileNavClose') === null) {
+        closeDrawer();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isOpen()) closeDrawer();
+    });
+
+    // Reset when resizing up to desktop.
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 1100 && isOpen()) closeDrawer();
+    }, { passive: true });
+  })();
 });

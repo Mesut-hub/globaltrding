@@ -164,6 +164,22 @@
                     return (string)($arr[$locale] ?? $arr[$fallback] ?? (count($arr) ? reset($arr) : ''));
                 };
             @endphp
+            {{-- Mobile: hamburger toggle (hidden on desktop via CSS) --}}
+            <button
+                type="button"
+                id="mobileMenuToggle"
+                class="mobile-menu-toggle"
+                aria-label="{{ __('ui.global') }}"
+                aria-controls="mobileNav"
+                aria-expanded="false"
+            >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+
             {{-- Left: nav bar --}}
             <nav class="main-nav" aria-label="Main navigation">
                 <ul>
@@ -265,7 +281,64 @@
             </div>
         </div>
     </header>
-    
+
+    {{-- Mobile navigation drawer --}}
+    @php
+        $mLocale = app()->getLocale();
+        $mFallback = config('locales.default', 'en');
+        $mSupported = config('locales.supported', ['en']);
+        $mNavPayload = app(\App\Services\NavService::class)->payload();
+
+        $mT = function ($arr) use ($mLocale, $mFallback) {
+            if (!is_array($arr)) return (string)($arr ?? '');
+            return (string)($arr[$mLocale] ?? $arr[$mFallback] ?? (count($arr) ? reset($arr) : ''));
+        };
+
+        $mPath = '/' . ltrim(request()->path(), '/');
+        $mParts = explode('/', trim($mPath, '/'));
+        $mFirst = $mParts[0] ?? $mFallback;
+        $mRestParts = in_array($mFirst, $mSupported, true) ? array_slice($mParts, 1) : $mParts;
+        $mRest = implode('/', $mRestParts);
+    @endphp
+    <div id="mobileNavBackdrop" class="mobile-nav-backdrop" hidden></div>
+    <aside id="mobileNav" class="mobile-nav" aria-hidden="true" aria-label="{{ __('ui.global') }}">
+        <div class="mobile-nav__header">
+            <a href="/{{ $mLocale }}/" class="mobile-nav__brand">GLOBAL TRADING</a>
+            <button type="button" id="mobileNavClose" class="mobile-nav__close" aria-label="{{ __('ui.close') }}">&times;</button>
+        </div>
+
+        <nav class="mobile-nav__list" aria-label="Mobile navigation">
+            <a href="/{{ $mLocale }}/" class="mobile-nav__link">{{ __('Global') }}</a>
+
+            @foreach($mNavPayload as $group)
+                @php
+                    $mKey = $group['key'] ?? null;
+                    $mLabel = $mT($group['label'] ?? []);
+                    if (!$mKey || $mLabel === '') continue;
+                @endphp
+                <a href="#" class="mobile-nav__link" data-overlay-key="{{ $mKey }}">
+                    <span>{{ $mLabel }}</span>
+                    <span class="mobile-nav__chev" aria-hidden="true">&rsaquo;</span>
+                </a>
+            @endforeach
+        </nav>
+
+        <div class="mobile-nav__section">{{ __('ui.search') ?? 'Search' }}</div>
+        <nav class="mobile-nav__list" aria-label="Mobile shortcuts">
+            <a href="/{{ $mLocale }}/products" class="mobile-nav__link">{{ __('products.finder_title') }}</a>
+        </nav>
+
+        <div class="mobile-nav__section" aria-hidden="true">Language</div>
+        <div class="mobile-nav__langs">
+            @foreach ($mSupported as $loc)
+                <a
+                    href="{{ $mRest !== '' ? "/{$loc}/{$mRest}" : "/{$loc}" }}"
+                    class="mobile-nav__lang {{ $mLocale === $loc ? 'active' : '' }}"
+                >{{ strtoupper($loc) }}</a>
+            @endforeach
+        </div>
+    </aside>
+
     @php
         $hasHero = $hasHero ?? false;
     @endphp

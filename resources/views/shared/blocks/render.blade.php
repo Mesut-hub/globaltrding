@@ -576,7 +576,7 @@
     @endphp
     <section class="mt-8 rounded-2xl border {{ $wrapClass }} p-6 md:p-10">
         @if ($metricTitle) <h3 class="text-xl font-semibold tracking-tight">{{ $metricTitle }}</h3> @endif
-        <div class="mt-5 grid gap-4"
+        <div class="gt-metrics__grid mt-5 grid gap-4"
             style="grid-template-columns: repeat({{ min($n, 4) }}, minmax(0, 1fr));">
             @foreach ($items as $it)
             @php
