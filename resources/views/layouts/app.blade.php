@@ -239,7 +239,6 @@
                             @endforeach
                         </div>
                     </div>
-                    @if (!empty($promotionPayload))
                     <button
                         type="button"
                         id="gtPromoTrigger"
@@ -249,7 +248,6 @@
                         aria-haspopup="dialog"
                         aria-expanded="false"
                     >
-                        {{-- Megaphone / announcement icon ──────────────────────────── --}}
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                             fill="none" stroke="currentColor" stroke-width="1.9"
                             stroke-linecap="round" stroke-linejoin="round"
@@ -258,7 +256,6 @@
                         </svg>
                         <span class="gt-promo-trigger__badge" hidden aria-hidden="true"></span>
                     </button>
-                    @endif
                 </div>
 
                 <a href="/{{ $locale }}/" class="header-logo-box" aria-label="Logo link">

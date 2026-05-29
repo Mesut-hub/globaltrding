@@ -20,7 +20,7 @@ class PromotionComposer
             $payload = $this->service->getActivePayload($locale, $fallback);
         } catch (\Throwable $e) {
             // Never break page rendering due to promotion service failure
-            Log::warning('[PromotionComposer] Failed to load payload: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::warning('[PromotionComposer] Failed to load payload: ' . $e->getMessage());
             $payload = [];
         }
 
