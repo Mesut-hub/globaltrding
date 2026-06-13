@@ -1,0 +1,86 @@
+<?php
+return [
+    'news'           => 'الأخبار',
+    'industries'     => 'الصناعات',
+    'products'       => 'المنتجات',
+    'home'           => 'الرئيسية',
+    'back_to_home'   => 'العودة إلى الرئيسية',
+    'back_to_news'   => 'العودة إلى الأخبار',
+    'back_to_industries' => 'جميع الصناعات',
+    'scroll_top'     => 'الرجوع للأعلى',
+    'loading'        => 'جارٍ التحميل...',
+    'error_generic'  => 'حدث خطأ ما. يرجى المحاولة مجدداً.',
+    'yes'            => 'نعم',
+    'no'             => 'لا',
+    'all'            => 'الكل',
+    'filter'         => 'تصفية',
+    'filters'        => 'الفلاتر',
+    'sort'           => 'ترتيب',
+    'pagination_prev'=> 'السابق',
+    'pagination_next'=> 'التالي',
+    'page_not_found' => 'الصفحة غير موجودة',
+    'server_error'   => 'خطأ في الخادم',
+    'featured'       => 'مميز',
+    'read_more'      => 'اقرأ المزيد',
+    'view_all_news'  => 'عرض جميع الأخبار',
+    'view_all_products' => 'عرض جميع المنتجات',
+    'no_content_yet' => 'لم يُنشر أي محتوى حتى الآن.',
+    'cookie_always_active' => 'نشط دائمًا',
+    'tip_scroll_horizontal' => 'مرر أفقيًا لرؤية المزيد.',
+    
+    // Generic actions
+    'apply'          => 'تطبيق',
+    'reset'          => 'إعادة تعيين',
+    'submit'         => 'إرسال',
+    'continue'       => 'متابعة',
+    'confirm'        => 'تأكيد',
+    'cancel'         => 'إلغاء',
+    'close'          => 'إغلاق',
+    'share'          => 'مشاركة',
+    'search'         => 'بحث',
+    'view_all'       => 'عرض الكل',
+    'find_out_more'  => 'اكتشف المزيد',
+    'discover_more'  => 'استكشف المزيد',
+    'go_back'        => 'الرجوع',
+    'learn_more'     => 'اعرف المزيد',
+    'open'           => 'فتح',
+
+    // Navigation / header
+    'global'         => 'عالمي',
+    'follow_us'      => 'تابعنا',
+
+    // Cookie banner
+    'cookie_text'    => 'نستخدم ملفات تعريف الارتباط لتحسين تجربتك وقياس استخدام الموقع (Google Analytics). اقرأ :link.',
+    'cookie_policy'  => 'سياسة ملفات تعريف الارتباط',
+    'cookie_accept'  => 'قبول الكل',
+    'cookie_reject'  => 'رفض الكل',
+    'cookie_social'  => 'قبول وسائل التواصل الاجتماعي فقط',
+
+    // Search overlay
+    'search_placeholder'    => 'بحث...',
+    'search_type_hint'      => 'اكتب 3 أحرف على الأقل…',
+    'search_searching'      => 'جارٍ البحث…',
+    'search_no_results'     => 'لم يتم العثور على نتائج.',
+    'search_product_finder' => 'الباحث عن المنتجات',
+    'search_products_cta'   => 'هل تبحث عن منتجات؟',
+    'search_products_body'  => 'استخدم الباحث عن المنتجات لتصفح واكتشاف المنتج المناسب لاحتياجاتك.',
+    'search_find_products'  => 'ابحث عن المنتجات',
+
+    // Accessibility / toolbar
+    'accessibility'  => 'إمكانية الوصول',
+    'language'       => 'اللغة',
+    'promotions' => 'العروض والإعلانات',
+
+    // 404 / error pages
+    '404_title'      => '404 — الصفحة غير موجودة',
+    '404_body'       => 'الصفحة التي تبحث عنها غير موجودة أو ربما تم نقلها.',
+    '500_title'      => '500 — حدث خطأ ما',
+    '500_body'       => 'حدث خطأ غير متوقع أثناء تحميل هذه الصفحة. يرجى المحاولة مرة أخرى بعد قليل.',
+    'go_home'        => 'الذهاب إلى الصفحة الرئيسية',
+    'reload'         => 'إعادة تحميل',
+    'browse_products'=> 'تصفح المنتجات',
+    'latest_news'    => 'آخر الأخبار',
+
+    'social_consent_text' => 'أوافق على نقل بياناتي الشخصية إلى :platform لعرض المحتوى المقدم من :platform. لقد قرأت :link.',
+    'privacy_policy' => 'سياسة الخصوصية',
+];

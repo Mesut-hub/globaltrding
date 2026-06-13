@@ -1,0 +1,34 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class InquiryRequest extends Model
+{
+    protected $fillable = [
+        'full_name',
+        'email',
+        'company',
+        'phone',
+        'subject',
+        'message',
+        'status',
+        'reviewed_at',
+        'reviewed_by',
+    ];
+
+    protected $casts = [
+        'reviewed_at' => 'datetime',
+    ];
+
+    public function reviewer()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'reviewed_by');
+    }
+
+    public function replies()
+    {
+        return $this->hasMany(\App\Models\InquiryReply::class, 'inquiry_request_id');
+    }
+}

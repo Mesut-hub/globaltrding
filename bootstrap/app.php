@@ -1,0 +1,31 @@
+<?php
+
+use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Configuration\Exceptions;
+use Illuminate\Foundation\Configuration\Middleware;
+use App\Http\Middleware\RateLimitSearch;
+use App\Http\Middleware\CheckCustomerStatus;
+
+return Application::configure(basePath: dirname(__DIR__))
+    ->withRouting(
+        web: __DIR__.'/../routes/web.php',
+        commands: __DIR__.'/../routes/console.php',
+        health: '/up',
+    )
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->web(append: [
+            \App\Http\Middleware\SetLocaleFromPath::class,
+        ]);
+
+        $middleware->alias([
+            'search.throttle'   => RateLimitSearch::class,
+            'customer.status'   => CheckCustomerStatus::class,  // ← new
+        ]);
+
+        $middleware->prependToGroup(
+            'filament', \App\Http\Middleware\NoIndexAdminPages::class
+        );
+    })
+    ->withExceptions(function (Exceptions $exceptions): void {
+        //
+    })->create();

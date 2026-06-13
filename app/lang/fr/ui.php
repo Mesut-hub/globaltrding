@@ -1,0 +1,82 @@
+<?php
+return [
+    'news'           => 'Actualités',
+    'industries'     => 'Secteurs',
+    'products'       => 'Produits',
+    'home'           => 'Accueil',
+    'back_to_home'   => 'Retour à l\'accueil',
+    'back_to_news'   => 'Retour aux actualités',
+    'back_to_industries' => 'Toutes les industries',
+    'scroll_top'     => 'Remonter',
+    'loading'        => 'Chargement...',
+    'error_generic'  => 'Une erreur est survenue. Veuillez réessayer.',
+    'yes'            => 'Oui',
+    'no'             => 'Non',
+    'all'            => 'Tout',
+    'filter'         => 'Filtrer',
+    'filters'        => 'Filtres',
+    'sort'           => 'Trier',
+    'pagination_prev'=> 'Précédent',
+    'pagination_next'=> 'Suivant',
+    'page_not_found' => 'Page introuvable',
+    'server_error'   => 'Erreur serveur',
+    'featured'       => 'À la une',
+    'read_more'      => 'Lire la suite',
+    'view_all_news'  => 'Voir toutes les actualités',
+    'view_all_products' => 'Voir tous les produits',
+    'no_content_yet' => 'Aucun contenu publié pour l\'instant.',
+    'cookie_always_active' => 'Toujours actif',
+    'tip_scroll_horizontal' => 'Faites défiler horizontalement pour voir plus.',
+    
+    // Generic actions
+    'apply'          => 'Appliquer',
+    'reset'          => 'Réinitialiser',
+    'submit'         => 'Envoyer',
+    'continue'       => 'Continuer',
+    'confirm'        => 'Confirmer',
+    'cancel'         => 'Annuler',
+    'close'          => 'Fermer',
+    'share'          => 'Partager',
+    'search'         => 'Rechercher',
+    'view_all'       => 'Voir tout',
+    'find_out_more'  => 'En savoir plus',
+    'discover_more'  => 'Découvrir davantage',
+    'go_back'        => 'Retour',
+    'learn_more'     => 'En savoir plus',
+    'open'           => 'Ouvrir',
+
+    // Navigation / header
+    'global'         => 'Global',
+    'follow_us'      => 'Suivez-nous',
+
+    // Cookie banner
+    'cookie_text'    => 'Nous utilisons des cookies pour améliorer votre expérience et mesurer l’utilisation du site (Google Analytics). Consultez notre :link.',
+    'cookie_policy'  => 'Politique relative aux cookies',
+    'cookie_accept'  => 'Tout accepter',
+    'cookie_reject'  => 'Tout refuser',
+    'cookie_social'  => 'Accepter uniquement les réseaux sociaux',
+
+    // Search overlay
+    'search_placeholder'    => 'Rechercher...',
+    'search_type_hint'      => 'Tapez au moins 3 caractères…',
+    'search_searching'      => 'Recherche en cours…',
+    'search_no_results'     => 'Aucun résultat trouvé.',
+    'search_product_finder' => 'Recherche de Produits',
+    'search_products_cta'   => 'Vous recherchez des produits ?',
+    'search_products_body'  => 'Utilisez notre Recherche de Produits pour parcourir et découvrir le produit adapté à vos besoins.',
+    'search_find_products'  => 'Trouver des produits',
+
+    // Accessibility / toolbar
+    'accessibility'  => 'Accessibilité',
+    'language'       => 'Langue',
+
+    // 404 / error pages
+    '404_title'      => '404 — Page introuvable',
+    '404_body'       => 'La page que vous recherchez n’existe pas ou a peut-être été déplacée.',
+    '500_title'      => '500 — Une erreur est survenue',
+    '500_body'       => 'Une erreur inattendue est survenue lors du chargement de cette page. Veuillez réessayer dans un instant.',
+    'go_home'        => 'Aller à l’accueil',
+    'reload'         => 'Recharger',
+    'browse_products'=> 'Parcourir les produits',
+    'latest_news'    => 'Dernières actualités',
+];

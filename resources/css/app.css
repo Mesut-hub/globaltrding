@@ -1,0 +1,106 @@
+@import 'tailwindcss';
+@import "./shell.css";
+@import "./home.css";
+@import "./cookie-consent.css";
+@import "./promotion-overlay.css";
+@import "./responsive.css";
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+/* ── RTL logical properties ── */
+[dir="rtl"] .site-header .main-nav {
+    padding-left:  34px;
+    padding-right: max(24px, calc((100vw - 1320px) / 2 + 60px));
+}
+
+[dir="rtl"] .gt-hero__content {
+    transform: translate(calc(-1 * var(--hero-offset-x, 140px)), var(--hero-offset-y, -90px));
+}
+
+[dir="rtl"] .nav-overlay__content {
+    direction: rtl;
+    text-align: right;
+}
+
+[dir="rtl"] .gt-pf__grid {
+    direction: rtl;
+}
+
+[dir="rtl"] .gt-pdp__tabs {
+    direction: rtl;
+}
+
+/* Arabic typography */
+:lang(ar) {
+    font-family: 'Cairo', 'Tajawal', 'Noto Sans Arabic', ui-sans-serif, system-ui, sans-serif;
+    line-height: 1.8;
+    letter-spacing: 0;
+}
+
+:lang(ar) .gt-hero__title,
+:lang(ar) .gt-pdp__h1,
+:lang(ar) .gt-pf__title {
+    font-family: 'Cairo', 'Tajawal', sans-serif;
+    font-weight: 700;
+}
+
+:lang(ar) .tabular-nums {
+    font-variant-numeric: normal;
+    font-feature-settings: normal;
+}
+
+/* RTL-aware market belt */
+[dir="rtl"] .gt-pf__grid {
+    direction: rtl;
+}
+
+/* RTL pagination */
+[dir="rtl"] .gt-pf__pager .pagination {
+    direction: rtl;
+}
+
+/* RTL footer columns */
+[dir="rtl"] .site-header .main-nav ul {
+    padding-right: max(24px, calc((100vw - 1320px) / 2 + 60px));
+    padding-left: 34px;
+}
+
+/* RTL cookie banner */
+[dir="rtl"] .gt-cookie-banner__actions {
+    flex-direction: row-reverse;
+}
+
+/* RTL form labels */
+[dir="rtl"] .gt-reg__form,
+[dir="rtl"] .gt-login__form {
+    text-align: right;
+}
+
+/* RTL checkboxes */
+[dir="rtl"] .gt-reg__check {
+    flex-direction: row-reverse;
+}
+
+/* RTL product filter */
+[dir="rtl"] .gt-pf__checkRow {
+    flex-direction: row-reverse;
+}
+
+/* RTL nav overlay */
+[dir="rtl"] .nav-overlay__content {
+    grid-template-columns: 340px 24px 260px 340px;
+    direction: rtl;
+}
+
+/* RTL search overlay */
+[dir="rtl"] .site-search-input {
+    text-align: right;
+}

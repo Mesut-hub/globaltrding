@@ -1,0 +1,491 @@
+/* resources/css/home.css */
+
+/* ─── @property: enables CSS transition on --tt-s ─── */
+@property --tt-s {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+
+/* ─── Hero ─── */
+.hero-shell {
+  min-height: var(--hero-min-h, 92vh);
+  min-height: var(--hero-min-h, 92svh);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-shell > .absolute {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-shell video,
+.hero-shell img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .hero-shell {
+    min-height: 75svh;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-shell {
+    min-height: 70svh;
+  }
+}
+
+/* ─── Industries slider ─── */
+.ind-btn{
+  position: absolute;
+  top:50%;
+  width: 36px; height: 36px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,0.2);
+  background: #fff; color: rgb(15,23,42);
+  font-size: 18px; line-height: 1;
+  display: grid; place-items: center;
+}
+
+.ind-btn--prev{ left: 14px; }
+.ind-btn--next{ right: 14px; }
+
+.ind-btn:hover{ border-color: rgba(15,23,42,0.35); }
+[data-industry-slider]{ position: relative; }
+[data-industry-slider]::before,
+[data-industry-slider]::after{
+  content: ""; position: absolute;
+  top: 84px; bottom: 34px; width: 64px;
+  pointer-events: none; z-index: 5;
+  opacity: 1; transition: opacity 360ms ease;
+}
+[data-industry-slider]::before{
+  left: 0;
+  background: linear-gradient(to right, rgba(255,255,255,1), rgba(255,255,255,0));
+}
+[data-industry-slider]::after{
+  right: 0;
+  background: linear-gradient(to left, rgba(255,255,255,1), rgba(255,255,255,0));
+}
+[data-industry-slider].at-start::before{ opacity: 0; }
+[data-industry-slider].at-end::after   { opacity: 0; }
+.ind-btn.is-disabled,
+.ind-btn:disabled{ opacity: 0.4; cursor: not-allowed; }
+
+
+/* ════════════════════════════════════════════════════════════════
+   TRENDING TOPICS  –  BASF-like 3D stage
+   ════════════════════════════════════════════════════════════════
+*/
+
+/* ── Stage ── */
+.tt-stage{
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 861px;
+  overflow: hidden;
+  background: #000;
+  perspective: 1100px;
+  perspective-origin: 50% 44%;
+}
+
+.tt-stage__headline{
+  position: absolute;
+  top: 34px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 25;
+  color: rgba(255,255,255,0.96);
+  font-size: 36px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  pointer-events: none;
+  text-shadow: 0 4px 18px rgba(0,0,0,0.28);
+}
+/*font-weight: 800; font-size: 18px;*/
+
+/* ── Background ── */
+.tt-stage__bg{
+  position: absolute; inset: 0;
+  z-index: 0; background: #000;
+}
+.tt-stage__bgImg{
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  /* darkened so white cards pop clearly */
+  opacity: 0.48;
+  pointer-events: none;
+}
+.tt-stage__bgFallback{
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, #1e293b, #020617);
+}
+.tt-stage__bgOverlay{
+  position: absolute; inset: 0;
+  /* strong overlay = cards read as white floating sheets */
+  background: rgba(0,0,0,0.56);
+}
+
+/* ── Inner: perspective container ── */
+/* Keeps original repo structure: perspective lives here, not on .tt-stage */
+.tt-stage__scene{
+  position: relative;
+  inset: 0;
+  z-index: 1;
+  perspective: 1200px;
+  perspective-origin: 50% 50%;
+}
+
+
+/* ── Rig: 3D scene container, JS animates this ──
+   transform-style:preserve-3d passes perspective to slot children.
+   JS writes: transform = translate3d(mx,my,0) rotateX(rx) rotateY(ry)
+   ── */
+.tt-rig{
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  transform-style: preserve-3d;
+}
+
+/* ── Card size tokens ── */
+:root{
+  --tt-card-w:          348px;
+  --tt-card-h-sm:       380px;
+  --tt-card-h-lg:       480px;  /* reduced from 602px so center fits in 861px stage */
+  --tt-s-sm:            0.672;
+  --tt-s-hover:         0.706;
+}
+
+/* ── Slot: the hit-box wrapper ──
+   position:absolute left/top:50% anchors to rig centre.
+   transform shifts the WHOLE element (including pointer-events area)
+   to its visual position — so hover and click work on the full card.
+   width/height set per variant below.
+   JS writes inline transform on init and after each swap.
+   ── */
+.tt-slot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  /* no width/height here — set by .tt-slot--* variants */
+  transform-style: preserve-3d;
+  will-change: transform, opacity, filter;
+  /* swap spring animation */
+  transition:
+    transform  980ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity    540ms ease,
+    filter     450ms ease;
+}
+
+/* Slot sizes by variant (JS reads these to size the hit-box correctly) */
+.tt-slot--leftTop,
+.tt-slot--leftBottom,
+.tt-slot--rightTop,
+.tt-slot--rightBottom {
+  width:  var(--tt-card-w);
+  height: var(--tt-card-h-sm);
+  cursor: pointer;
+  opacity: 70%;
+}
+
+.tt-slot--center {
+  width:  var(--tt-card-w);
+  height: var(--tt-card-h-lg);
+  cursor: default;
+}
+
+/* ── Hover: surrounding cards only ── */
+.tt-slot--leftTop:hover,
+.tt-slot--leftBottom:hover,
+.tt-slot--rightTop:hover,
+.tt-slot--rightBottom:hover{
+  z-index: 20 !important;
+  width:  368px;
+  height: 400px;
+  filter: brightness(1.2) saturate(1.03);
+  transition: 750ms ease;
+}
+
+
+.tt-card{
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  box-shadow: 
+    0 18px 70px rgba(0,0,0,0.45),
+    0 3px 16px rgba(255,255,255,0.06) inset;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  -webkit-mask-image: -webkit-radial-gradient(center, white, black);
+  mask-image: radial-gradient(circle, white, black);
+  transition:
+    box-shadow 420ms ease,
+    transform 420ms ease,
+    filter 420ms ease;
+}
+
+/* ── Card content layout ── */
+.tt-card__content{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.tt-card__media{
+  position: relative;
+  flex: 0 0 44%;          /* fixed proportion, not height:46% */
+  min-height: 0;
+  background: #e5e7eb;
+  overflow: hidden;
+}
+.tt-card__img{
+  display: block;
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+
+.tt-card__badge{
+  position: absolute; top: 8px; right: 8px;
+  width: 30px; height: 30px;
+  border-radius: 5px;
+  display: grid; place-items: center;
+  font-weight: 800; font-size: 12px; color: #fff;
+  z-index: 2;
+}
+.tt-card__badge--ig{ background: #e1306c; }
+.tt-card__badge--li{ background: #0a66c2; font-family: Arial, sans-serif; }
+
+.tt-card__body{
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 10px 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow: hidden;
+}
+/* Center card: body fills 100% (used when card has no media, or expands fully) */
+.tt-card__body--lg{
+  flex: 1 1 100%;
+  padding: 14px 14px 10px;
+  gap: 8px;
+}
+
+.tt-card__meta{
+  display: flex; align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.tt-card__profile{ font-weight: 800; color: #111; font-size: 11px; }
+.tt-card__time   { color: #9ca3af; font-size: 10px; }
+
+.tt-card__title{
+  font-weight: 800; font-size: 14px;
+  line-height: 1.25; color: #111;
+  flex-shrink: 0;
+}
+
+/* Scrollable text area — expands to fill remaining body height */
+.tt-card__scroll{
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 3px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,0,0,0.16) transparent;
+}
+.tt-card__scroll::-webkit-scrollbar      { width: 3px; }
+.tt-card__scroll::-webkit-scrollbar-thumb{ 
+  background: rgba(0,0,0,0.15); border-radius: 2px; 
+}
+
+.tt-card__text{
+  font-size: 11px; line-height: 1.5; color: #374151;
+  word-break: break-word;
+}
+.tt-card__text--lg{
+  font-size: 12px; line-height: 1.55;
+}
+
+.tt-card__link{
+  display: inline-block; margin-top: 8px;
+  font-size: 11px; color: #0ea5e9; text-decoration: none;
+  flex-shrink: 0;
+}
+.tt-card__link:hover{ text-decoration: underline; }
+
+/* Scroll-down arrow button */
+.tt-card__down{
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 4px;
+  width: 32px; height: 32px;
+  border-radius: 999px; border: 0;
+  background: #10a6df; color: #fff;
+  display: grid; place-items: center;
+  cursor: pointer;
+  transition: background 100ms ease;
+}
+.tt-card__down:hover{ background: #0d8fc0; }
+.tt-card__downIcon{ font-size: 18px; line-height: 1; display: block; }
+
+/* ════════════════════════════════════════════════════════════════
+   CONSENT GATE
+   ════════════════════════════════════════════════════════════════ */
+
+[data-social-card] .tt-card__consent{ display: none; }
+[data-social-card] .tt-card__content{ pointer-events: auto; }
+
+/* Instagram: force always-visible regardless of consent state */
+[data-social-card][data-source="instagram"] .tt-card__consent{ display: none !important; }
+[data-social-card][data-source="instagram"] .tt-card__content{
+  pointer-events: auto !important;
+}
+
+/* LinkedIn: gated until JS consent accepted */
+[data-social-card].needs-consent .tt-card__consent{ display: flex; height: 35%; opacity: 100%; }
+[data-social-card].needs-consent .tt-card__content{
+  pointer-events: none; opacity: 0%;
+}
+
+/* Consent overlay */
+.tt-card__consent{
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-start; justify-content: center;
+  padding: 30px;
+  padding-top: 50px;
+  background: rgba(255,255,255,0.78);
+  z-index: 1;
+  pointer-events: auto;
+  object-fit: cover;
+}
+
+[data-social-card].needs-consent .tt-card__media .tt-card__consent{
+  display: flex;
+}
+
+.tt-card__media .tt-card__consent{
+  display: none;
+}
+
+.tt-consent__box{ width: 100%; }
+.tt-consent__text{ font-size: 11px; line-height: 1.5; color: #333; text-align: center; }
+.tt-consent__text a{ color: #0ea5e9; text-decoration: underline; }
+.tt-consent__btn{
+  display: inline-flex; margin-top: 8px;
+  background: #10a6df; color: #fff;
+  padding: 6px 14px; font-weight: 800; font-size: 12px;
+  text-decoration: none; border: 0;
+  text-decoration: none; border: 0; cursor: pointer; border-radius: 2px;
+  transition: background 100ms ease;
+}
+.tt-consent__btn:hover{ background: #0d8fc0; }
+
+/* ── Bottom nav bar ── */
+.tt-nav{
+  position: absolute; left: 0; right: 0; bottom: 0;
+  height: 44px; z-index: 30;
+}
+.tt-nav__bg{
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.30);
+}
+.tt-nav__inner{
+  position: relative;
+  width: min(92%, 1320px);
+  height: 100%; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  color: #fff;
+}
+.tt-nav__title { font-weight: 800; font-size: 18px; }
+.tt-nav__labels{ display: flex; align-items: center; gap: 14px; }
+.tt-nav__label {
+  font-weight: 800; font-size: 18px; color: #21a0d2;
+  position: relative;
+}
+.tt-nav__label.is-active::after{
+  content: ''; position: absolute;
+  bottom: -4px; left: 0; right: 0;
+  height: 2px; background: #21a0d2; border-radius: 1px;
+}
+
+/* ── Confirm overlay ("Show original post") ── */
+.tt-confirm{
+  position: absolute; inset: 0; z-index: 50;
+  background: rgba(0,0,0,0.62);
+  display: grid; place-items: center;
+}
+.tt-confirm.hidden{ display: none; }
+.tt-confirm__dialog{
+  width: min(480px, 90%); background: #fff;
+  padding: 20px 22px; border-radius: 3px;
+  border: 1px solid rgba(0,0,0,0.14);
+}
+.tt-confirm__text{ font-size: 14px; color: #111; line-height: 1.5; }
+.tt-confirm__actions{
+  margin-top: 14px; display: flex; gap: 8px; justify-content: flex-end;
+}
+.tt-confirm__btn{
+  border-radius: 3px; padding: 8px 16px;
+  font-weight: 800; font-size: 13px; cursor: pointer;
+  border: 1px solid rgba(0,0,0,0.16);
+  background: #fff; color: #111;
+  transition: background 100ms ease;
+}
+.tt-confirm__btn:hover{ background: #f3f4f6; }
+.tt-confirm__btn--primary{
+  background: #10a6df; color: #fff; border-color: transparent;
+}
+.tt-confirm__btn--primary:hover{ background: #0d8fc0; }
+
+/* ── Responsive: flatten 3D on narrow screens ── */
+@media (max-width: 1100px){
+  .tt-stage{ height: auto; min-height: 0; overflow: visible; background: #111; }
+  .tt-stage__scene{ perspective: relative; inset: auto; perspective: none; }
+  .tt-stage__headline{
+    top: 20px;
+    font-size: 20px;
+    text-align: center;
+    width: calc(100% - 32px);
+  }
+  .tt-rig{
+    position: relative; inset: auto;
+    transform: none !important; transform-style: flat;
+    display: grid; gap: 12px; padding: 16px 16px 60px;
+  }
+  .tt-slot,
+  .tt-slot--leftTop,.tt-slot--leftBottom,.tt-slot--center,
+  .tt-slot--rightTop,.tt-slot--rightBottom {
+    position: relative !important;
+    left: auto !important; top: auto !important;
+    width: 100% !important; height: auto !important;
+    transform: none !important;
+    opacity: 1 !important; filter: none !important;
+    z-index: auto !important; cursor: default !important;
+    --tt-s: 1;
+  }
+  .tt-card { height: auto; }
+  .tt-card__media { flex: 0 0 200px; }
+  .tt-card__scroll { overflow: visible; }
+  .tt-nav { position: relative; }
+}
