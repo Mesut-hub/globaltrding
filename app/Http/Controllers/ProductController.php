@@ -121,16 +121,23 @@ class ProductController extends Controller
 
         // Search (display_name may be JSON after multilingual)
         if ($q !== '') {
-            $query->where(function ($sub) use ($q, $locale, $fallback) {
-                $sub->whereRaw(
-                    "COALESCE(
-                        NULLIF(JSON_UNQUOTE(JSON_EXTRACT(display_name, ?)), ''),
-                        NULLIF(JSON_UNQUOTE(JSON_EXTRACT(display_name, ?)), '')
-                    ) LIKE ?",
-                    ["$.{$locale}", "$.{$fallback}", "%{$q}%"]
-                )
-                ->orWhere('prd_number', 'like', "%{$q}%")
-                ->orWhere('slug', 'like', "%{$q}%");
+            $words = array_values(array_filter(array_map('trim', explode(' ', $q))));
+
+            $query->where(function ($outer) use ($words, $locale, $fallback) {
+                foreach ($words as $word) {
+                    $lower = mb_strtolower($word);
+                    $outer->where(function ($inner) use ($word, $lower, $locale, $fallback) {
+                        $inner->whereRaw(
+                            "LOWER(COALESCE(
+                                NULLIF(JSON_UNQUOTE(JSON_EXTRACT(display_name, ?)), ''),
+                                NULLIF(JSON_UNQUOTE(JSON_EXTRACT(display_name, ?)), '')
+                            )) LIKE ?",
+                            ["$.{$locale}", "$.{$fallback}", "%{$lower}%"]
+                        )
+                        ->orWhere('prd_number', 'like', "%{$word}%")
+                        ->orWhere('slug',       'like', "%{$word}%");
+                    });
+                }
             });
         }
 
@@ -164,21 +171,22 @@ class ProductController extends Controller
         } else {
             // "Most relevant"
             if ($q !== '') {
+                $lowerQ = mb_strtolower($q);
                 $query->orderByRaw(
                     "CASE
-                        WHEN COALESCE(
+                        WHEN LOWER(COALESCE(
                             NULLIF(JSON_UNQUOTE(JSON_EXTRACT(display_name, ?)), ''),
                             NULLIF(JSON_UNQUOTE(JSON_EXTRACT(display_name, ?)), '')
-                        ) LIKE ? THEN 0
-                        WHEN COALESCE(
+                        )) LIKE ? THEN 0
+                        WHEN LOWER(COALESCE(
                             NULLIF(JSON_UNQUOTE(JSON_EXTRACT(display_name, ?)), ''),
                             NULLIF(JSON_UNQUOTE(JSON_EXTRACT(display_name, ?)), '')
-                        ) LIKE ? THEN 1
+                        )) LIKE ? THEN 1
                         ELSE 2
-                     END",
+                    END",
                     [
-                        "$.{$locale}", "$.{$fallback}", "{$q}%",
-                        "$.{$locale}", "$.{$fallback}", "%{$q}%",
+                        "$.{$locale}", "$.{$fallback}", "{$lowerQ}%",
+                        "$.{$locale}", "$.{$fallback}", "%{$lowerQ}%",
                     ]
                 );
             }
@@ -216,5 +224,48 @@ class ProductController extends Controller
             ->firstOrFail();
 
         return view('products.show', compact('product'));
+    }
+
+    public function suggest(Request $request, string $locale): \Illuminate\Http\JsonResponse
+    {
+        $fallback = config('locales.default', 'en');
+        $q        = trim((string) $request->query('q', ''));
+
+        if ($q === '') {
+            return response()->json([]);
+        }
+
+        $words = array_values(array_filter(array_map('trim', explode(' ', $q))));
+
+        $query = Product::query()
+            ->where('is_published', true)
+            ->select(['display_name', 'slug', 'prd_number', 'sort_order']);
+
+        foreach ($words as $word) {
+            $lower = mb_strtolower($word);
+            $query->where(function ($inner) use ($lower, $word, $locale, $fallback) {
+                $inner->whereRaw(
+                    "LOWER(COALESCE(
+                        NULLIF(JSON_UNQUOTE(JSON_EXTRACT(display_name, ?)), ''),
+                        NULLIF(JSON_UNQUOTE(JSON_EXTRACT(display_name, ?)), '')
+                    )) LIKE ?",
+                    ["$.{$locale}", "$.{$fallback}", "%{$lower}%"]
+                )
+                ->orWhere('prd_number', 'like', "%{$word}%")
+                ->orWhere('slug',       'like', "%{$word}%");
+            });
+        }
+
+        $products = $query->orderBy('sort_order')->limit(12)->get();
+
+        return response()->json(
+            $products->map(fn ($p) => [
+                'title' => data_get($p->display_name, $locale)
+                        ?: data_get($p->display_name, $fallback)
+                        ?: $p->slug,
+                'prd'   => $p->prd_number,
+                'url'   => "/{$locale}/products/{$p->slug}",
+            ])
+        );
     }
 }

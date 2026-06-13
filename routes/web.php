@@ -162,6 +162,7 @@ Route::prefix('{locale}')
         Route::get('/news', [NewsController::class, 'index'])->name('news.index');
         Route::get('/news/{slug}', [NewsController::class, 'show'])->name('news.show');
 
+        Route::get('/products/suggest', [ProductController::class, 'suggest'])->name('products.suggest');
         Route::get('/products', [ProductController::class, 'index'])->name('products.index');
         Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
 

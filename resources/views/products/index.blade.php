@@ -48,6 +48,7 @@
                 @endforeach
 
                 <button class="gt-pf__topBtn" type="submit" aria-label="{{ __('ui.search') }}"></button>
+                <div class="gt-pf__suggest" data-suggest aria-live="polite"></div>
             </form>
         </div>
 
@@ -171,15 +172,80 @@
 @push('scripts')
 <script>
 (function () {
-    const input = document.querySelector('[data-filter-search]');
-    if (! input) return;
-    input.addEventListener('input', () => {
-        const q = input.value.trim().toLowerCase();
-        document.querySelectorAll('[data-filter-item]').forEach(el => {
-            const t = (el.textContent || '').toLowerCase();
-            el.style.display = (! q || t.includes(q)) ? '' : 'none';
+    /* ── Live product suggest ───────────────────────────── */
+    const input  = document.querySelector('.gt-pf__topInput');
+    const box    = document.querySelector('[data-suggest]');
+    if (input && box) {
+        const locale = document.documentElement.lang || 'en';
+        let timer = null;
+
+        function close() {
+            box.removeAttribute('data-open');
+            box.innerHTML = '';
+        }
+
+        function render(items) {
+            if (!items.length) {
+                box.innerHTML = '<div class="gt-pf__suggestEmpty">{{ __("products.no_results") }}</div>';
+            } else {
+                box.innerHTML = items.map(function (r) {
+                    return '<a class="gt-pf__suggestItem" href="' + r.url + '">'
+                        + '<span class="gt-pf__suggestTitle">' + r.title + '</span>'
+                        + (r.prd ? '<span class="gt-pf__suggestMeta">' + r.prd + '</span>' : '')
+                        + '</a>';
+                }).join('');
+            }
+            box.setAttribute('data-open', '');
+        }
+
+        input.addEventListener('input', function () {
+            clearTimeout(timer);
+            const q = this.value.trim();
+            if (!q) { close(); return; }
+            timer = setTimeout(async function () {
+                try {
+                    const res  = await fetch('/' + locale + '/products/suggest?q=' + encodeURIComponent(q));
+                    const data = await res.json();
+                    render(data);
+                } catch (e) { close(); }
+            }, 180);
         });
-    });
+
+        document.addEventListener('click', function (e) {
+            if (!input.contains(e.target) && !box.contains(e.target)) close();
+        });
+
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') close();
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                const first = box.querySelector('.gt-pf__suggestItem');
+                if (first) first.focus();
+            }
+        });
+
+        box.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') { close(); input.focus(); }
+        });
+    }
+
+    /* ── Search within filters ──────────────────────────── */
+    const filterInput = document.querySelector('[data-filter-search]');
+    if (filterInput) {
+        filterInput.addEventListener('input', function () {
+            const q = this.value.trim().toLowerCase();
+            document.querySelectorAll('[data-facet-body]').forEach(function (body) {
+                let hasMatch = false;
+                body.querySelectorAll('[data-filter-item]').forEach(function (el) {
+                    const match = !q || (el.textContent || '').toLowerCase().includes(q);
+                    el.style.display = match ? '' : 'none';
+                    if (match) hasMatch = true;
+                });
+                const details = body.closest('details');
+                if (details) details.open = q ? hasMatch : false;
+            });
+        });
+    }
 })();
 </script>
 @endpush
