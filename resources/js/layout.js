@@ -359,7 +359,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const kickerEl = hero.querySelector('[data-hero-kicker]');
     const titleEl = hero.querySelector('[data-hero-title]');
     const leadEl = hero.querySelector('[data-hero-lead]');
-    const ctaEl = hero.querySelector('[data-hero-cta]');
     const ctaWrap = hero.querySelector('[data-hero-cta-wrap]');
 
     let slideData = [];
@@ -388,32 +387,42 @@ document.addEventListener('DOMContentLoaded', () => {
     const applyText = (i) => {
       const s = pickSlideText(i);
 
-      const kicker = (s.kicker || '').trim();
-      const title = (s.title || '').trim();
-      const lead = (s.lead || '').trim();
-      const ctaLabel = (s.cta_label || '').trim();
-      const ctaUrl = (s.cta_url || '').trim();
+      const kicker    = (s.kicker     || '').trim();
+      const title     = (s.title      || '').trim();
+      const lead      = (s.lead       || '').trim();
+      const cta1Label = (s.cta1_label || '').trim();
+      const cta1Url   = (s.cta1_url   || '').trim();
+      const cta2Label = (s.cta2_label || '').trim();
+      const cta2Url   = (s.cta2_url   || '').trim();
 
       if (kickerEl) {
-        kickerEl.textContent = kicker;
-        kickerEl.classList.toggle('hidden', !kicker);
+          kickerEl.textContent = kicker;
+          kickerEl.classList.toggle('hidden', !kicker);
       }
       if (titleEl) titleEl.textContent = title || '';
       if (leadEl) {
-        leadEl.textContent = lead;
-        leadEl.classList.toggle('hidden', !lead);
+          leadEl.textContent = lead;
+          leadEl.classList.toggle('hidden', !lead);
       }
-      if (ctaEl) {
-        if (ctaLabel && ctaUrl) {
-          ctaEl.textContent = ctaLabel;
-          ctaEl.href = ctaUrl;
-          ctaEl.classList.remove('hidden');
-          ctaWrap?.classList.remove('hidden');
-        } else {
-          ctaEl.classList.add('hidden');
-        }
+      if (ctaWrap) {
+          ctaWrap.innerHTML = '';
+          if (cta1Label && cta1Url) {
+              const a1 = document.createElement('a');
+              a1.href = cta1Url;
+              a1.textContent = cta1Label;
+              a1.className = 'rounded-md border border-white/30 px-5 py-2.5 font-medium hover:bg-white/50';
+              ctaWrap.appendChild(a1);
+          }
+          if (cta2Label && cta2Url) {
+              const a2 = document.createElement('a');
+              a2.href = cta2Url;
+              a2.textContent = cta2Label;
+              a2.className = 'rounded-md border border-white/30 px-5 py-2.5 font-medium hover:bg-white/50';
+              ctaWrap.appendChild(a2);
+          }
+          ctaWrap.classList.toggle('hidden', !cta1Label && !cta2Label);
       }
-    };
+  };
 
     const set = (i) => {
       idx = (i + slides.length) % slides.length;

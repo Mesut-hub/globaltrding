@@ -60,8 +60,8 @@
         $titleSize = $data['title_size'] ?? 'xl';
         $leadSize  = $data['lead_size']  ?? 'md';
         $maxW      = is_numeric($data['content_max_width']  ?? null) ? (int) $data['content_max_width']  : 760;
-        $offX      = is_numeric($data['content_offset_x']  ?? null) ? (int) $data['content_offset_x']   : 140;
-        $offY      = is_numeric($data['content_offset_y']  ?? null) ? (int) $data['content_offset_y']   : -90;
+        $offX = is_numeric($data['content_offset_x'] ?? null) ? (int) $data['content_offset_x'] : 0;
+$offY = is_numeric($data['content_offset_y'] ?? null) ? (int) $data['content_offset_y'] : 0;
 
         $titleClass = match($titleSize) { 'md' => 'gt-hero__title--md', 'lg' => 'gt-hero__title--lg', default => 'gt-hero__title--xl' };
         $leadClass  = match($leadSize)  { 'sm' => 'gt-hero__lead--sm',  'lg' => 'gt-hero__lead--lg',  default => 'gt-hero__lead--md' };
@@ -77,12 +77,15 @@
         $heroCta2Url = $s0['cta2_url'] ?? null;
 
         // Pre-resolve ALL slides for the JS slider so it receives plain strings
+        // Pre-resolve ALL slides for the JS slider so it receives plain strings
         $slidesForJs = collect($slides)->map(fn ($s) => [
-            'kicker'    => $t($s['kicker']    ?? '', $locale, $fallback),
-            'title'     => $t($s['title']     ?? '', $locale, $fallback),
-            'lead'      => $t($s['lead']      ?? '', $locale, $fallback),
-            'cta_label' => $t($s['cta_label'] ?? '', $locale, $fallback),
-            'cta_url'   => $s['cta_url'] ?? null,
+            'kicker'    => $t($s['kicker']     ?? '', $locale, $fallback),
+            'title'     => $t($s['title']      ?? '', $locale, $fallback),
+            'lead'      => $t($s['lead']       ?? '', $locale, $fallback),
+            'cta1_label' => $t($s['cta1_label'] ?? '', $locale, $fallback),
+            'cta1_url'   => $s['cta1_url'] ?? null,
+            'cta2_label' => $t($s['cta2_label'] ?? '', $locale, $fallback),
+            'cta2_url'   => $s['cta2_url'] ?? null,
         ])->all();
     @endphp
     <section class="gt-hero {{ $heightClass }}"
@@ -172,10 +175,10 @@
         $title = $t($data['title'] ?? '', $locale, $fallback);
         $lead  = $t($data['lead']  ?? '', $locale, $fallback);
     @endphp
-    <section>
+    <section class="mx-auto max-w-7xl px-4 py-12">
         <h2 class="text-2xl md:text-3xl font-semibold tracking-tight">{{ $title }}</h2>
         @if ($lead)
-            <p class="mt-3 text-slate-600 max-w-3xl">{{ $lead }}</p>
+            <p class="mt-3 text-slate-600 max-w-7xl">{{ $lead }}</p>
         @endif
     </section>
 

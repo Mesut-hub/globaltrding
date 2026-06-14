@@ -145,8 +145,14 @@
                 <h1 class="{{ $titleClass }}" data-hero-title>{{ $title }}</h1>
                 @if ($subtitle)<p class="{{ $leadClass }}" data-hero-lead>{{ $subtitle }}</p>@endif
                 <div class="mt-8 flex flex-wrap gap-3">
-                    <a href="{{ $cta1Url }}" class="rounded-md bg-white px-5 py-2.5 text-slate-900 font-medium hover:bg-slate-100">{{ $cta1Label ?: 'Discover more' }}</a>
-                    <a href="{{ $cta2Url }}" class="rounded-md border border-white/30 px-5 py-2.5 font-medium hover:bg-white/10">{{ $cta2Label ?: 'Contact' }}</a>
+                    @if ($cta1Url && $cta1Label && $cta2Url && $cta2Label)
+                        <a href="{{ $cta1Url }}" class="rounded-md bg-white px-5 py-2.5 text-slate-900 font-medium hover:bg-slate-100">{{ $cta1Label ?: 'Discover more' }}</a>
+                        <a href="{{ $cta2Url }}" class="rounded-md border border-white/30 px-5 py-2.5 font-medium hover:bg-white/10">{{ $cta2Label ?: 'Contact' }}</a>
+                    @elseif ($cta1Url && $cta1Label)
+                        <a href="{{ $cta1Url }}" class="rounded-md bg-white px-5 py-2.5 text-slate-900 font-medium hover:bg-slate-100">{{ $cta1Label ?: 'Discover more' }}</a>
+                    @else
+                        <a href="#" class="gt-btn gt-btn-primary hidden" data-hero-cta></a>
+                    @endif
                 </div>
             </div>
         </div>
