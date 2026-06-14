@@ -6,6 +6,7 @@ use App\Filament\Concerns\HasPermission;
 use App\Filament\Resources\NavLinks\Pages\CreateNavLink;
 use App\Filament\Resources\NavLinks\Pages\EditNavLink;
 use App\Filament\Resources\NavLinks\Pages\ListNavLinks;
+use Filament\Forms\Components\FileUpload;
 use App\Models\NavGroup;
 use App\Models\NavLink;
 use App\Models\Page;
@@ -120,10 +121,16 @@ class NavLinkResource extends Resource
                 ->rows(3)
                 ->nullable(),
 
-            TextInput::make('preview_image')
+            FileUpload::make('preview_image')
                 ->label(__('Overlay preview image'))
-                ->helperText(__('Absolute URL or public path, e.g. /images/overlay/example.jpg'))
-                ->nullable(),
+                ->helperText(__('Upload an image or paste an absolute URL below. Uploaded images are stored in storage/app/public/nav-previews/.'))
+                ->image()
+                ->disk('public')
+                ->directory('nav-previews')
+                ->visibility('public')
+                ->imagePreviewHeight('120')
+                ->nullable()
+                ->columnSpanFull(),
 
             Toggle::make('is_finder')
                 ->label(__('Product finder row'))

@@ -14,4 +14,9 @@ class EditNavLink extends EditRecord
     {
         return [DeleteAction::make()];
     }
+
+    protected function afterSave(): void
+    {
+        \Illuminate\Support\Facades\Cache::forget('gt_nav_payload');
+    }
 }

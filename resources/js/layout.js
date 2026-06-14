@@ -582,12 +582,14 @@ document.addEventListener('DOMContentLoaded', () => {
             url: resolveUrl(l),
             desc: l.desc || '',
             previewImage: (function () {
-              const raw = (l.preview_image || l.previewImage || '').trim();
-              if (!raw) return '';
-              if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
-              if (raw.startsWith('/')) return raw;
-              // if admin enters only file name like "who-we-are.jpg"
-              return `/images/overlay/${raw.replace(/^images\/overlay\//, '')}`;
+                const raw = (l.preview_image || l.previewImage || '').trim();
+                if (!raw) return '';
+                if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
+                if (raw.startsWith('/')) return raw;
+                // Storage disk path uploaded via FileUpload (e.g. "nav-previews/abc123.jpg")
+                if (raw.includes('/') || /\.[a-z]{2,5}$/i.test(raw)) return `/storage/${raw}`;
+                // Legacy: bare filename only → fallback to overlay folder
+                return `/images/overlay/${raw}`;
             })(),
             isFinder: !!l.is_finder || l.action === 'finder',
             target: l.target || '_self',
