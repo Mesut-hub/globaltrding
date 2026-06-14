@@ -42,6 +42,7 @@
                             ? max(0, min(1, (float) $data['overlay_opacity']))
                             : 0.45;
 
+        $mediaType = $data['media_type'] ?? 'video';
         $videoPath  = $data['video'] ?? null;
         $videoUrl   = $videoPath ? Storage::disk('public')->url($videoPath) : null;
         $imageUrls  = collect(is_array($data['images'] ?? null) ? $data['images'] : [])
@@ -61,7 +62,7 @@
         $leadSize  = $data['lead_size']  ?? 'md';
         $maxW      = is_numeric($data['content_max_width']  ?? null) ? (int) $data['content_max_width']  : 760;
         $offX = is_numeric($data['content_offset_x'] ?? null) ? (int) $data['content_offset_x'] : 0;
-$offY = is_numeric($data['content_offset_y'] ?? null) ? (int) $data['content_offset_y'] : 0;
+        $offY = is_numeric($data['content_offset_y'] ?? null) ? (int) $data['content_offset_y'] : 0;
 
         $titleClass = match($titleSize) { 'md' => 'gt-hero__title--md', 'lg' => 'gt-hero__title--lg', default => 'gt-hero__title--xl' };
         $leadClass  = match($leadSize)  { 'sm' => 'gt-hero__lead--sm',  'lg' => 'gt-hero__lead--lg',  default => 'gt-hero__lead--md' };
@@ -88,17 +89,17 @@ $offY = is_numeric($data['content_offset_y'] ?? null) ? (int) $data['content_off
             'cta2_url'   => $s['cta2_url'] ?? null,
         ])->all();
     @endphp
-    <section class="gt-hero {{ $heightClass }}"
+    <section class="relative text-white hero-shell {{ $heightClass }}" 
             data-hero
             data-hero-autoplay="{{ $autoplay ? '1' : '0' }}"
             data-hero-interval="{{ $interval }}"
             data-hero-pause-hover="{{ $pauseOnHover ? '1' : '0' }}">
         <div class="gt-hero__media">
-            @if ($videoUrl)
+            @if ($mediaType === 'video')
                 <video class="gt-hero__video" autoplay muted loop playsinline preload="metadata">
                     <source src="{{ $videoUrl }}">
                 </video>
-            @elseif (count($imageUrls))
+            @elseif ($mediaType === 'image' && count($imageUrls))
                 <div class="gt-hero__slider" data-hero-slider>
                     @foreach ($imageUrls as $i => $u)
                         <div class="gt-hero__slide {{ $i === 0 ? 'is-active' : '' }}" data-hero-slide="{{ $i }}">
@@ -110,6 +111,31 @@ $offY = is_numeric($data['content_offset_y'] ?? null) ? (int) $data['content_off
                         <button type="button" class="gt-hero__nav gt-hero__nav--next" data-hero-next aria-label="Next">›</button>
                     @endif
                 </div>
+            @elseif ($mediaType === 'multimedia')
+                @php
+                    $multimediaSlides = [];
+                    if ($videoUrl) $multimediaSlides[] = ['type' => 'video', 'url' => $videoUrl];
+                    foreach ($imageUrls as $iu) $multimediaSlides[] = ['type' => 'image', 'url' => $iu];
+                @endphp
+                @if (count($multimediaSlides))
+                    <div class="gt-hero__slider" data-hero-slider>
+                        @foreach ($multimediaSlides as $mi => $ms)
+                            <div class="gt-hero__slide {{ $mi === 0 ? 'is-active' : '' }}" data-hero-slide="{{ $mi }}">
+                                @if ($ms['type'] === 'video')
+                                    <video class="gt-hero__video" autoplay muted loop playsinline preload="metadata">
+                                        <source src="{{ $ms['url'] }}" type="video/mp4">
+                                    </video>
+                                @else
+                                    <img src="{{ $ms['url'] }}" alt="" class="gt-hero__img">
+                                @endif
+                            </div>
+                        @endforeach
+                        @if (count($multimediaSlides) > 1)
+                            <button type="button" class="gt-hero__nav gt-hero__nav--prev" data-hero-prev aria-label="Previous">‹</button>
+                            <button type="button" class="gt-hero__nav gt-hero__nav--next" data-hero-next aria-label="Next">›</button>
+                        @endif
+                    </div>
+                @endif
             @else
                 <div class="gt-hero__placeholder"></div>
             @endif
@@ -135,12 +161,12 @@ $offY = is_numeric($data['content_offset_y'] ?? null) ? (int) $data['content_off
                     <p class="gt-hero__lead hidden" data-hero-lead></p>
                 @endif
 
-                <div class="gt-hero__cta" data-hero-cta-wrap>
+                <div class="mt-8 flex flex-wrap gap-3" data-hero-cta-wrap>
                     @if ($heroCta1 && $heroCta1Url && $heroCta2 && $heroCta2Url)
-                        <a href="{{ $heroCta1Url }}" class="rounded-md border border-white/30 px-5 py-2.5 font-medium hover:bg-white/50" data-hero-cta>{{ $heroCta1 }}</a>
-                        <a href="{{ $heroCta2Url }}" class="rounded-md border border-white/30 px-5 py-2.5 font-medium hover:bg-white/50" data-hero-cta>{{ $heroCta2 }}</a>
+                        <a href="{{ $heroCta1Url }}" class="rounded-md bg-white px-5 py-2.5 text-slate-900 font-medium hover:bg-slate-100">{{ $heroCta1 }}</a>
+                        <a href="{{ $heroCta2Url }}" class="rounded-md border border-white/30 px-5 py-2.5 font-medium hover:bg-white/10">{{ $heroCta2 }}</a>
                     @elseif ($heroCta1 && $heroCta1Url)
-                        <a href="{{ $heroCta1Url }}" class="rounded-md border border-white/30 px-5 py-2.5 font-medium hover:bg-white/50" data-hero-cta>{{ $heroCta1 }}</a>
+                        <a href="{{ $heroCta1Url }}" class="rounded-md bg-white px-5 py-2.5 text-slate-900 font-medium hover:bg-slate-100">{{ $heroCta1 }}</a>
                     @else
                         <a href="#" class="gt-btn gt-btn--primary hidden" data-hero-cta></a>
                     @endif

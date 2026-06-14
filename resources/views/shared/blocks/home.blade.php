@@ -40,11 +40,11 @@
         $titleSize = $data['title_size'] ?? 'xl';
         $leadSize  = $data['lead_size']  ?? 'md';
         $maxW      = is_numeric($data['content_max_width']  ?? null) ? (int) $data['content_max_width']  : 760;
-        $offX      = is_numeric($data['content_offset_x']  ?? null) ? (int) $data['content_offset_x']   : 140;
-        $offY      = is_numeric($data['content_offset_y']  ?? null) ? (int) $data['content_offset_y']   : -90;
+        $offX = is_numeric($data['content_offset_x'] ?? null) ? (int) $data['content_offset_x'] : 0;
+        $offY = is_numeric($data['content_offset_y'] ?? null) ? (int) $data['content_offset_y'] : 0;
 
-        $titleClass = match($titleSize) { 'md' => 'gt-home__title--md', 'lg' => 'gt-home__title--lg', default => 'gt-home__title--xl' };
-        $leadClass  = match($leadSize)  { 'sm' => 'gt-home__lead--sm',  'lg' => 'gt-home__lead--lg',  default => 'gt-home__lead--md' };
+        $titleClass = match($titleSize) { 'md' => 'gt-hero__title--md', 'lg' => 'gt-hero__title--lg', default => 'gt-hero__title--xl' };
+        $leadClass  = match($leadSize)  { 'sm' => 'gt-hero__lead--sm',  'lg' => 'gt-hero__lead--lg',  default => 'gt-hero__lead--md' };
 
         $s0         = $slides[0] ?? [];
         $heroKicker = $t($s0['kicker']    ?? '', $locale, $fallback);
@@ -55,11 +55,6 @@
         $cta2Label  = $t($s0['cta2_label'] ?? []);
         $cta2Url    = $urlWithLocale($s0['cta2_url'] ?? null);
         $mediaType  = $data['media_type'] ?? 'video';
-        $mediaPath  = $data['media_path'] ?? null;
-        $mediaUrl   = $mediaPath ? \Illuminate\Support\Facades\Storage::disk('public')->url($mediaPath) : null;
-        $overlayTop    = (float)($data['overlay_top']    ?? 0.45);
-        $overlayMid    = (float)($data['overlay_mid']    ?? 0.15);
-        $overlayBottom = (float)($data['overlay_bottom'] ?? 0.55);
         $videoPath  = $data['video'] ?? null;
         $videoUrl   = $videoPath ? Storage::disk('public')->url($videoPath) : null;
         $imageUrls  = collect(is_array($data['images'] ?? null) ? $data['images'] : [])
@@ -67,11 +62,13 @@
                     ->filter()->values()->all();
 
         $slidesForJs = collect($slides)->map(fn ($s) => [
-            'kicker'    => $t($s['kicker']    ?? '', $locale, $fallback),
-            'title'     => $t($s['title']     ?? '', $locale, $fallback),
-            'lead'      => $t($s['lead']      ?? '', $locale, $fallback),
-            'cta_label' => $t($s['cta_label'] ?? '', $locale, $fallback),
-            'cta_url'   => $s['cta_url'] ?? null,
+            'kicker'     => $t($s['kicker']     ?? []),
+            'title'      => $t($s['title']      ?? []),
+            'lead'       => $t($s['lead']       ?? []),
+            'cta1_label' => $t($s['cta1_label'] ?? []),
+            'cta1_url'   => $s['cta1_url'] ?? null,
+            'cta2_label' => $t($s['cta2_label'] ?? []),
+            'cta2_url'   => $s['cta2_url'] ?? null,
         ])->all();
     @endphp
     <section class="relative text-white hero-shell {{ $heightClass }}" 
