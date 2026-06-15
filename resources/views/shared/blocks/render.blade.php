@@ -1168,16 +1168,29 @@
 
         @foreach ($rows as $row)
             @php
-                $rowTitle = $t($row['title'] ?? '', $locale, $fallback);
-                $rowUrl   = (string) ($row['url']    ?? '');
-                $rowTarget = (string) ($row['target'] ?? '_blank');
+                $rowTitle     = $t($row['title'] ?? '', $locale, $fallback);
+                $rowFile      = ! empty($row['file']) ? Storage::disk('public')->url($row['file']) : null;
+                $rowUrl       = $rowFile ?: (string) ($row['url'] ?? '');
+                $rowTarget    = (string) ($row['target'] ?? '_blank');
                 $downloadable = (bool) ($row['downloadable'] ?? false);
                 $canDownload  = $hasAccess || ($publicEnabled && $downloadable);
                 $locked       = (! $canDownload && $disableLinks);
+
+                // Derive a file-type badge from the resolved URL
+                $ext = strtolower(pathinfo(parse_url($rowUrl, PHP_URL_PATH) ?? '', PATHINFO_EXTENSION));
+                $badge = match($ext) {
+                    'pdf'                      => 'PDF',
+                    'doc', 'docx'              => 'DOC',
+                    'xls', 'xlsx', 'csv'       => 'XLS',
+                    'ppt', 'pptx'              => 'PPT',
+                    'zip', 'rar', '7z'         => 'ZIP',
+                    default                    => strtoupper($ext) ?: 'FILE',
+                };
             @endphp
             <div class="gt-docdd__row" data-docdd-doc>
-                @if ($locked || ! $rowUrl)
+                @if (! $canDownload)
                     <span class="gt-docdd__link gt-docdd__link--locked" aria-disabled="true">
+                        <span class="gt-docdd__badge">{{ $badge }}</span>
                         {{ $rowTitle }}
                         <span class="gt-docdd__lockIcon" aria-hidden="true">🔒</span>
                     </span>
@@ -1186,7 +1199,8 @@
                     href="{{ $rowUrl }}"
                     target="{{ $rowTarget }}"
                     @if ($rowTarget === '_blank') rel="noopener" @endif
-                    download>
+                    @if ($rowFile) download @endif>
+                        <span class="gt-docdd__badge">{{ $badge }}</span>
                         {{ $rowTitle }}
                         <span class="gt-docdd__dlIcon" aria-hidden="true">↓</span>
                     </a>

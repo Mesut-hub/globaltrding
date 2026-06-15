@@ -462,9 +462,36 @@ class ProductForm
                     ->label('Document rows')
                     ->minItems(1)
                     ->schema([
+
+                        // ── Upload OR paste URL ───────────────────────────────
+                        FileUpload::make('file')
+                            ->label('Upload document')
+                            ->helperText('PDF, Word, Excel, PowerPoint, CSV, ZIP, etc. Max 20 MB. Leave empty if you paste a URL below.')
+                            ->disk('public')
+                            ->directory('products/documents')
+                            ->visibility('public')
+                            ->acceptedFileTypes([
+                                'application/pdf',
+                                'application/msword',
+                                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                                'application/vnd.ms-excel',
+                                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                                'application/vnd.ms-powerpoint',
+                                'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                                'text/csv',
+                                'application/zip',
+                                'application/x-zip-compressed',
+                                'application/octet-stream',
+                            ])
+                            ->maxSize(20480)
+                            ->columnSpanFull(),
+
                         TextInput::make('url')
-                            ->label('Document URL')
-                            ->required(),
+                            ->label('…or paste a document URL')
+                            ->helperText('Only used when no file is uploaded above. Absolute URL, e.g. https://example.com/spec.pdf')
+                            ->url()
+                            ->nullable()
+                            ->columnSpanFull(),
 
                         Grid::make(2)->schema([
                             Toggle::make('downloadable')
@@ -477,7 +504,7 @@ class ProductForm
 
                         // File name — translatable
                         self::blockLocaleTabs('doc_row_lang', [
-                            ['name' => 'title', 'label' => 'File name', 'type' => 'text'],
+                            ['name' => 'title', 'label' => 'File name / label', 'type' => 'text'],
                         ]),
                     ])
                     ->columns(1),
