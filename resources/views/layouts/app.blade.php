@@ -457,5 +457,43 @@
             ">&#8679;</button>
  
     @stack('scripts')
+        <script>
+            function gtDocDownload(el) {
+                var url  = el.getAttribute('data-doc-dl');
+                var name = el.getAttribute('data-doc-name') || 'document';
+                var icon = el.querySelector('.gt-docdd__dlIcon');
+
+                // Show loading state
+                if (icon) icon.textContent = '…';
+                el.style.opacity = '0.6';
+                el.style.pointerEvents = 'none';
+
+                fetch(url, { credentials: 'same-origin' })
+                    .then(function(res) {
+                        if (!res.ok) throw new Error('HTTP ' + res.status);
+                        return res.blob();
+                    })
+                    .then(function(blob) {
+                        var blobUrl = URL.createObjectURL(blob);
+                        var a = document.createElement('a');
+                        a.href = blobUrl;
+                        a.download = name;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        setTimeout(function() { URL.revokeObjectURL(blobUrl); }, 10000);
+                    })
+                    .catch(function() {
+                        // Fallback: open directly (IDM may intercept but file still downloads)
+                        window.open(url, '_blank');
+                    })
+                    .finally(function() {
+                        if (icon) icon.textContent = '↓';
+                        el.style.opacity = '';
+                        el.style.pointerEvents = '';
+                    });
+            }
+        </script>
+    @stack('scripts')
 </body>
 </html>

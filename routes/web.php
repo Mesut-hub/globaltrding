@@ -15,6 +15,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InquiryController;
 use App\Http\Controllers\PasswordResetController;
 use Illuminate\Support\Facades\Response;
+use App\Http\Controllers\DocumentDownloadController;
 use App\Models\Product;
 use App\Models\Industry;
 use App\Models\NewsPost;
@@ -210,3 +211,6 @@ Route::prefix('{locale}')
         Route::get('/cookie-consent/payload', [CookieConsentController::class, 'payload'])
             ->name('cookie.consent.payload');
     });
+
+Route::get('/document-download', DocumentDownloadController::class)
+            ->name('document.download');

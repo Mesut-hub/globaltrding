@@ -1169,8 +1169,20 @@
         @foreach ($rows as $row)
             @php
                 $rowTitle     = $t($row['title'] ?? '', $locale, $fallback);
-                $rowFile      = ! empty($row['file']) ? Storage::disk('public')->url($row['file']) : null;
-                $rowUrl       = $rowFile ?: (string) ($row['url'] ?? '');
+                $rowFile = ! empty($row['file']) ? $row['file'] : null;
+                if ($rowFile) {
+                    $originalName = $row['original_name'] ?? basename($rowFile);
+                    $rowUrl = url('/document-download') . '?' . http_build_query([
+                        'path' => $rowFile,
+                        'name' => $originalName,
+                    ]);
+                    $downloadName = $originalName;
+                } else {
+                    $rowUrl       = (string) ($row['url'] ?? '');
+                    $downloadName = ! empty($row['original_name'])
+                                        ? $row['original_name']
+                                        : basename(urldecode(parse_url($rowUrl, PHP_URL_PATH) ?? ''));
+                }
                 $downloadName = ! empty($row['original_name'])
                                     ? $row['original_name']
                                     : basename(urldecode(parse_url($rowUrl, PHP_URL_PATH) ?? ''));
@@ -1199,13 +1211,13 @@
                     </span>
                 @else
                     <a class="gt-docdd__link"
-                    href="{{ $rowUrl }}"
-                    target="{{ $rowTarget }}"
-                    @if ($rowTarget === '_blank') rel="noopener" @endif
-                    download="{{ $downloadName }}"
-                        <span class="gt-docdd__badge">{{ $badge }}</span>
-                        {{ $rowTitle }}
-                        <span class="gt-docdd__dlIcon" aria-hidden="true">↓</span>
+                        href="{{ $rowUrl }}"
+                        data-doc-dl="{{ $rowUrl }}"
+                        data-doc-name="{{ $downloadName }}"
+                        onclick="event.preventDefault(); gtDocDownload(this)">
+                            <span class="gt-docdd__badge">{{ $badge }}</span>
+                            {{ $rowTitle }}
+                            <span class="gt-docdd__dlIcon" aria-hidden="true">↓</span>
                     </a>
                 @endif
             </div>
