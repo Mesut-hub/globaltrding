@@ -470,6 +470,7 @@ class ProductForm
                             ->disk('public')
                             ->directory('products/documents')
                             ->visibility('public')
+                            ->storeFileNamesIn('original_name')
                             ->acceptedFileTypes([
                                 'application/pdf',
                                 'application/msword',

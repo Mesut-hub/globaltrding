@@ -1171,6 +1171,9 @@
                 $rowTitle     = $t($row['title'] ?? '', $locale, $fallback);
                 $rowFile      = ! empty($row['file']) ? Storage::disk('public')->url($row['file']) : null;
                 $rowUrl       = $rowFile ?: (string) ($row['url'] ?? '');
+                $downloadName = ! empty($row['original_name'])
+                                    ? $row['original_name']
+                                    : basename(urldecode(parse_url($rowUrl, PHP_URL_PATH) ?? ''));
                 $rowTarget    = (string) ($row['target'] ?? '_blank');
                 $downloadable = (bool) ($row['downloadable'] ?? false);
                 $canDownload  = $hasAccess || ($publicEnabled && $downloadable);
@@ -1199,7 +1202,7 @@
                     href="{{ $rowUrl }}"
                     target="{{ $rowTarget }}"
                     @if ($rowTarget === '_blank') rel="noopener" @endif
-                    @if ($rowFile) download @endif>
+                    download="{{ $downloadName }}"
                         <span class="gt-docdd__badge">{{ $badge }}</span>
                         {{ $rowTitle }}
                         <span class="gt-docdd__dlIcon" aria-hidden="true">↓</span>
