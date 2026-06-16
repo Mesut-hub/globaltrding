@@ -1,8 +1,20 @@
+@php
+    $pageTitle    = data_get($page?->title, $locale)
+                 ?: data_get($page?->title, $fallback)
+                 ?: __('industries.meta_title');
+
+    $pageSubtitle = data_get($page?->content, $locale)
+                 ?: data_get($page?->content, $fallback)
+                 ?: __('industries.subtitle');
+@endphp
+
 <section class="mx-auto max-w-7xl px-4 py-12">
     <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-            <h1 class="text-4xl font-semibold tracking-tight">{{ __('industries.meta_title') }}</h1>
-            <p class="mt-2 text-slate-600">{{ __('industries.subtitle') }}</p>
+            <h1 class="text-4xl font-semibold tracking-tight">{{ $pageTitle }}</h1>
+            @if ($pageSubtitle)
+                <p class="mt-2 text-slate-600">{{ $pageSubtitle }}</p>
+            @endif
         </div>
         <a href="/{{ $locale }}/products" class="text-sm text-slate-600 hover:underline">
             {{ __('products.finder_title') }} →
