@@ -35,6 +35,7 @@ class PageBlockBuilder
             static::mediaTextBlock(),
             static::mediaTextLinks3Block(),
             static::dropdownLinksBlock(),
+            static::industriesGridBlock(),
             ...static::homeOnlyBlocks(),
             ...static::industryOnlyBlocks(),
         ];
@@ -587,6 +588,32 @@ class PageBlockBuilder
                 TextInput::make('view_all_url')
                     ->label('View-all URL (supports {locale})')
                     ->default('/{locale}/industries'),
+            ]);
+    }
+
+    private static function industriesGridBlock(): Block
+    {
+        $locales  = config('locales.supported', ['en']);
+        $default  = config('locales.default', 'en');
+
+        return Block::make('industries_grid')
+            ->label('Industries grid')
+            ->schema([
+                
+                FileUpload::make('cover_image_path')
+                    ->label('Cover image')
+                    ->disk('public')
+                    ->directory('industries')
+                    ->image(),
+
+                Toggle::make('is_published')->required()->default(true),
+
+                TextInput::make('sort_order')->required()->numeric()->default(0),
+
+                static::blockLocaleTabs('split_lang', [
+                        ['name' => 'title_tabs',     'label' => 'Title',    'type' => 'text'],
+                        ['name' => 'excerpt_tabs',      'label' => 'Excerpt HTML body','type' => 'html', 'rows' => 8],
+                ]),
             ]);
     }
 
