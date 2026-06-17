@@ -349,17 +349,6 @@ body.nav-overlay-open .site-header .main-nav a.is-overlay-active {
   border-radius: 2px;
 }
 
-/* left list */
-.nav-overlay__list{
-  min-height: 0;
-  height: 100%;
-  max-height: none;               /* override calc() */
-  overflow-y: auto;
-  overflow-x: hidden;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-}
-
 .nav-overlay__item{
   display:flex;
   align-items:center;

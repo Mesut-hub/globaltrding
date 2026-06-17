@@ -580,7 +580,7 @@ document.addEventListener('DOMContentLoaded', () => {
           items: (g.links || []).map((l) => ({
             title: pick(l.label),
             url: resolveUrl(l),
-            desc: l.desc || '',
+            desc: pick(l.desc),
             previewImage: (function () {
                 const raw = (l.preview_image || l.previewImage || '').trim();
                 if (!raw) return '';

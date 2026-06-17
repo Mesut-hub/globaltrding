@@ -13,12 +13,9 @@
         <div>
             <h1 class="text-4xl font-semibold tracking-tight">{{ $pageTitle }}</h1>
             @if ($pageSubtitle)
-                <p class="mt-2 text-slate-600">{{ $pageSubtitle }}</p>
+                <p class="mt-2 text-2xl text-slate-600">{{ $pageSubtitle }}</p>
             @endif
         </div>
-        <a href="/{{ $locale }}/products" class="text-sm text-slate-600 hover:underline">
-            {{ __('products.finder_title') }} →
-        </a>
     </div>
 
     <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

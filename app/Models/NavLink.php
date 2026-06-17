@@ -23,7 +23,8 @@ class NavLink extends Model
     ];
 
     protected $casts = [
-        'label' => 'array',
+        'label'     => 'array',
+        'desc'      => 'array',
         'is_active' => 'boolean',
     ];
 
