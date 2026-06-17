@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Industries\Schemas;
 
 use App\Filament\Resources\Pages\Schemas\PageBlockBuilder;
+use App\Filament\Concerns\HasBlockLocaleTabs;
+use Filament\Forms\Components\Builder\Block;
 use Filament\Forms\Components\Builder;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Tabs;
@@ -15,12 +17,15 @@ use Filament\Schemas\Schema;
 
 class IndustryForm
 {
+    use HasBlockLocaleTabs;
     public static function configure(Schema $schema): Schema
     {
         $locales  = config('locales.supported', ['en']);
         $default  = config('locales.default', 'en');
 
-        return $schema->components([
+        return Block::make('colsGrids')
+                ->label('4 cols grid')
+                ->schema([
 
             TextInput::make('slug')
                 ->required()
@@ -28,31 +33,10 @@ class IndustryForm
                 ->regex('/^[a-z0-9]+(?:-[a-z0-9]+)*$/')
                 ->unique(ignoreRecord: true),
 
-            // ── Multilingual title ───────────────────────────────────────
-            Tabs::make('title_tabs')
-                ->label('Title')
-                ->tabs(
-                    collect($locales)->map(fn ($loc) =>
-                        Tab::make(strtoupper($loc))->schema([
-                            TextInput::make("title.{$loc}")
-                                ->label("Title ({$loc})")
-                                ->required($loc === $default),
-                        ])
-                    )->all()
-                ),
-
-            // ── Multilingual excerpt ─────────────────────────────────────
-            Tabs::make('excerpt_tabs')
-                ->label('Excerpt')
-                ->tabs(
-                    collect($locales)->map(fn ($loc) =>
-                        Tab::make(strtoupper($loc))->schema([
-                            Textarea::make("excerpt.{$loc}")
-                                ->label("Excerpt ({$loc})")
-                                ->rows(3),
-                        ])
-                    )->all()
-                ),
+            static::blockLocaleTabs('colsGrids_item_lang', [
+                    ['name' => 'title_tabs', 'label' => 'Title', 'type' => 'text'],
+                    ['name' => 'excerpt_tabs',  'label' => 'Excerpt',  'type' => 'textarea', 'rows' => 2],
+                ]),
 
             FileUpload::make('cover_image_path')
                 ->label('Cover image')

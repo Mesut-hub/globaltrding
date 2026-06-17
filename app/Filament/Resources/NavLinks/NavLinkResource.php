@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\NavLinks;
 
+use App\Filament\Concerns\HasBlockLocaleTabs;
 use App\Filament\Concerns\HasPermission;
 use App\Filament\Resources\NavLinks\Pages\CreateNavLink;
 use App\Filament\Resources\NavLinks\Pages\EditNavLink;
@@ -25,6 +26,7 @@ use Filament\Tables\Table;
 
 class NavLinkResource extends Resource
 {
+    use HasBlockLocaleTabs;    
     use HasPermission;
 
     protected static string $permissionKey = 'nav_links';
@@ -44,52 +46,7 @@ class NavLinkResource extends Resource
                 ->required()
                 ->searchable(),
 
-            KeyValue::make('label')
-                ->label(__('Label (multilingual)'))
-                ->keyLabel(__('Locale'))
-                ->valueLabel(__('Label'))
-                ->required()
-                ->dehydrateStateUsing(function ($state) {
-                    if (is_string($state)) {
-                        $decoded = json_decode($state, true);
-                        $state = is_array($decoded) ? $decoded : [];
-                    }
-                    if (is_array($state) && array_is_list($state)) {
-                        $assoc = [];
-                        foreach ($state as $row) {
-                            if (is_array($row) && isset($row['key'])) {
-                                $k = trim((string) $row['key']);
-                                $v = (string) ($row['value'] ?? '');
-                                if ($k !== '') $assoc[$k] = $v;
-                            }
-                        }
-                        $state = $assoc;
-                    }
-                    return is_array($state) ? $state : [];
-                })
-                ->rule(function () {
-                    $default = config('locales.default', 'en');
-                    return function (string $attribute, $value, \Closure $fail) use ($default) {
-                        if (is_string($value)) {
-                            $decoded = json_decode($value, true);
-                            $value = is_array($decoded) ? $decoded : [];
-                        }
-                        if (is_array($value) && array_is_list($value)) {
-                            $assoc = [];
-                            foreach ($value as $row) {
-                                if (is_array($row) && isset($row['key'])) {
-                                    $k = trim((string) $row['key']);
-                                    $v = (string) ($row['value'] ?? '');
-                                    if ($k !== '') $assoc[$k] = $v;
-                                }
-                            }
-                            $value = $assoc;
-                        }
-
-                        $v = is_array($value) ? trim((string) ($value[$default] ?? '')) : '';
-                        if ($v === '') $fail("Label must include a non-empty '{$default}' value.");
-                    };
-                }),
+            
 
             Select::make('page_id')
                 ->label(__('Page'))
@@ -116,11 +73,6 @@ class NavLinkResource extends Resource
                 ->helperText(__('Special overlay action key, e.g. finder or search. Leave empty for normal links.'))
                 ->nullable(),
 
-            Textarea::make('desc')
-                ->label(__('Overlay description'))
-                ->rows(3)
-                ->nullable(),
-
             FileUpload::make('preview_image')
                 ->label(__('Overlay preview image'))
                 ->helperText(__('Upload an image or paste an absolute URL below. Uploaded images are stored in storage/app/public/nav-previews/.'))
@@ -141,6 +93,11 @@ class NavLinkResource extends Resource
                 ->options(['_self' => '_self', '_blank' => '_blank'])
                 ->default('_self')
                 ->required(),
+
+            static::blockLocaleTabs('split_lang', [
+                    ['name' => 'label',     'label' => 'Label (multilingual)',    'type' => 'text'],
+                    ['name' => 'desc',      'label' => 'Overlay description','type' => 'html', 'rows' => 8],
+                ]),
 
             Toggle::make('is_active')->label(__('Active'))->default(true)->required(),
 

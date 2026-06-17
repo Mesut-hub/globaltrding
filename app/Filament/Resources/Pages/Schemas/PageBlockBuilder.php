@@ -680,10 +680,34 @@ class PageBlockBuilder
     public static function industryOnlyBlocks(): array
     {
         return [
+            static::colsGridsBlocks(),
             static::richTextBlock(),
             static::imageBlock(),
             static::videoBlock(),
         ];
+    }
+
+    public static function colsGridsBlocks(): Block
+    {
+        
+            return Block::make('colsGrids')
+                ->label('4 cols grid')
+                ->schema([
+                static::blockLocaleTabs('colsGrids_item_lang', [
+                    ['name' => 'title_tabs', 'label' => 'Title', 'type' => 'text'],
+                    ['name' => 'excerpt_tabs',  'label' => 'Excerpt',  'type' => 'textarea', 'rows' => 2],
+                ]),
+
+                FileUpload::make('cover_image_path')
+                    ->label('Cover image')
+                    ->disk('public')
+                    ->directory('industries')
+                    ->image(),
+
+                Toggle::make('is_published')->required()->default(true),
+
+                TextInput::make('sort_order')->required()->numeric()->default(0),
+            ]);
     }
 
     private static function richTextBlock(): Block
