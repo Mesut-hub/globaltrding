@@ -46,7 +46,7 @@ return [
     'open'           => 'فتح',
 
     // Navigation / header
-    'global'         => 'عالمي',
+    'global'         => 'جلوبال',
     'follow_us'      => 'تابعنا',
 
     // Cookie banner
