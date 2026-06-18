@@ -4,7 +4,6 @@ namespace App\Filament\Resources\Industries\Schemas;
 
 use App\Filament\Resources\Pages\Schemas\PageBlockBuilder;
 use App\Filament\Concerns\HasBlockLocaleTabs;
-use Filament\Forms\Components\Builder\Block;
 use Filament\Forms\Components\Builder;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Tabs;
@@ -23,9 +22,7 @@ class IndustryForm
         $locales  = config('locales.supported', ['en']);
         $default  = config('locales.default', 'en');
 
-        return Block::make('colsGrids')
-                ->label('4 cols grid')
-                ->schema([
+        return $schema->components([
 
             TextInput::make('slug')
                 ->required()

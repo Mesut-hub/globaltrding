@@ -689,24 +689,47 @@ class PageBlockBuilder
 
     public static function colsGridsBlocks(): Block
     {
-        
-            return Block::make('colsGrids')
-                ->label('4 cols grid')
-                ->schema([
-                static::blockLocaleTabs('colsGrids_item_lang', [
-                    ['name' => 'title_tabs', 'label' => 'Title', 'type' => 'text'],
-                    ['name' => 'excerpt_tabs',  'label' => 'Excerpt',  'type' => 'textarea', 'rows' => 2],
+        return Block::make('colsGrids')
+            ->label('Card grid (2–4 columns)')
+            ->schema([
+                Select::make('columns')
+                    ->label('Columns')
+                    ->options(['2' => '2', '3' => '3', '4' => '4'])
+                    ->default('3')
+                    ->required(),
+
+                static::blockLocaleTabs('colsGrids_heading_lang', [
+                    ['name' => 'heading_tabs',  'label' => 'Section heading (optional)', 'type' => 'text'],
+                    ['name' => 'subtitle_tabs', 'label' => 'Section subtitle (optional)', 'type' => 'html', 'rows' => 8],
                 ]),
 
-                FileUpload::make('cover_image_path')
-                    ->label('Cover image')
-                    ->disk('public')
-                    ->directory('industries')
-                    ->image(),
+                Repeater::make('items')
+                    ->label('Cards')
+                    ->minItems(1)
+                    ->schema([
+                        static::blockLocaleTabs('colsGrids_item_lang', [
+                            ['name' => 'title_tabs',   'label' => 'Title',   'type' => 'text'],
+                            ['name' => 'excerpt_tabs', 'label' => 'Excerpt', 'type' => 'textarea', 'rows' => 2],
+                            ['name' => 'cta_tabs',   'label' => 'CTA Label',   'type' => 'text'],
+                        ]),
 
-                Toggle::make('is_published')->required()->default(true),
+                        FileUpload::make('cover_image_path')
+                            ->label('Cover image')
+                            ->disk('public')
+                            ->directory('industries')
+                            ->image(),
 
-                TextInput::make('sort_order')->required()->numeric()->default(0),
+                        TextInput::make('link_url')
+                            ->label('Link URL (optional)')
+                            ->helperText('Absolute URL or path, e.g. /en/industries/oil-gas. Leave empty for a non-clickable card.')
+                            ->nullable(),
+                        TextInput::make('cta_url')
+                            ->label('CTA URL (optional)')
+                            ->helperText('Absolute URL or path, e.g. /en/industries/oil-gas. Leave empty for a non-clickable card.')
+                            ->nullable(),
+                    ])
+                    ->columns(1)
+                    ->collapsible(),
             ]);
     }
 
