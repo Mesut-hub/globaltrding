@@ -76,6 +76,8 @@
         $heroCta1Url = $s0['cta1_url'] ?? null;
         $heroCta2    = $t($s0['cta2_label'] ?? '', $locale, $fallback);
         $heroCta2Url = $s0['cta2_url'] ?? null;
+        $heroCta3    = $t($s0['cta3_label'] ?? '', $locale, $fallback);
+        $heroCta3Url = $s0['cta3_url'] ?? null;
 
         // Pre-resolve ALL slides for the JS slider so it receives plain strings
         // Pre-resolve ALL slides for the JS slider so it receives plain strings
@@ -162,7 +164,11 @@
                 @endif
 
                 <div class="mt-8 flex flex-wrap gap-3" data-hero-cta-wrap>
-                    @if ($heroCta1 && $heroCta1Url && $heroCta2 && $heroCta2Url)
+                    @if ($heroCta1 && $heroCta1Url && $heroCta2 && $heroCta2Url && $heroCta3 && $heroCta3Url)
+                        <a href="{{ $heroCta1Url }}" class="rounded-md bg-white px-5 py-2.5 text-slate-900 font-medium hover:bg-slate-100">{{ $heroCta1 }}</a>
+                        <a href="{{ $heroCta2Url }}" class="rounded-md border border-white/30 px-5 py-2.5 font-medium hover:bg-white/10">{{ $heroCta2 }}</a>
+                        <a href="{{ $heroCta3Url }}" class="rounded-md border border-white/30 px-5 py-2.5 font-medium hover:bg-white/10">{{ $heroCta3 }}</a>
+                    @elseif ($heroCta1 && $heroCta1Url && $heroCta2 && $heroCta2Url)
                         <a href="{{ $heroCta1Url }}" class="rounded-md bg-white px-5 py-2.5 text-slate-900 font-medium hover:bg-slate-100">{{ $heroCta1 }}</a>
                         <a href="{{ $heroCta2Url }}" class="rounded-md border border-white/30 px-5 py-2.5 font-medium hover:bg-white/10">{{ $heroCta2 }}</a>
                     @elseif ($heroCta1 && $heroCta1Url)
@@ -175,7 +181,9 @@
         </div>
     </section>
 
-    {{-- MARKET BELT --}}
+{{-- ══════════════════════════════════════════════════════════════════ --}}
+{{-- MARKET BELT                                                               --}}
+{{-- ══════════════════════════════════════════════════════════════════ --}}
 @elseif ($type === 'market_belt')
     @php $beltSlugs = 'usd-try,eur-try,gbp-try,gold-gram-try,brent-usd'; $dataUrl = "/{$locale}/market/data?instruments=".urlencode($beltSlugs); @endphp
     <section class="border-b border-slate-200 bg-white">
@@ -1058,33 +1066,43 @@
 {{-- ══════════════════════════════════════════════════════════════════ --}}
 @elseif ($type === 'colsGrids')
     @php
+        $cgGap      = $data['grid_type'] ?? 'gaped';
+        $cgAlign    = $data['item-align'] ?? 'left';
         $cgCols     = (int) ($data['columns'] ?? 3);
         $cgColClass = match ($cgCols) {
             2 => 'xl:grid-cols-2',
             3 => 'lg:grid-cols-3',
             4 => 'sm:grid-cols-4',
+            5 => 'grid-cols-5',
             default => 'sm:grid-cols-2 lg:grid-cols-3',
         };
+        $cgGapClass = $cgGap === 'gapless' ? '' : 'gap-6';
+        $cgAlignClass = $cgAlign === 'center' ? 'place-items-center' : '';
+        $cgKicker  = $t($data['kicker']  ?? '', $locale, $fallback);
         $cgHeading  = $t($data['heading_tabs']  ?? '', $locale, $fallback);
         $cgSubtitle = $t($data['subtitle_tabs'] ?? '', $locale, $fallback);
         $cgItems    = is_array($data['items'] ?? null) ? $data['items'] : [];
     @endphp
 
     <section class="mx-auto max-w-7xl px-4 py-12">
-        @if ($cgHeading || $cgSubtitle)
+        @if ($cgKicker || $cgHeading || $cgSubtitle)
             <div class="mb-10">
+                @if ($cgKicker)
+                    <div class="mt-4 text-lg font-semibold text-slate-400">{{ $cgKicker }}</div>
+                @endif
                 @if ($cgHeading)
-                    <h2 class="text-4xl font-semibold tracking-tight">{{ $cgHeading }}</h2>
+                    <h2 class="mt-4 text-4xl font-semibold tracking-tight">{{ $cgHeading }}</h2>
                 @endif
                 @if ($cgSubtitle)
-                    <p class="mt-2 text-2xl text-slate-600">{{ $cgSubtitle }}</p>
+                    <p class="mt-4 text-2xl text-slate-600">{{ $cgSubtitle }}</p>
                 @endif
             </div>
         @endif
 
-        <div class="grid gap-6 {{ $cgColClass }}">
+        <div class="grid {{ $cgGapClass }} {{ $cgColClass }}">
             @foreach ($cgItems as $item)
                 @php
+                    $itKicker = $t($item['kicker_tabs'] ?? '', $locale, $fallback);
                     $itTitle = $t($item['title_tabs']   ?? '', $locale, $fallback);
                     $itExc   = $t($item['excerpt_tabs'] ?? '', $locale, $fallback);
                     $itImg   = ! empty($item['cover_image_path'])
@@ -1098,7 +1116,7 @@
                 @if ($itUrl)
                     <a href="{{ $itUrl }}" class="group rounded-xl border border-slate-200 bg-white overflow-hidden hover:border-slate-300 hover:shadow-sm transition">
                 @else
-                    <a class="group rounded-xl border border-slate-200 bg-white overflow-hidden hover:border-slate-300 hover:shadow-sm transition">
+                    <div class="group rounded-xl border border-slate-200 bg-white overflow-hidden hover:border-slate-300 hover:shadow-sm transition">
                 @endif
                     @if ($itImg)
                         <div class="aspect-[16/9] bg-slate-100 overflow-hidden">
@@ -1106,10 +1124,30 @@
                                  class="h-full w-full object-cover {{ $itUrl ? 'group-hover:scale-[1.015] transition' : '' }}" />
                         </div>
                     @endif
-                    @if ($cgColClass === 'sm:grid-cols-4')
-                        <div class="m-2 p-4">
+                    @if ($cgColClass === 'grid-cols-5')
+                        <div class="m-2 p-4 {{ $cgAlignClass }}">
+                            @if ($itKicker)
+                                <div class="mt-2 font-semibold text-slate-400" style="font-size: 0.80rem">{{ $itKicker }}</div>
+                            @endif
                             @if ($itTitle)
-                                <div class="mt-2 text-lg font-light tracking-tight {{ $itUrl ? 'group-hover:underline' : '' }}">{{ $itTitle }}</div>
+                                <div class="mt-1 text-sm font-light tracking-tight {{ $itUrl ? 'group-hover:underline' : '' }}">{{ $itTitle }}</div>
+                            @endif
+                            @if ($itExc)
+                                <p class="mt-2 text-slate-600" style="font-size: 0.80rem">{{ $itExc }}</p>
+                            @endif
+                            @if ($itCta && $itCtaUrl)
+                                <div class="mt-4">
+                                    <a href="{{ $itCtaUrl }}" class="mt-2 font-medium text-blue-600 transition-colors duration-150 ease-in-out hover:underline" style="font-size: 0.80rem">{{ $itCta }} -&gt</a>
+                                </div>
+                            @endif
+                        </div>
+                    @elseif ($cgColClass === 'sm:grid-cols-4')
+                        <div class="m-2 p-4 {{ $cgAlignClass }}">
+                            @if ($itKicker)
+                                <div class="mt-2 text-sm font-semibold text-slate-400">{{ $itKicker }}</div>
+                            @endif
+                            @if ($itTitle)
+                                <div class="mt-1 text-lg font-light tracking-tight {{ $itUrl ? 'group-hover:underline' : '' }}">{{ $itTitle }}</div>
                             @endif
                             @if ($itExc)
                                 <p class="mt-2 text-sm text-slate-600">{{ $itExc }}</p>
@@ -1121,7 +1159,10 @@
                             @endif
                         </div>
                     @elseif ($cgColClass === 'lg:grid-cols-3')
-                        <div class="m-4 p-4">
+                        <div class="m-4 p-4 {{ $cgAlignClass }}">
+                            @if ($cgKicker)
+                                <div class="mt-2 text-lg font-semibold text-slate-400">{{ $cgKicker }}</div>
+                            @endif
                             @if ($itTitle)
                                 <div class="mt-2 text-2xl font-light tracking-tight {{ $itUrl ? 'group-hover:underline' : '' }}">{{ $itTitle }}</div>
                             @endif
@@ -1135,7 +1176,10 @@
                             @endif
                         </div>
                     @else
-                        <div class="m-4 p-4">
+                        <div class="m-4 p-4 {{ $cgAlignClass }}">
+                            @if ($itKicker)
+                                <div class="m-2 mt-4 text-xl font-semibold text-slate-400">{{ $itKicker }}</div>
+                            @endif
                             @if ($itTitle)
                                 <div class="m-2 mt-4 text-3xl font-light tracking-tight {{ $itUrl ? 'group-hover:underline' : '' }}">{{ $itTitle }}</div>
                             @endif
@@ -1152,7 +1196,7 @@
                 @if ($itUrl)
                     </a>
                 @else
-                    </a>
+                    </div>
                 @endif
             @endforeach
         </div>
@@ -1406,15 +1450,38 @@
 {{-- ══════════════════════════════════════════════════════════════════ --}}
 @elseif ($type === 'richText')
     @php
+        $rtKicker = $t($data['kicker'] ?? '', $locale, $fallback);
         $rtHeading = $t($data['heading'] ?? '', $locale, $fallback);
         $rtHtml    = $th($data['html']   ?? '', $locale, $fallback);
     @endphp
-    <section class="gt-rich-text">
+    <section class="mt-4 gt-rich-text">
+        @if ($rtKicker)
+            <div class="m-2 text-lg font-semibold text-slate-500">{{ $rtKicker }}</div>
+        @endif
         @if ($rtHeading)
             <h2 class="m-2 text-4xl md:text-3xl font-semibold tracking-tight mb-4">{{ $rtHeading }}</h2>
         @endif
         @if ($rtHtml)
             <div class="m-2 text-2xl prose prose-slate max-w-none">{!! $rtHtml !!}</div>
+        @endif
+    </section>
+{{-- RICH TEXT 2                                                          --}}
+{{-- ══════════════════════════════════════════════════════════════════ --}}
+@elseif ($type === 'richText2')
+    @php
+        $rtKicker = $t($data['kicker'] ?? '', $locale, $fallback);
+        $rtHeading = $t($data['heading'] ?? '', $locale, $fallback);
+        $rtHtml    = $th($data['html']   ?? '', $locale, $fallback);
+    @endphp
+    <section class="mt-4 gt-rich-text">
+        @if ($rtKicker)
+            <div class="m-2 text-lg font-semibold text-slate-500">{{ $rtKicker }}</div>
+        @endif
+        @if ($rtHeading)
+            <h2 class="m-2 text-3xl md:text-3xl font-semibold tracking-tight mb-4">{{ $rtHeading }}</h2>
+        @endif
+        @if ($rtHtml)
+            <div class="m-2 text-xl prose prose-slate max-w-none">{!! $rtHtml !!}</div>
         @endif
     </section>
 
@@ -1465,4 +1532,143 @@
             @endif
         </figure>
     @endif
+
+{{-- ══════════════════════════════════════════════════════════════════ --}}
+{{-- TIMELINE                                                           --}}
+{{-- ══════════════════════════════════════════════════════════════════ --}}
+@elseif ($type === 'timeline')
+    @php
+        $tlKicker  = $t($data['kicker']  ?? [], $locale, $fallback);
+        $tlHeading = $t($data['heading'] ?? [], $locale, $fallback);
+        $tlItems   = is_array($data['items'] ?? null) ? $data['items'] : [];
+    @endphp
+
+    <section class="mt-20 rounded-2xl bg-slate-50 text-black py-20 px-4">
+        <div class="mx-auto max-w-3xl">
+            @if ($tlKicker)
+                <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">{{ $tlKicker }}</p>
+            @endif
+            @if ($tlHeading)
+                <h2 class="text-3xl md:text-4xl font-semibold tracking-tight mb-14">{{ $tlHeading }}</h2>
+            @endif
+
+            <div class="relative">
+                {{-- Vertical line --}}
+                <div class="absolute left-0 top-2 bottom-0 w-px bg-slate-700 pointer-events-none"></div>
+
+                <div class="space-y-12">
+                    @foreach ($tlItems as $item)
+                        @php
+                            $tlYear     = $item['year'] ?? '';
+                            $tlCategory = $t($item['category'] ?? [], $locale, $fallback);
+                            $tlTitle    = $t($item['title']    ?? [], $locale, $fallback);
+                            $tlBody     = $t($item['body']     ?? [], $locale, $fallback);
+                            $dotFilled  = (bool) ($item['dot_filled'] ?? false);
+                        @endphp
+                        <div class="relative pl-8">
+                            {{-- Dot marker --}}
+                            <div class="absolute -left-[3px] top-[6px] w-[7px] h-[7px] rounded-full border
+                                        {{ $dotFilled
+                                            ? 'bg-black border-black'
+                                            : 'bg-slate-950 border-slate-400' }}">
+                            </div>
+
+                            @if ($tlYear || $tlCategory)
+                                <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">
+                                    {{ $tlYear }}{{ ($tlYear && $tlCategory) ? ' — ' : '' }}{{ $tlCategory }}
+                                </p>
+                            @endif
+                            @if ($tlTitle)
+                                <h3 class="text-base font-semibold leading-snug mb-2 text-slate-800">{{ $tlTitle }}</h3>
+                            @endif
+                            @if ($tlBody)
+                                <p class="text-sm text-slate-600 leading-relaxed">{{ $tlBody }}</p>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </section>
+
+{{-- ══════════════════════════════════════════════════════════════════ --}}
+{{-- CTA WITH STATS                                                     --}}
+{{-- ══════════════════════════════════════════════════════════════════ --}}
+@elseif ($type === 'ctaStats')
+    @php
+        $csHeading  = $t($data['heading']  ?? [], $locale, $fallback);
+        $csSubtitle = $t($data['subtitle'] ?? [], $locale, $fallback);
+        $csButtons  = is_array($data['buttons'] ?? null) ? $data['buttons'] : [];
+        $csStats    = is_array($data['stats']   ?? null) ? $data['stats']   : [];
+
+        $csIcons = [
+            'location'  => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 shrink-0 text-slate-400"><path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd"/></svg>',
+            'calendar'  => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 shrink-0 text-slate-400"><path fill-rule="evenodd" d="M5.75 2a.75.75 0 01.75.75V4h7V2.75a.75.75 0 011.5 0V4h.25A2.75 2.75 0 0118 6.75v8.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25v-8.5A2.75 2.75 0 014.75 4H5V2.75A.75.75 0 015.75 2zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75z" clip-rule="evenodd"/></svg>',
+            'globe'     => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 shrink-0 text-slate-400"><path d="M16.555 5.412a8.028 8.028 0 00-3.503-2.81 14.898 14.898 0 011.601 4.123 8.025 8.025 0 001.902-1.313zM5.643 15.347a8.028 8.028 0 01-2.631-3.423A14.918 14.918 0 016.25 13.5c.382 0 .762-.013 1.139-.04a11.27 11.27 0 01-1.746 1.887zM10 2a8 8 0 100 16A8 8 0 0010 2zm0 3.5c.712 0 1.41.067 2.09.192a13.387 13.387 0 01-1.008 2.448A11.265 11.265 0 0110 8.25a11.265 11.265 0 01-1.082-.11 13.387 13.387 0 01-1.008-2.448A11.35 11.35 0 0110 5.5z"/></svg>',
+            'shield'    => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 shrink-0 text-slate-400"><path fill-rule="evenodd" d="M9.661 2.237a.531.531 0 01.678 0 11.947 11.947 0 007.078 2.749.5.5 0 01.479.425c.069.52.104 1.05.104 1.589 0 5.162-3.26 9.563-7.834 11.256a.48.48 0 01-.332 0C5.26 16.563 2 12.162 2 7c0-.538.035-1.069.104-1.589a.5.5 0 01.48-.425 11.947 11.947 0 007.077-2.749z" clip-rule="evenodd"/></svg>',
+            'clock'     => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 shrink-0 text-slate-400"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clip-rule="evenodd"/></svg>',
+            'star'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 shrink-0 text-slate-400"><path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd"/></svg>',
+            'check'     => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 shrink-0 text-slate-400"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/></svg>',
+            'users'     => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 shrink-0 text-slate-400"><path d="M7 8a3 3 0 100-6 3 3 0 000 6zM14.5 9a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM1.615 16.428a1.224 1.224 0 01-.569-1.175 6.002 6.002 0 0111.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 017 17a9.953 9.953 0 01-5.385-1.572zM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 00-1.588-3.755 4.502 4.502 0 015.874 2.636.818.818 0 01-.36.98A7.465 7.465 0 0114.5 16z"/></svg>',
+            'db'        => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4"><path d="M8 7c3.314 0 6-1.343 6-3s-2.686-3-6-3-6 1.343-6 3 2.686 3 6 3Z" /><path d="M8 8.5c1.84 0 3.579-.37 4.914-1.037A6.33 6.33 0 0 0 14 6.78V8c0 1.657-2.686 3-6 3S2 9.657 2 8V6.78c.346.273.72.5 1.087.683C4.42 8.131 6.16 8.5 8 8.5Z" /><path d="M8 12.5c1.84 0 3.579-.37 4.914-1.037.366-.183.74-.41 1.086-.684V12c0 1.657-2.686 3-6 3s-6-1.343-6-3v-1.22c.346.273.72.5 1.087.683C4.42 12.131 6.16 12.5 8 12.5Z" /></svg>',
+            'cube'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4"><path d="M8.372 1.349a.75.75 0 0 0-.744 0l-4.81 2.748L8 7.131l5.182-3.034-4.81-2.748ZM14 5.357 8.75 8.43v6.005l4.872-2.784A.75.75 0 0 0 14 11V5.357ZM7.25 14.435V8.43L2 5.357V11c0 .27.144.518.378.651l4.872 2.784Z" /></svg>',
+        ];
+    @endphp
+
+    <section class="mx-auto max-w-7xl px-4 py-12">
+        <div class="rounded-2xl bg-slate-950 text-white px-8 py-12 md:px-14 md:py-16">
+
+            {{-- Heading + subtitle --}}
+            @if ($csHeading || $csSubtitle)
+                <div class="text-center mb-10">
+                    @if ($csHeading)
+                        <h2 class="text-2xl md:text-3xl font-semibold tracking-tight">{{ $csHeading }}</h2>
+                    @endif
+                    @if ($csSubtitle)
+                        <p class="mt-3 text-sm md:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
+                            {{ $csSubtitle }}
+                        </p>
+                    @endif
+                </div>
+            @endif
+
+            {{-- CTA buttons --}}
+            @if (count($csButtons))
+                <div class="flex flex-wrap justify-center gap-3 mb-10">
+                    @foreach ($csButtons as $btn)
+                        @php
+                            $btnLabel = $t($btn['label'] ?? [], $locale, $fallback);
+                            $btnUrl   = $btn['url'] ?? '#';
+                        @endphp
+                        @if ($btnLabel)
+                            <a href="{{ $btnUrl }}"
+                               class="inline-flex items-center rounded-md border border-white/25 px-5 py-2.5 text-sm font-medium text-white hover:bg-white/10 transition-colors">
+                                {{ $btnLabel }}
+                            </a>
+                        @endif
+                    @endforeach
+                </div>
+            @endif
+
+            {{-- Divider + stats --}}
+            @if (count($csStats))
+                <hr class="border-slate-700 mb-8">
+                <div class="flex flex-wrap justify-center gap-x-8 gap-y-3">
+                    @foreach ($csStats as $stat)
+                        @php
+                            $statText = $t($stat['text'] ?? [], $locale, $fallback);
+                            $statIcon = $csIcons[$stat['icon'] ?? 'globe'] ?? $csIcons['globe'];
+                        @endphp
+                        @if ($statText)
+                            <span class="flex items-center gap-1.5 text-sm text-slate-300">
+                                {!! $statIcon !!}
+                                {{ $statText }}
+                            </span>
+                        @endif
+                    @endforeach
+                </div>
+            @endif
+
+        </div>
+    </section>
 @endif

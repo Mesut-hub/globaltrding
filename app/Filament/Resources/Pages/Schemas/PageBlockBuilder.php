@@ -35,6 +35,9 @@ class PageBlockBuilder
             static::mediaTextBlock(),
             static::mediaTextLinks3Block(),
             static::dropdownLinksBlock(),
+            static::timelineBlock(),
+            static::ctaStatsBlock(),
+            static::richText2Block(),
             ...static::homeOnlyBlocks(),
             ...static::industryOnlyBlocks(),
         ];
@@ -115,6 +118,7 @@ class PageBlockBuilder
                     ->schema([
                         TextInput::make('cta1_url')->label('CTA1 URL'),
                         TextInput::make('cta2_url')->label('CTA2 URL'),
+                        TextInput::make('cta3_url')->label('CTA3 URL'),
 
                         static::blockLocaleTabs('hero_slide_lang', [
                             ['name' => 'kicker',    'label' => 'Kicker',    'type' => 'text'],
@@ -122,6 +126,7 @@ class PageBlockBuilder
                             ['name' => 'lead',      'label' => 'Lead text', 'type' => 'textarea', 'rows' => 2],
                             ['name' => 'cta1_label', 'label' => 'CTA1 label', 'type' => 'text'],
                             ['name' => 'cta2_label', 'label' => 'CTA2 label', 'type' => 'text'],
+                            ['name' => 'cta3_label', 'label' => 'CTA3 label', 'type' => 'text'],
                         ]),
                     ]),
             ]);
@@ -554,6 +559,128 @@ class PageBlockBuilder
             ]);
     }
 
+    // ── Timeline ──────────────────────────────────────────────────────────────────
+
+    private static function timelineBlock(): Block
+    {
+        return Block::make('timeline')
+            ->label('Timeline — vertical history / milestones')
+            ->schema([
+                static::blockLocaleTabs('tl_header_lang', [
+                    ['name' => 'kicker',  'label' => 'Section kicker (e.g. A HISTORY OF EXPANSION)', 'type' => 'text'],
+                    ['name' => 'heading', 'label' => 'Section heading', 'type' => 'text'],
+                ]),
+
+                Repeater::make('items')
+                    ->label('Timeline items')
+                    ->minItems(1)
+                    ->schema([
+                        TextInput::make('year')
+                            ->label('Year')
+                            ->required()
+                            ->maxLength(4)
+                            ->placeholder('2001'),
+
+                        Toggle::make('dot_filled')
+                            ->label('Filled dot (most prominent milestone)')
+                            ->default(false),
+
+                        static::blockLocaleTabs('tl_item_lang', [
+                            ['name' => 'category', 'label' => 'Era / category label (e.g. FOUNDED)',   'type' => 'text'],
+                            ['name' => 'title',    'label' => 'Item title (bold heading)',              'type' => 'text'],
+                            ['name' => 'body',     'label' => 'Body paragraph',                        'type' => 'textarea', 'rows' => 4],
+                        ]),
+                    ])
+                    ->itemLabel(fn (array $state): ?string => implode(' — ', array_filter([
+                        $state['year'] ?? null,
+                        is_array($state['category'] ?? null)
+                            ? ($state['category']['en'] ?? null)
+                            : ($state['category'] ?? null),
+                    ])))
+                    ->collapsible()
+                    ->columns(1),
+            ]);
+    }
+
+    // ── CTA with stats ────────────────────────────────────────────────────────────
+
+    private static function ctaStatsBlock(): Block
+    {
+        return Block::make('ctaStats')
+            ->label('CTA panel with stats row')
+            ->schema([
+                static::blockLocaleTabs('cs_main_lang', [
+                    ['name' => 'heading',  'label' => 'Heading',                    'type' => 'text'],
+                    ['name' => 'subtitle', 'label' => 'Subtitle (1–2 lines)',        'type' => 'textarea', 'rows' => 2],
+                ]),
+
+                Repeater::make('buttons')
+                    ->label('CTA buttons (max 4)')
+                    ->minItems(1)
+                    ->maxItems(4)
+                    ->schema([
+                        static::blockLocaleTabs('cs_btn_lang', [
+                            ['name' => 'label', 'label' => 'Button label', 'type' => 'text'],
+                        ]),
+                        TextInput::make('url')->label('URL')->required(),
+                    ])
+                    ->itemLabel(fn (array $state): ?string =>
+                        is_array($state['label'] ?? null)
+                            ? ($state['label']['en'] ?? null)
+                            : ($state['label'] ?? null)
+                    )
+                    ->collapsible()
+                    ->columns(1),
+
+                Repeater::make('stats')
+                    ->label('Stats badges (below divider — max 8)')
+                    ->minItems(1)
+                    ->maxItems(8)
+                    ->schema([
+                        Select::make('icon')
+                            ->label('Icon')
+                            ->options([
+                                'location' => '📍 Location pin',
+                                'calendar' => '📅 Calendar',
+                                'globe'    => '🌐 Globe',
+                                'shield'   => '🛡️ Shield / badge',
+                                'clock'    => '⏰ Clock',
+                                'star'     => '⭐ Star',
+                                'check'    => '✅ Check',
+                                'users'    => '👥 Users / team',
+                                'db'       => '⛃ database / servers',
+                                'cube'     => '🧊 Cube',
+                            ])
+                            ->default('globe')
+                            ->required(),
+
+                        static::blockLocaleTabs('cs_stat_lang', [
+                            ['name' => 'text', 'label' => 'Stat text (e.g. 40+ countries served)', 'type' => 'text'],
+                        ]),
+                    ])
+                    ->itemLabel(fn (array $state): ?string =>
+                        is_array($state['text'] ?? null)
+                            ? ($state['text']['en'] ?? null)
+                            : ($state['text'] ?? null)
+                    )
+                    ->collapsible()
+                    ->columns(1),
+            ]);
+    }
+
+    private static function richText2Block(): Block
+    {
+        return Block::make('richText2')
+            ->label('Rich text 2')
+            ->schema([
+                static::blockLocaleTabs('dl_item_lang', [
+                        ['name' => 'kicker',  'label' => 'Kicker', 'type' => 'text'],
+                        ['name' => 'heading',  'label' => 'Heading', 'type' => 'text'],
+                        ['name' => 'html',   'label' => 'HTML content',   'type' => 'html', 'rows' => 10, 'helper' => 'Use this for long-form content.'],
+                    ]),
+            ]);
+    }
+
     // ── Home-only blocks (not available on regular Pages) ─────────────────
 
     public static function homeOnlyBlocks(): array
@@ -690,15 +817,23 @@ class PageBlockBuilder
     public static function colsGridsBlocks(): Block
     {
         return Block::make('colsGrids')
-            ->label('Card grid (2–4 columns)')
+            ->label('Card grid (2–5 columns)')
             ->schema([
+                Select::make('item-align')
+                    ->label('Card content alignment')
+                    ->options(['center' => 'Center', 'left' => 'Left'])
+                    ->default('left'),
+                Select::make('grid_type')
+                    ->label('Grid type')
+                    ->options(['gapless' => 'Gapless', 'gaped' => 'Gaped'])
+                    ->default('gaped'),
                 Select::make('columns')
                     ->label('Columns')
-                    ->options(['2' => '2', '3' => '3', '4' => '4'])
-                    ->default('3')
-                    ->required(),
+                    ->options(['2' => '2', '3' => '3', '4' => '4', '5' => '5'])
+                    ->default('3'),
 
                 static::blockLocaleTabs('colsGrids_heading_lang', [
+                    ['name' => 'kicker',  'label' => 'Section kicker (optional)', 'type' => 'text'],
                     ['name' => 'heading_tabs',  'label' => 'Section heading (optional)', 'type' => 'text'],
                     ['name' => 'subtitle_tabs', 'label' => 'Section subtitle (optional)', 'type' => 'html', 'rows' => 8],
                 ]),
@@ -708,6 +843,7 @@ class PageBlockBuilder
                     ->minItems(1)
                     ->schema([
                         static::blockLocaleTabs('colsGrids_item_lang', [
+                            ['name' => 'kicker_tabs',   'label' => 'Kicker',   'type' => 'text'],
                             ['name' => 'title_tabs',   'label' => 'Title',   'type' => 'text'],
                             ['name' => 'excerpt_tabs', 'label' => 'Excerpt', 'type' => 'textarea', 'rows' => 2],
                             ['name' => 'cta_tabs',   'label' => 'CTA Label',   'type' => 'text'],
@@ -739,6 +875,7 @@ class PageBlockBuilder
             ->label('Rich text')
             ->schema([
                 static::blockLocaleTabs('dl_item_lang', [
+                        ['name' => 'kicker',  'label' => 'Kicker', 'type' => 'text'],
                         ['name' => 'heading',  'label' => 'Heading', 'type' => 'text'],
                         ['name' => 'html',   'label' => 'HTML content',   'type' => 'html', 'rows' => 10, 'helper' => 'Use this for long-form content.'],
                     ]),
