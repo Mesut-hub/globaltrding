@@ -1671,4 +1671,125 @@
 
         </div>
     </section>
+
+{{-- ══════════════════════════════════════════════════════════════════ --}}
+{{-- FULL WIDTH CARDS                                                  --}}
+{{-- ══════════════════════════════════════════════════════════════════ --}}
+@elseif ($type === 'fullWidthCards')
+    @php
+        $fwcCols     = (int) ($data['columns'] ?? 3);
+        $fwcGap      = $data['grid_type'] ?? 'gaped';
+        $fwcBg       = $data['section_bg_color'] ?? '#dce9f5';
+        $fwcCardBg   = $data['card_bg_color'] ?? 'transparent';
+        $fwcColClass = match ($fwcCols) {
+            2       => 'md:grid-cols-2',
+            4       => 'sm:grid-cols-2 lg:grid-cols-4',
+            default => 'sm:grid-cols-2 lg:grid-cols-3',
+        };
+        $fwcGapClass = $fwcGap === 'gapless' ? '' : 'gap-8';
+
+        $fwcKickerSize   = $data['kicker_size']      ?? 'text-sm';
+        $fwcHeadingSize  = $data['heading_size']     ?? 'text-4xl';
+        $fwcSubtitleSize = $data['subtitle_size']    ?? 'text-xl';
+        $fwcItemKicker   = $data['item_kicker_size'] ?? 'text-sm';
+        $fwcItemTitle    = $data['item_title_size']  ?? 'text-2xl';
+        $fwcItemBody     = $data['item_body_size']   ?? 'text-base';
+        $fwcItemCta      = $data['item_cta_size']    ?? 'text-sm';
+
+        $fwcKicker   = $t($data['kicker']        ?? '', $locale, $fallback);
+        $fwcHeading  = $t($data['heading_tabs']  ?? '', $locale, $fallback);
+        $fwcSubtitle = $t($data['subtitle_tabs'] ?? '', $locale, $fallback);
+        $fwcItems    = is_array($data['items'] ?? null) ? $data['items'] : [];
+
+        // Determine card style — transparent means no inline style needed
+        $cardBgStyle = ($fwcCardBg && $fwcCardBg !== 'transparent' && $fwcCardBg !== '#00000000')
+            ? "background-color:{$fwcCardBg};"
+            : '';
+    @endphp
+
+    <section class="w-full py-16 px-6" style="background-color:{{ $fwcBg }}">
+        @if ($fwcKicker || $fwcHeading || $fwcSubtitle)
+            <div class="max-w-screen-2xl mx-auto mb-10">
+                @if ($fwcKicker)
+                    <div class="{{ $fwcKickerSize }} font-semibold uppercase tracking-widest text-slate-500 mb-2">
+                        {{ $fwcKicker }}
+                    </div>
+                @endif
+                @if ($fwcHeading)
+                    <h2 class="{{ $fwcHeadingSize }} font-light tracking-tight text-slate-800">
+                        {{ $fwcHeading }}
+                    </h2>
+                @endif
+                @if ($fwcSubtitle)
+                    <p class="mt-3 {{ $fwcSubtitleSize }} text-slate-600">{!! $fwcSubtitle !!}</p>
+                @endif
+            </div>
+        @endif
+
+        <div class="max-w-screen-2xl mx-auto grid {{ $fwcGapClass }} {{ $fwcColClass }}">
+            @foreach ($fwcItems as $item)
+                @php
+                    $itKicker = $t($item['kicker_tabs']  ?? '', $locale, $fallback);
+                    $itTitle  = $t($item['title_tabs']   ?? '', $locale, $fallback);
+                    $itExc    = $t($item['excerpt_tabs'] ?? '', $locale, $fallback);
+                    $itImg    = ! empty($item['cover_image_path'])
+                        ? Storage::disk('public')->url($item['cover_image_path'])
+                        : null;
+                    $itUrl    = $item['link_url'] ?? null;
+                    $itCta    = $t($item['cta_tabs'] ?? '', $locale, $fallback);
+                    $itCtaUrl = $item['cta_url'] ?? null;
+                @endphp
+
+                @if ($itUrl)
+                    <a href="{{ $itUrl }}" class="group flex flex-col overflow-hidden" style="{{ $cardBgStyle }}">
+                @else
+                    <div class="group flex flex-col overflow-hidden" style="{{ $cardBgStyle }}">
+                @endif
+
+                    @if ($itImg)
+                        <div class="aspect-[16/9] overflow-hidden">
+                            <img src="{{ $itImg }}" alt="{{ $itTitle }}"
+                                class="h-full w-full object-cover transition duration-300 {{ $itUrl ? 'group-hover:scale-[1.02]' : '' }}" />
+                        </div>
+                    @endif
+
+                    <div class="pt-6 pb-4 flex flex-col flex-1">
+                        @if ($itKicker)
+                            <div class="{{ $fwcItemKicker }} font-semibold uppercase tracking-widest text-slate-500 mb-2">
+                                {{ $itKicker }}
+                            </div>
+                        @endif
+                        @if ($itTitle)
+                            <div class="{{ $fwcItemTitle }} font-light tracking-tight text-slate-800 mb-3 {{ $itUrl ? 'group-hover:underline' : '' }}">
+                                {{ $itTitle }}
+                            </div>
+                        @endif
+                        @if ($itExc)
+                            <p class="{{ $fwcItemBody }} text-slate-600 leading-relaxed flex-1">
+                                {{ $itExc }}
+                            </p>
+                        @endif
+                        @if ($itCta && $itCtaUrl)
+                            <div class="mt-5">
+                                <a href="{{ $itCtaUrl }}"
+                                   class="{{ $fwcItemCta }} font-medium text-blue-600 inline-flex items-center gap-2 hover:gap-3 transition-all duration-200">
+                                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <circle cx="12" cy="12" r="10" stroke-width="1.5"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                              d="M9 12h6m0 0l-3-3m3 3l-3 3"/>
+                                    </svg>
+                                    {{ $itCta }}
+                                </a>
+                            </div>
+                        @endif
+                    </div>
+
+                @if ($itUrl)
+                    </a>
+                @else
+                    </div>
+                @endif
+            @endforeach
+        </div>
+    </section>
 @endif

@@ -101,22 +101,12 @@ class PageResource extends Resource
                 ),
 
             // Add before the Builder::make('blocks') in PageResource::form()
-            \Filament\Forms\Components\FileUpload::make('seo.og_image_upload')
+            \Filament\Forms\Components\FileUpload::make('seo.og_image')
                 ->label('SEO / OG Image (overrides default)')
                 ->disk('public')
                 ->directory('seo/og')
                 ->image()
-                ->helperText('Recommended: 1200×630px. Leave empty to auto-generate from content.')
-                ->dehydrateStateUsing(function ($state) {
-                    if (!$state) return null;
-                    return \Illuminate\Support\Facades\Storage::disk('public')->url($state);
-                })
-                ->afterStateHydrated(function ($component, $state, $record) {
-                    // Show current og_image path if it's a storage path
-                    if ($record && $ogImg = data_get($record->seo, 'og_image')) {
-                        // Only show in uploader if it's a local path
-                    }
-                }),
+                ->helperText('Recommended: 1200×630px. Leave empty to auto-generate from content.'),
             
             Builder::make('blocks')
                 ->label('Page blocks')

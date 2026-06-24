@@ -38,8 +38,25 @@ class PageBlockBuilder
             static::timelineBlock(),
             static::ctaStatsBlock(),
             static::richText2Block(),
+            static::fullWidthCardsBlock(),
             ...static::homeOnlyBlocks(),
             ...static::industryOnlyBlocks(),
+        ];
+    }
+
+    protected static function fontSizeOptions(): array
+    {
+        return [
+            'text-xs'   => 'XS – 12px',
+            'text-sm'   => 'SM – 14px',
+            'text-base' => 'Base – 16px',
+            'text-lg'   => 'LG – 18px',
+            'text-xl'   => 'XL – 20px',
+            'text-2xl'  => '2XL – 24px',
+            'text-3xl'  => '3XL – 30px',
+            'text-4xl'  => '4XL – 36px',
+            'text-5xl'  => '5XL – 48px',
+            'text-6xl'  => '6XL – 60px',
         ];
     }
 
@@ -678,6 +695,107 @@ class PageBlockBuilder
                         ['name' => 'heading',  'label' => 'Heading', 'type' => 'text'],
                         ['name' => 'html',   'label' => 'HTML content',   'type' => 'html', 'rows' => 10, 'helper' => 'Use this for long-form content.'],
                     ]),
+            ]);
+    }
+
+    public static function fullWidthCardsBlock(): Block
+    {
+        return Block::make('fullWidthCards')
+            ->label('Full-Width Card Grid')
+            ->schema([
+
+                \Filament\Schemas\Components\Grid::make(2)->schema([
+                    Select::make('columns')
+                        ->label('Columns')
+                        ->options(['2' => '2', '3' => '3', '4' => '4'])
+                        ->default('3'),
+                    Select::make('grid_type')
+                        ->label('Card spacing')
+                        ->options(['gapless' => 'Gapless', 'gaped' => 'Gapped'])
+                        ->default('gaped'),
+                ]),
+
+                \Filament\Schemas\Components\Grid::make(2)->schema([
+                    \Filament\Forms\Components\ColorPicker::make('section_bg_color')
+                        ->label('Section background color')
+                        ->default('#dce9f5'),
+                    \Filament\Forms\Components\ColorPicker::make('card_bg_color')
+                        ->label('Card background color')
+                        ->default('#00000000'),  // transparent
+                ]),
+
+                \Filament\Forms\Components\Section::make('Section header font sizes')
+                    ->collapsed()
+                    ->schema([
+                        \Filament\Schemas\Components\Grid::make(3)->schema([
+                            Select::make('kicker_size')
+                                ->label('Kicker size')
+                                ->options(static::fontSizeOptions())
+                                ->default('text-sm'),
+                            Select::make('heading_size')
+                                ->label('Heading size')
+                                ->options(static::fontSizeOptions())
+                                ->default('text-4xl'),
+                            Select::make('subtitle_size')
+                                ->label('Subtitle size')
+                                ->options(static::fontSizeOptions())
+                                ->default('text-xl'),
+                        ]),
+                    ]),
+
+                static::blockLocaleTabs('fwc_heading_lang', [
+                    ['name' => 'kicker',        'label' => 'Section kicker (optional)',   'type' => 'text'],
+                    ['name' => 'heading_tabs',  'label' => 'Section heading (optional)',  'type' => 'text'],
+                    ['name' => 'subtitle_tabs', 'label' => 'Section subtitle (optional)', 'type' => 'html', 'rows' => 3],
+                ]),
+
+                \Filament\Forms\Components\Section::make('Card font sizes')
+                    ->collapsed()
+                    ->schema([
+                        \Filament\Schemas\Components\Grid::make(4)->schema([
+                            Select::make('item_kicker_size')
+                                ->label('Kicker')
+                                ->options(static::fontSizeOptions())
+                                ->default('text-sm'),
+                            Select::make('item_title_size')
+                                ->label('Title')
+                                ->options(static::fontSizeOptions())
+                                ->default('text-2xl'),
+                            Select::make('item_body_size')
+                                ->label('Body')
+                                ->options(static::fontSizeOptions())
+                                ->default('text-base'),
+                            Select::make('item_cta_size')
+                                ->label('CTA')
+                                ->options(static::fontSizeOptions())
+                                ->default('text-sm'),
+                        ]),
+                    ]),
+
+                Repeater::make('items')
+                    ->label('Cards')
+                    ->minItems(1)
+                    ->schema([
+                        static::blockLocaleTabs('fwc_item_lang', [
+                            ['name' => 'kicker_tabs',  'label' => 'Kicker',     'type' => 'text'],
+                            ['name' => 'title_tabs',   'label' => 'Title',      'type' => 'text'],
+                            ['name' => 'excerpt_tabs', 'label' => 'Body text',  'type' => 'textarea', 'rows' => 3],
+                            ['name' => 'cta_tabs',     'label' => 'CTA label',  'type' => 'text'],
+                        ]),
+                        FileUpload::make('cover_image_path')
+                            ->label('Cover image')
+                            ->disk('public')
+                            ->directory('pages')
+                            ->image(),
+                        TextInput::make('link_url')
+                            ->label('Card link URL (optional)')
+                            ->nullable(),
+                        TextInput::make('cta_url')
+                            ->label('CTA URL (optional)')
+                            ->nullable(),
+                    ])
+                    ->columns(1)
+                    ->collapsible(),
             ]);
     }
 
