@@ -724,7 +724,7 @@ class PageBlockBuilder
                         ->default('#00000000'),  // transparent
                 ]),
 
-                \Filament\Forms\Components\Section::make('Section header font sizes')
+                \Filament\Schemas\Components\Section::make('Section header font sizes')
                     ->collapsed()
                     ->schema([
                         \Filament\Schemas\Components\Grid::make(3)->schema([
@@ -749,7 +749,7 @@ class PageBlockBuilder
                     ['name' => 'subtitle_tabs', 'label' => 'Section subtitle (optional)', 'type' => 'html', 'rows' => 3],
                 ]),
 
-                \Filament\Forms\Components\Section::make('Card font sizes')
+                \Filament\Schemas\Components\Section::make('Card font sizes')
                     ->collapsed()
                     ->schema([
                         \Filament\Schemas\Components\Grid::make(4)->schema([

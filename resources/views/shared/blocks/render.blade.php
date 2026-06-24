@@ -1707,7 +1707,7 @@
             : '';
     @endphp
 
-    <section class="w-full py-16 px-6" style="background-color:{{ $fwcBg }}">
+    <section class="w-full py-16 px-6" style="background-color:{{ $fwcBg }}" >
         @if ($fwcKicker || $fwcHeading || $fwcSubtitle)
             <div class="max-w-screen-2xl mx-auto mb-10">
                 @if ($fwcKicker)
