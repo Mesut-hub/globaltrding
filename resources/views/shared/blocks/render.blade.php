@@ -599,7 +599,7 @@
         $cardsLead  = $t($data['lead']  ?? '', $locale, $fallback);
         $items      = $data['items'] ?? [];
     @endphp
-    <section class="mx-auto max-w-7xl px-4 py-12" data-industry-slider>
+    <section class="mx-auto py-12" data-industry-slider>
         <div class="flex items-end justify-between gap-4">
             @if ($cardsTitle) <h2 class="text-xl md:text-2xl font-semibold tracking-tight">{{ $cardsTitle }}</h2> @endif
             @if ($cardsLead)  <p class="mt-2 text-slate-600 max-w-3xl">{{ $cardsLead }}</p>                       @endif
@@ -714,7 +714,7 @@
         };
         $mediaStyle = $maxH ? "max-height:{$maxH}px; height:{$maxH}px;" : '';
     @endphp
-    <section class="mx-auto max-w-7xl px-4 py-12">
+    <section class="mx-auto py-12">
         <div class="grid md:grid-cols-16 gap-6 items-center">
             @if ($side === 'left')
                 <div class="{{ $mediaClass }}">
@@ -787,7 +787,7 @@
         $linksPadColor = $data['links_pad_color'] ?? '#ffffff';
         $linksRowColor = $data['links_row_color'] ?? '#0ea5e9';
     @endphp
-    <section class="mx-auto max-w-7xl px-4 py-12">
+    <section class="mx-auto py-12">
         <div class="gt-mtl3__grid" style="grid-template-columns: {{ $gridCols }};">
             @foreach ($colOrder as $col)
                 @if ($col === 'media')
@@ -848,7 +848,7 @@
         $dlHeading = $t($data['heading'] ?? '', $locale, $fallback) ?: null;
         $items     = is_array($data['items'] ?? null) ? $data['items'] : [];
     @endphp
-    <section class="mx-auto max-w-7xl px-4 py-12">
+    <section class="mx-auto py-12">
         @if ($dlHeading) <h3 class="gt-acc__heading">{{ $dlHeading }}</h3> @endif
         <div class="gt-acc__list">
             @foreach ($items as $i => $row)
@@ -1028,7 +1028,7 @@
                             ->limit(12)
                             ->get();
     @endphp
-    <section class="mx-auto max-w-7xl px-4 py-12" data-industry-slider>
+    <section class="mx-auto py-12" data-industry-slider>
         <div class="flex items-end justify-between gap-4">
             <h2 class="text-4xl font-semibold tracking-tight">{{ $sectionTitle }}</h2>
             <div class="flex items-center gap-3">
@@ -1083,8 +1083,7 @@
         $cgSubtitle = $t($data['subtitle_tabs'] ?? '', $locale, $fallback);
         $cgItems    = is_array($data['items'] ?? null) ? $data['items'] : [];
     @endphp
-
-    <section class="mx-auto max-w-7xl px-4 py-12">
+    <section class="mx-auto py-12">
         @if ($cgKicker || $cgHeading || $cgSubtitle)
             <div class="mb-10">
                 @if ($cgKicker)
@@ -1686,7 +1685,7 @@
             4       => 'sm:grid-cols-2 lg:grid-cols-4',
             default => 'sm:grid-cols-2 lg:grid-cols-3',
         };
-        $fwcGapClass = $fwcGap === 'gapless' ? '' : 'gap-8';
+        $fwcGapClass = $fwcGap === 'gapless' ? '' : 'gap-6';
 
         $fwcKickerSize   = $data['kicker_size']      ?? 'text-sm';
         $fwcHeadingSize  = $data['heading_size']     ?? 'text-4xl';
@@ -1709,7 +1708,7 @@
 
     <section class="w-full py-16 px-6" style="background-color:{{ $fwcBg }}">
         @if ($fwcKicker || $fwcHeading || $fwcSubtitle)
-            <div class="max-w-screen-2xl mx-auto mb-10">
+            <div class="mx-auto max-w-7xl px-4 mb-10">
                 @if ($fwcKicker)
                     <div class="{{ $fwcKickerSize }} font-semibold uppercase tracking-widest text-slate-500 mb-2">
                         {{ $fwcKicker }}
@@ -1726,7 +1725,7 @@
             </div>
         @endif
 
-        <div class="max-w-screen-2xl mx-auto grid {{ $fwcGapClass }} {{ $fwcColClass }}">
+        <div class="mx-auto max-w-7xl px-4 grid {{ $fwcGapClass }} {{ $fwcColClass }}">
             @foreach ($fwcItems as $item)
                 @php
                     $itKicker = $t($item['kicker_tabs']  ?? '', $locale, $fallback);

@@ -48,9 +48,9 @@
 }
 
 /* Nav */
-.site-header .main-nav{
+/*.site-header .main-nav{
   flex: 1;
-  background: rgba(87, 87, 87, 0.50); /* brown translucent */
+  background: rgba(87, 87, 87, 0.50);
   display: flex;
   align-items: center;
   min-height: var(--header-height);
@@ -58,12 +58,12 @@
   overflow: visible;
   padding-left:  max(24px, calc((100vw - 1320px) / 2 + 60px));
   padding-right: 34px;
-}
+}*/
 .site-header .main-nav ul{
   list-style: none;
   display: flex;
   align-items: center;
-  gap: 28px;
+  gap: 20px;
   flex-wrap: wrap;
   padding: 0;
   margin: 0;
@@ -198,18 +198,18 @@
 /* ===== NAV OVERLAY ===== */
 .nav-overlay.hidden{ display:none; }
 
-body.nav-overlay-open #siteHeader .main-nav,
+/*body.nav-overlay-open #siteHeader .main-nav,
 body.nav-overlay-open #siteHeader .header-icons {
   opacity: 100%;
   pointer-events: none;
   background: none;
-}
+}*/
 
-body.nav-overlay-open #siteHeader .main-nav{
+/*body.nav-overlay-open #siteHeader .main-nav{
   padding-left: max(24px, calc((100vw - 1320px) / 10 + 30px));
-}
+}*/
 
-body.nav-overlay-open .site-header {
+/*body.nav-overlay-open .site-header {
   position: fixed;
   top: 42px;
   left: 160px;
@@ -217,14 +217,14 @@ body.nav-overlay-open .site-header {
   z-index: 1000;
   transition: all 0.35s ease;
   pointer-events: none;
-}
+}*/
 
 body.nav-overlay-open .site-header,
 body.nav-overlay-open .site-header.scrolled {
   top: 42px;
 }
 
-body.nav-overlay-open .site-header .main-nav,
+/*body.nav-overlay-open .site-header .main-nav,
 body.nav-overlay-open .site-header.scrolled .main-nav,
 body.nav-overlay-open .site-header .header-icons,
 body.nav-overlay-open .site-header.scrolled .header-icons {
@@ -233,8 +233,8 @@ body.nav-overlay-open .site-header.scrolled .header-icons {
   height: auto;
   font-size: 28px;
   opacity: 1;
-  pointer-events: none;           /* let clicks fall through to overlay items */
-}
+  pointer-events: none;
+}*/
 
 body.nav-overlay-open .site-header .header-logo-box,
 body.nav-overlay-open .site-header.scrolled .header-logo-box {
@@ -1091,8 +1091,31 @@ body.has-hero-header .gt-hero{
   border: 1px solid rgba(255,255,255,.22);
   z-index: 5;
 }
+:lang(ar) .gt-hero__nav {
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  width:46px;
+  height:46px;
+  border-radius:999px;
+  background: rgba(0,0,0,.35);
+  color:#fff;
+  border: 1px solid rgba(255,255,255,.22);
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 .gt-hero__nav--prev{ left: 14px; }
 .gt-hero__nav--next{ right: 14px; }
+:lang(ar) .gt-hero__nav--prev {
+    left: auto;
+    right: 14px;
+}
+:lang(ar) .gt-hero__nav--next {
+    right: auto;
+    left: 14px;
+}
 
 /* ===== Cards carousel ===== */
 .gt-car__text {

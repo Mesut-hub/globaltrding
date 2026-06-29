@@ -16,10 +16,10 @@
 }
 
 /* ── RTL logical properties ── */
-[dir="rtl"] .site-header .main-nav {
+/*[dir="rtl"] .site-header .main-nav {
     padding-left:  34px;
     padding-right: max(24px, calc((100vw - 1320px) / 2 + 60px));
-}
+}*/
 
 [dir="rtl"] .gt-hero__content {
     transform: translate(calc(-1 * var(--hero-offset-x, 140px)), var(--hero-offset-y, -90px));
@@ -43,6 +43,8 @@
     font-family: 'Cairo', 'Tajawal', 'Noto Sans Arabic', ui-sans-serif, system-ui, sans-serif;
     line-height: 1.8;
     letter-spacing: 0;
+    direction: rtl;
+    text-align: right;
 }
 
 :lang(ar) .gt-hero__title,
@@ -68,10 +70,10 @@
 }
 
 /* RTL footer columns */
-[dir="rtl"] .site-header .main-nav ul {
+/*[dir="rtl"] .site-header .main-nav ul {
     padding-right: max(24px, calc((100vw - 1320px) / 2 + 60px));
     padding-left: 34px;
-}
+}*/
 
 /* RTL cookie banner */
 [dir="rtl"] .gt-cookie-banner__actions {

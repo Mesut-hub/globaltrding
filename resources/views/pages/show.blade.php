@@ -66,56 +66,74 @@
         @php $hero = $blocks[0]; @endphp
         @include('shared.blocks.render', ['block' => $hero])
 
-        {{-- Render remaining blocks as normal page sections --}}
-        <section class="mx-auto max-w-7xl px-4 py-12" data-industry-slider>
-            
-                @foreach (array_slice($blocks, 1) as $block)
+        {{-- Render remaining blocks — full-width types break out of container --}}
+    @php
+        $fullWidthBlocks = ['fullWidthCards', 'insightsGrid', 'market_belt'];
+    @endphp
+
+    @foreach (array_slice($blocks, 1) as $block)
+        @php $bType = $block['type'] ?? ''; @endphp
+        @if (in_array($bType, $fullWidthBlocks))
+            @include('shared.blocks.render', ['block' => $block])
+        @else
+            <div class="mx-auto max-w-7xl px-4">
+                @include('shared.blocks.render', ['block' => $block])
+            </div>
+        @endif
+    @endforeach
+
+    @if (count($blocks) <= 1)
+        <div class="mx-auto max-w-7xl px-4 py-12">
+            @if (is_array($content))
+                @foreach ($content as $block)
                     @include('shared.blocks.render', ['block' => $block])
                 @endforeach
-
-                {{-- fallback to legacy content if blocks are empty after hero --}}
-                @if (count($blocks) <= 1)
-                    @if (is_array($content))
-                        @foreach ($content as $block)
-                            @include('shared.blocks.render', ['block' => $block])
-                        @endforeach
-                    @elseif (is_string($content) && trim($content) !== '')
-                        <div class="prose prose-slate max-w-none">
-                            {!! nl2br(e($content)) !!}
-                        </div>
-                    @endif
-                @endif
-            
-        </section>
+            @elseif (is_string($content) && trim($content) !== '')
+                <div class="prose prose-slate max-w-none">
+                    {!! nl2br(e($content)) !!}
+                </div>
+            @endif
+        </div>
+    @endif
 
     @else
         {{-- Normal page (no hero header) --}}
-        <section class="mx-auto max-w-7xl px-4 py-12">
-            <a href="/{{ $locale }}/" class="text-sm text-slate-600 hover:underline">
-                ← Back to Home
-            </a>
-
+        <div class="mx-auto max-w-7xl px-4 py-12">
+            <a href="/{{ $locale }}/" class="text-sm text-slate-600 hover:underline">← Back to Home</a>
             <h1 class="mt-4 text-4xl font-semibold tracking-tight">{{ $title }}</h1>
+        </div>
 
-            <div class="mt-8 space-y-8">
-                @if (is_array($blocks) && count($blocks))
-                    @foreach ($blocks as $block)
-                        @include('shared.blocks.render', ['block' => $block])
-                    @endforeach
-                @elseif (is_array($content))
-                    @foreach ($content as $block)
-                        @include('shared.blocks.render', ['block' => $block])
-                    @endforeach
-                @elseif (is_string($content) && trim($content) !== '')
-                    <div class="prose prose-slate max-w-none">
-                        {!! nl2br(e($content)) !!}
-                    </div>
+        @php
+            $fullWidthBlocks = ['fullWidthCards', 'insightsGrid', 'market_belt'];
+        @endphp
+
+        @if (is_array($blocks) && count($blocks))
+            @foreach ($blocks as $block)
+                @php $bType = $block['type'] ?? ''; @endphp
+                @if (in_array($bType, $fullWidthBlocks))
+                    @include('shared.blocks.render', ['block' => $block])
                 @else
-                    <div class="text-slate-600">
-                        This page has no content yet.
+                    <div class="mx-auto max-w-7xl px-4 mt-8">
+                        @include('shared.blocks.render', ['block' => $block])
                     </div>
                 @endif
+            @endforeach
+        @elseif (is_array($content))
+            <div class="mx-auto max-w-7xl px-4">
+                @foreach ($content as $block)
+                    @include('shared.blocks.render', ['block' => $block])
+                @endforeach
             </div>
-        </section>
+        @elseif (is_string($content) && trim($content) !== '')
+            <div class="mx-auto max-w-7xl px-4">
+                <div class="prose prose-slate max-w-none">
+                    {!! nl2br(e($content)) !!}
+                </div>
+            </div>
+        @else
+            <div class="mx-auto max-w-7xl px-4">
+                <div class="text-slate-600">This page has no content yet.</div>
+            </div>
+        @endif
     @endif
 @endsection
