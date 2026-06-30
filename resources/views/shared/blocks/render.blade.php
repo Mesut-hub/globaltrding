@@ -1682,6 +1682,7 @@
         $fwcCardBg   = $data['card_bg_color'] ?? 'transparent';
         $fwcColClass = match ($fwcCols) {
             2       => 'md:grid-cols-2',
+            3       => 'sm:grid-cols-2 lg:grid-cols-3',
             4       => 'sm:grid-cols-2 lg:grid-cols-4',
             default => 'sm:grid-cols-2 lg:grid-cols-3',
         };
@@ -1789,6 +1790,77 @@
                     </div>
                 @endif
             @endforeach
+        </div>
+    </section>
+
+{{-- ══════════════════════════════════════════════════════════════════ --}}
+{{-- QUOTE BLOCK                                                        --}}
+{{-- ══════════════════════════════════════════════════════════════════ --}}
+@elseif ($type === 'quoteBlock')
+    @php
+        $qBg          = $data['bg']           ?? 'dark';
+        $qQuote       = $t($data['quote']       ?? '', $locale, $fallback);
+        $qAuthorName  = $t($data['author_name'] ?? '', $locale, $fallback);
+        $qAuthorTitle = $t($data['author_title'] ?? '', $locale, $fallback);
+        $qAccent      = $data['accent_color']  ?? '#C8A96E';
+
+        $qSectionClass = match ($qBg) {
+            'light' => 'bg-slate-50 text-slate-900',
+            'white' => 'bg-white text-slate-900',
+            default => 'bg-slate-950 text-white',
+        };
+
+        $qTextClass = match ($qBg) {
+            'light', 'white' => 'text-slate-700',
+            default          => 'text-slate-200',
+        };
+
+        $qAttrClass = match ($qBg) {
+            'light', 'white' => 'text-slate-500',
+            default          => 'text-slate-400',
+        };
+
+        $qDividerClass = match ($qBg) {
+            'light', 'white' => 'border-slate-200',
+            default          => 'border-slate-700',
+        };
+    @endphp
+
+    <section class="w-full py-16 px-6 {{ $qSectionClass }}">
+        <div class="mx-auto max-w-3xl">
+
+            {{-- Accent line --}}
+            <div class="w-12 h-0.5 mb-8" style="background: {{ $qAccent }};"></div>
+
+            {{-- Quote mark --}}
+            <div class="text-6xl font-serif leading-none mb-4 opacity-30"
+                 style="color: {{ $qAccent }}; font-family: Georgia, serif;">"</div>
+
+            {{-- Quote text --}}
+            @if ($qQuote)
+                <blockquote class="text-xl md:text-2xl font-light leading-relaxed {{ $qTextClass }} mb-8"
+                             style="font-family: Georgia, 'Times New Roman', serif;">
+                    {{ $qQuote }}
+                </blockquote>
+            @endif
+
+            {{-- Attribution --}}
+            @if ($qAuthorName || $qAuthorTitle)
+                <div class="pt-6 border-t {{ $qDividerClass }}">
+                    @if ($qAuthorName)
+                        <div class="text-sm font-semibold tracking-wide"
+                             style="color: {{ $qAccent }};">
+                            {{ $qAuthorName }}
+                        </div>
+                    @endif
+                    @if ($qAuthorTitle)
+                        <div class="mt-1 text-sm {{ $qAttrClass }}">
+                            {{ $qAuthorTitle }}
+                        </div>
+                    @endif
+                </div>
+            @endif
+
         </div>
     </section>
 @endif
