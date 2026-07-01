@@ -1794,28 +1794,28 @@
     </section>
 
 {{-- ══════════════════════════════════════════════════════════════════ --}}
-{{-- QUOTE BLOCK                                                        --}}
+{{-- PULL QUOTE                                                         --}}
 {{-- ══════════════════════════════════════════════════════════════════ --}}
 @elseif ($type === 'quoteBlock')
     @php
-        $qBg          = $data['bg']           ?? 'dark';
-        $qQuote       = $t($data['quote']       ?? '', $locale, $fallback);
-        $qAuthorName  = $t($data['author_name'] ?? '', $locale, $fallback);
+        $qBg          = $data['bg']                                            ?? 'dark';
+        $qQuote       = $t($data['quote']        ?? '', $locale, $fallback);
+        $qAuthorName  = $t($data['author_name']  ?? '', $locale, $fallback);
         $qAuthorTitle = $t($data['author_title'] ?? '', $locale, $fallback);
-        $qAccent      = $data['accent_color']  ?? '#C8A96E';
+        $qAccent      = $data['accent_color']                                  ?? '#C8A96E';
 
         $qSectionClass = match ($qBg) {
-            'light' => 'bg-slate-50 text-slate-900',
-            'white' => 'bg-white text-slate-900',
+            'light' => 'bg-slate-50  text-slate-900',
+            'white' => 'bg-white     text-slate-900',
             default => 'bg-slate-950 text-white',
         };
 
-        $qTextClass = match ($qBg) {
+        $qTextClass   = match ($qBg) {
             'light', 'white' => 'text-slate-700',
             default          => 'text-slate-200',
         };
 
-        $qAttrClass = match ($qBg) {
+        $qAttrClass   = match ($qBg) {
             'light', 'white' => 'text-slate-500',
             default          => 'text-slate-400',
         };
@@ -1824,32 +1824,38 @@
             'light', 'white' => 'border-slate-200',
             default          => 'border-slate-700',
         };
+
+        // RTL: Arabic flips the border side
+        $qBorderClass = $locale === 'ar' ? 'border-r-2 border-l-0' : 'border-l-2';
     @endphp
 
-    <section class="w-full py-16 px-6 {{ $qSectionClass }}">
+    <section class="w-full py-16 px-6 {{ $qSectionClass }}"
+             @if ($locale === 'ar') dir="rtl" @endif>
         <div class="mx-auto max-w-3xl">
 
-            {{-- Accent line --}}
-            <div class="w-12 h-0.5 mb-8" style="background: {{ $qAccent }};"></div>
+            {{-- Accent top line --}}
+            <div class="w-12 h-0.5 mb-8" style="background:{{ $qAccent }};"></div>
 
-            {{-- Quote mark --}}
-            <div class="text-6xl font-serif leading-none mb-4 opacity-30"
-                 style="color: {{ $qAccent }}; font-family: Georgia, serif;">"</div>
+            {{-- Opening quotation mark --}}
+            <div class="text-7xl font-light leading-none mb-2 select-none"
+                 style="color:{{ $qAccent }}; font-family:Georgia,'Times New Roman',serif; opacity:.35;"
+                 aria-hidden="true">"</div>
 
             {{-- Quote text --}}
             @if ($qQuote)
                 <blockquote class="text-xl md:text-2xl font-light leading-relaxed {{ $qTextClass }} mb-8"
-                             style="font-family: Georgia, 'Times New Roman', serif;">
+                            style="font-family:Georgia,'Times New Roman',serif;">
                     {{ $qQuote }}
                 </blockquote>
             @endif
 
             {{-- Attribution --}}
             @if ($qAuthorName || $qAuthorTitle)
-                <div class="pt-6 border-t {{ $qDividerClass }}">
+                <footer class="pt-6 border-t {{ $qDividerClass }} {{ $qBorderClass }} pl-4"
+                        style="border-color: {{ $qAccent }}20;">
                     @if ($qAuthorName)
                         <div class="text-sm font-semibold tracking-wide"
-                             style="color: {{ $qAccent }};">
+                             style="color:{{ $qAccent }};">
                             {{ $qAuthorName }}
                         </div>
                     @endif
@@ -1858,7 +1864,7 @@
                             {{ $qAuthorTitle }}
                         </div>
                     @endif
-                </div>
+                </footer>
             @endif
 
         </div>

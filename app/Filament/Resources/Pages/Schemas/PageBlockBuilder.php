@@ -38,6 +38,7 @@ class PageBlockBuilder
             static::timelineBlock(),
             static::ctaStatsBlock(),
             static::richText2Block(),
+            static::pullQuoteBlock(),
             static::fullWidthCardsBlock(),
             ...static::homeOnlyBlocks(),
             ...static::industryOnlyBlocks(),
@@ -695,6 +696,49 @@ class PageBlockBuilder
                         ['name' => 'heading',  'label' => 'Heading', 'type' => 'text'],
                         ['name' => 'html',   'label' => 'HTML content',   'type' => 'html', 'rows' => 10, 'helper' => 'Use this for long-form content.'],
                     ]),
+            ]);
+    }
+
+    // ── Pull Quote ───────────────────────────────────────────────────────────
+
+    private static function pullQuoteBlock(): Block
+    {
+        return Block::make('quoteBlock')
+            ->label('Pull quote — full-width author quote')
+            ->schema([
+                Select::make('bg')
+                    ->label('Background')
+                    ->options([
+                        'dark'  => 'Dark navy (default)',
+                        'light' => 'Off-white',
+                        'white' => 'White',
+                    ])
+                    ->default('dark')
+                    ->required(),
+
+                ColorPicker::make('accent_color')
+                    ->label('Accent line colour')
+                    ->default('#C8A96E')
+                    ->helperText('The gold underline and quotation mark colour. Default: #C8A96E (Turkish gold).'),
+
+                static::blockLocaleTabs('qb_lang', [
+                    [
+                        'name'  => 'quote',
+                        'label' => 'Quote text (no quotation marks needed — added by template)',
+                        'type'  => 'textarea',
+                        'rows'  => 4,
+                    ],
+                    [
+                        'name'  => 'author_name',
+                        'label' => 'Author name',
+                        'type'  => 'text',
+                    ],
+                    [
+                        'name'  => 'author_title',
+                        'label' => 'Author title / role (e.g. Founder & Managing Director, Global Trading Ltd.)',
+                        'type'  => 'text',
+                    ],
+                ]),
             ]);
     }
 
