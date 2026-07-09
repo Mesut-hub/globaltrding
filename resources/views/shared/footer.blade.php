@@ -21,7 +21,6 @@
         : asset(ltrim($footerLogoPath, '/'));
 
     $companyPages = \App\Models\Page::query()->where('is_published', true)->where('show_in_company', true)->orderBy('slug')->get();
-    $companyPages = \App\Models\Page::query()->where('is_published', true)->where('show_in_company', true)->orderBy('sort_order')->get();
     $productPages = \App\Models\Page::query()->where('is_published', true)->where('show_in_products', true)->orderBy('slug')->get();
     $infoPages    = \App\Models\Page::query()->where('is_published', true)->where('show_in_information', true)->orderBy('slug')->get();
     $servicePages = \App\Models\Page::query()->where('is_published', true)->where('show_in_service', true)->orderBy('slug')->get();
