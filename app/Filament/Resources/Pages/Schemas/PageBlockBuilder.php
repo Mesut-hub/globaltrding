@@ -39,6 +39,7 @@ class PageBlockBuilder
             static::ctaStatsBlock(),
             static::richText2Block(),
             static::pullQuoteBlock(),
+            static::overlayCarouselBlock(),
             static::fullWidthCardsBlock(),
             ...static::homeOnlyBlocks(),
             ...static::industryOnlyBlocks(),
@@ -449,6 +450,7 @@ class PageBlockBuilder
                     ->visible(fn ($get) => $get('media_type') === 'video'),
 
                 static::blockLocaleTabs('mt_lang', [
+                    ['name' => 'kicker',     'label' => 'Kicker',     'type' => 'text'],
                     ['name' => 'title',     'label' => 'Title',     'type' => 'text'],
                     ['name' => 'excerpt',   'label' => 'Excerpt',   'type' => 'textarea', 'rows' => 2],
                     ['name' => 'body_html', 'label' => 'Body HTML', 'type' => 'html',     'rows' => 8],
@@ -843,6 +845,83 @@ class PageBlockBuilder
             ]);
     }
 
+    public static function overlayCarouselBlock(): Block
+    {
+        return Block::make('overlayCarousel')
+            ->label('Overlay Card Carousel')
+            ->schema([
+
+                // Section meta
+                static::blockLocaleTabs('ovcar_meta_lang', [
+                    ['name' => 'kicker',        'label' => 'Section kicker',   'type' => 'text'],
+                    ['name' => 'heading_tabs',  'label' => 'Section heading',  'type' => 'text'],
+                    ['name' => 'subtitle_tabs', 'label' => 'Section subtitle', 'type' => 'text'],
+                ]),
+
+                // Inner heading (displayed above cards inside the section)
+                static::blockLocaleTabs('ovcar_inner_lang', [
+                    ['name' => 'inner_heading', 'label' => 'Inner heading (shown above cards)', 'type' => 'text'],
+                ]),
+
+                \Filament\Schemas\Components\Grid::make(2)->schema([
+                    FileUpload::make('bg_image_path')
+                        ->label('Section background image')
+                        ->disk('public')
+                        ->directory('blocks/carousel')
+                        ->image(),
+                    \Filament\Forms\Components\ColorPicker::make('bg_overlay_color')
+                        ->label('Background overlay color')
+                        ->default('#8B0000CC'),
+                ]),
+
+                \Filament\Schemas\Components\Grid::make(3)->schema([
+                    \Filament\Forms\Components\ColorPicker::make('card_border_color')
+                        ->label('Card border color')
+                        ->default('#ffffff'),
+                    \Filament\Forms\Components\ColorPicker::make('card_overlay_color')
+                        ->label('Card default overlay color')
+                        ->default('#00000099'),
+                    \Filament\Forms\Components\ColorPicker::make('nav_btn_color')
+                        ->label('Prev / Next button color')
+                        ->default('#DAA520'),
+                ]),
+
+                \Filament\Schemas\Components\Grid::make(2)->schema([
+                    \Filament\Forms\Components\Toggle::make('autoplay')
+                        ->label('Auto-play')
+                        ->default(true),
+                    \Filament\Forms\Components\TextInput::make('autoplay_ms')
+                        ->label('Auto-play interval (ms)')
+                        ->numeric()
+                        ->default(4000),
+                ]),
+
+                Repeater::make('items')
+                    ->label('Cards')
+                    ->minItems(1)
+                    ->schema([
+                        static::blockLocaleTabs('ovcar_item_lang', [
+                            ['name' => 'kicker_tabs',   'label' => 'Kicker',   'type' => 'text'],
+                            ['name' => 'title_tabs',    'label' => 'Heading',  'type' => 'text'],
+                            ['name' => 'subtitle_tabs', 'label' => 'Subtitle', 'type' => 'text'],
+                        ]),
+                        FileUpload::make('card_image_path')
+                            ->label('Card image')
+                            ->disk('public')
+                            ->directory('blocks/carousel')
+                            ->image(),
+                        \Filament\Forms\Components\ColorPicker::make('card_overlay_color')
+                            ->label('Card overlay color (overrides global if set)')
+                            ->nullable(),
+                        TextInput::make('link_url')
+                            ->label('Card link URL (optional)')
+                            ->nullable(),
+                    ])
+                    ->columns(1)
+                    ->collapsible(),
+            ]);
+    }
+
     // ── Home-only blocks (not available on regular Pages) ─────────────────
 
     public static function homeOnlyBlocks(): array
@@ -1025,6 +1104,14 @@ class PageBlockBuilder
                             ->label('CTA URL (optional)')
                             ->helperText('Absolute URL or path, e.g. /en/industries/oil-gas. Leave empty for a non-clickable card.')
                             ->nullable(),
+                        ColorPicker::make('img_bg_color')->label('Image background color')->default('#94A3B8'),
+                        ColorPicker::make('kicker_color')->label('Kicker text color')->default('#94A3B8'),
+                        ColorPicker::make('title_color')->label('Title text color')->default('#0f172a'),
+                        ColorPicker::make('excerpt_color')->label('Excerpt text color')->default('#475569'),
+                        ColorPicker::make('cta_color')->label('CTA label color')->default('#2563EB'),
+                        ColorPicker::make('card_bg_color')->label('Card background color')->default('#ffffff'),
+                        ColorPicker::make('card_border_color')->label('Card border color')->default('#e2e8f0'),
+                        ColorPicker::make('card_hover_border_color')->label('Card hover border color')->default('#CBD5E1'),
                     ])
                     ->columns(1)
                     ->collapsible(),

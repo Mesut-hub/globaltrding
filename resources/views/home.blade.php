@@ -7,11 +7,11 @@
 @endphp
 
 @section('meta_title', 'Globaltrding - Home')
-@section('meta_description', 'Industrial equipment & raw materials supplier supporting Oil & Gas, Petrochemical, Refinery, and Chemical industries with trusted sourcing and multilingual experience.')
+@section('meta_description', 'Istanbul-based industrial equipment & raw materials supplier since 2001. Oil & gas, boron products, solar, NDT and security systems. Serving 40+ countries.')
 
 @section('og_type', 'website')
 @section('og_title', 'Globaltrding - Home')
-@section('og_description', 'Industrial equipment & raw materials supplier supporting Oil & Gas, Petrochemical, Refinery, and Chemical industries with trusted sourcing and multilingual experience.')
+@section('og_description', 'Istanbul-based industrial equipment & raw materials supplier since 2001. Oil & gas, boron products, solar, NDT and security systems. Serving 40+ countries.')
 
 @section('og_image', 'https://globaltrding.com/og-home.jpg')
 

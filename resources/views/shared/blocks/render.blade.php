@@ -698,6 +698,7 @@
         $vidUrl    = !empty($data['video'])  ? Storage::disk('public')->url($data['video'])  : null;
         $posterUrl = !empty($data['poster']) ? Storage::disk('public')->url($data['poster']) : null;
 
+        $mtKicker   = $t($data['kicker']    ?? '', $locale, $fallback);
         $mtTitle    = $t($data['title']     ?? '', $locale, $fallback);
         $mtExcerpt  = $t($data['excerpt']   ?? '', $locale, $fallback);
         $mtHtml     = $th($data['body_html'] ?? '', $locale, $fallback);
@@ -722,6 +723,7 @@
                 </div>
             @endif
             <div class="{{ $textClass }}">
+                @if ($mtKicker) <p class="text-sm font-bold text-slate-600">{{ $mtKicker }}</p> @endif
                 <h3 class="text-xl md:text-2xl font-semibold tracking-tight">{{ $mtTitle }}</h3>
                 @if ($mtExcerpt) <p class="mt-2 text-slate-600">{{ $mtExcerpt }}</p>          @endif
                 @if ($mtHtml)    <div class="mt-3 prose prose-slate max-w-none">{!! $mtHtml !!}</div> @endif
@@ -1077,7 +1079,6 @@
             default => 'sm:grid-cols-2 lg:grid-cols-3',
         };
         $cgGapClass = $cgGap === 'gapless' ? '' : 'gap-6';
-        $cgAlignClass = $cgAlign === 'center' ? 'place-items-center' : '';
         $cgKicker  = $t($data['kicker']  ?? '', $locale, $fallback);
         $cgHeading  = $t($data['heading_tabs']  ?? '', $locale, $fallback);
         $cgSubtitle = $t($data['subtitle_tabs'] ?? '', $locale, $fallback);
@@ -1102,92 +1103,142 @@
             @foreach ($cgItems as $item)
                 @php
                     $itKicker = $t($item['kicker_tabs'] ?? '', $locale, $fallback);
+                    $kickerColor = $item['kicker_color'] ?? '#94A3B8';
                     $itTitle = $t($item['title_tabs']   ?? '', $locale, $fallback);
+                    $titleColor = $item['title_color'] ?? '#0f172a';
                     $itExc   = $t($item['excerpt_tabs'] ?? '', $locale, $fallback);
+                    $excerptColor = $item['excerpt_color'] ?? '#475569';
                     $itImg   = ! empty($item['cover_image_path'])
                         ? Storage::disk('public')->url($item['cover_image_path'])
                         : null;
+                    $imgBgColor = $item['img_bg_color'] ?? '#f1f5f9';
                     $itUrl   = $item['link_url'] ?? null;
                     $itCta   = $t($item['cta_tabs'] ?? '', $locale, $fallback);
+                    $ctaColor = $item['cta_color'] ?? '#2563EB';
                     $itCtaUrl = $item['cta_url'] ?? null;
+                    $cardBgColor = $item['card_bg_color'] ?? '#ffffff';
+                    $cardBorderColor = $item['card_border_color'] ?? '#e2e8f0';
+                    $cardHoverBorderColor = $item['card_hover_border_color'] ?? '#CBD5E1';
+                    $cgAlignClass = $cgAlign === 'center' ? 'place-items-center' : '';
+                    $cardStyles = "--image-bg: {$imgBgColor}; --card-bg: {$cardBgColor}; --card-border: {$cardBorderColor}; --card-hover: {$cardHoverBorderColor};";
                 @endphp
 
                 @if ($itUrl)
-                    <a href="{{ $itUrl }}" class="group rounded-xl border border-slate-200 bg-white overflow-hidden hover:border-slate-300 hover:shadow-sm transition">
+                    <a href="{{ $itUrl }}" 
+                    class="group rounded-xl border overflow-hidden hover:shadow-sm transition bg-[var(--card-bg)] border-[var(--card-border)] hover:border-[var(--card-hover)]" 
+                    style="{{ $cardStyles }}">
                 @else
-                    <div class="group rounded-xl border border-slate-200 bg-white overflow-hidden hover:border-slate-300 hover:shadow-sm transition">
+                    <div class="group rounded-xl border overflow-hidden hover:shadow-sm transition bg-[var(--card-bg)] border-[var(--card-border)] hover:border-[var(--card-hover)]" 
+                        style="{{ $cardStyles }}">
                 @endif
+                
                     @if ($itImg)
-                        <div class="aspect-[16/9] bg-slate-100 overflow-hidden">
+                        <div class="aspect-[16/9] bg-[var(--image-bg)] overflow-hidden">
                             <img src="{{ $itImg }}" alt="{{ $itTitle }}"
-                                 class="h-full w-full object-cover {{ $itUrl ? 'group-hover:scale-[1.015] transition' : '' }}" />
+                                class="h-full w-full object-cover {{ $itUrl ? 'group-hover:scale-[1.015] transition' : '' }}" />
                         </div>
                     @endif
+                    
                     @if ($cgColClass === 'grid-cols-5')
                         <div class="m-2 p-4 {{ $cgAlignClass }}">
                             @if ($itKicker)
-                                <div class="mt-2 font-semibold text-slate-400" style="font-size: 0.80rem">{{ $itKicker }}</div>
+                                <div class="mt-2 font-semibold" style="font-size: 0.80rem; color: {{ $kickerColor }};">
+                                    {{ $itKicker }}
+                                </div>
                             @endif
+                            
                             @if ($itTitle)
-                                <div class="mt-1 text-sm font-light tracking-tight {{ $itUrl ? 'group-hover:underline' : '' }}">{{ $itTitle }}</div>
+                                <div class="mt-1 text-sm font-light tracking-tight {{ $itUrl ? 'group-hover:underline' : '' }}" style="color: {{ $titleColor }};">
+                                    {{ $itTitle }}
+                                </div>
                             @endif
+                            
                             @if ($itExc)
-                                <p class="mt-2 text-slate-600" style="font-size: 0.80rem">{{ $itExc }}</p>
+                                <p class="mt-2" style="font-size: 0.80rem; color: {{ $excerptColor }};">
+                                    {{ $itExc }}
+                                </p>
                             @endif
+                            
                             @if ($itCta && $itCtaUrl)
                                 <div class="mt-4">
-                                    <a href="{{ $itCtaUrl }}" class="mt-2 font-medium text-blue-600 transition-colors duration-150 ease-in-out hover:underline" style="font-size: 0.80rem">{{ $itCta }} -&gt</a>
+                                    <a href="{{ $itCtaUrl }}" class="mt-2 font-medium transition-colors duration-150 ease-in-out hover:underline" style="font-size: 0.80rem; color: {{ $ctaColor }};">
+                                        {{ $itCta }} -&gt;
+                                    </a>
                                 </div>
                             @endif
                         </div>
                     @elseif ($cgColClass === 'sm:grid-cols-4')
                         <div class="m-2 p-4 {{ $cgAlignClass }}">
                             @if ($itKicker)
-                                <div class="mt-2 text-sm font-semibold text-slate-400">{{ $itKicker }}</div>
+                                <div class="mt-2 text-sm font-semibold" style="color: {{ $kickerColor }};">
+                                    {{ $itKicker }}
+                                </div>
                             @endif
                             @if ($itTitle)
-                                <div class="mt-1 text-lg font-light tracking-tight {{ $itUrl ? 'group-hover:underline' : '' }}">{{ $itTitle }}</div>
+                                <div class="mt-1 text-lg font-light tracking-tight {{ $itUrl ? 'group-hover:underline' : '' }}" style="color: {{ $titleColor }};">
+                                    {{ $itTitle }}
+                                </div>
                             @endif
                             @if ($itExc)
-                                <p class="mt-2 text-sm text-slate-600">{{ $itExc }}</p>
+                                <p class="mt-2 text-sm" style="color: {{ $excerptColor }};">
+                                    {{ $itExc }}
+                                </p>
                             @endif
                             @if ($itCta && $itCtaUrl)
                                 <div class="mt-4">
-                                    <a href="{{ $itCtaUrl }}" class="mt-2 text-sm font-medium text-blue-600 transition-colors duration-150 ease-in-out hover:underline">{{ $itCta }} -&gt</a>
+                                    <a href="{{ $itCtaUrl }}" class="mt-2 text-sm font-medium transition-colors duration-150 ease-in-out hover:underline" style="color: {{ $ctaColor }};">
+                                        {{ $itCta }} -&gt;
+                                    </a>
                                 </div>
                             @endif
                         </div>
                     @elseif ($cgColClass === 'lg:grid-cols-3')
                         <div class="m-4 p-4 {{ $cgAlignClass }}">
-                            @if ($cgKicker)
-                                <div class="mt-2 text-lg font-semibold text-slate-400">{{ $cgKicker }}</div>
+                            @if ($itKicker)
+                                <div class="mt-2 text-lg font-semibold" style="color: {{ $kickerColor }};">
+                                    {{ $itKicker }}
+                                </div>
                             @endif
                             @if ($itTitle)
-                                <div class="mt-2 text-2xl font-light tracking-tight {{ $itUrl ? 'group-hover:underline' : '' }}">{{ $itTitle }}</div>
+                                <div class="mt-2 text-2xl font-light tracking-tight {{ $itUrl ? 'group-hover:underline' : '' }}" style="color: {{ $titleColor }};">
+                                    {{ $itTitle }}
+                                </div>
                             @endif
                             @if ($itExc)
-                                <p class="mt-2 text-lg text-slate-600">{{ $itExc }}</p>
+                                <p class="mt-2 text-lg " style="color: {{ $excerptColor }};">
+                                    {{ $itExc }}
+                                </p>
                             @endif
                             @if ($itCta && $itCtaUrl)
                                 <div class="mt-4">
-                                    <a href="{{ $itCtaUrl }}" class="mt-2 text-lg font-medium text-blue-600 transition-colors duration-150 ease-in-out hover:underline">{{ $itCta }} -&gt</a>
+                                    <a href="{{ $itCtaUrl }}" class="mt-2 text-lg font-medium transition-colors duration-150 ease-in-out hover:underline" style="color: {{ $ctaColor }};">
+                                        {{ $itCta }} -&gt;
+                                    </a>
                                 </div>
                             @endif
                         </div>
                     @else
                         <div class="m-4 p-4 {{ $cgAlignClass }}">
                             @if ($itKicker)
-                                <div class="m-2 mt-4 text-xl font-semibold text-slate-400">{{ $itKicker }}</div>
+                                <div class="m-2 mt-4 text-xl font-semibold " style="color: {{ $kickerColor }};">
+                                    {{ $itKicker }}
+                                </div>
                             @endif
                             @if ($itTitle)
-                                <div class="m-2 mt-4 text-3xl font-light tracking-tight {{ $itUrl ? 'group-hover:underline' : '' }}">{{ $itTitle }}</div>
+                                <div class="m-2 mt-4 text-3xl font-light tracking-tight {{ $itUrl ? 'group-hover:underline' : '' }}" style="color: {{ $titleColor }};">
+                                    {{ $itTitle }}
+                                </div>
                             @endif
                             @if ($itExc)
-                                <p class="m-2 mt-4 text-xl text-slate-600">{{ $itExc }}</p>
+                                <p class="m-2 mt-4 text-xl " style="color: {{ $excerptColor }};">
+                                    {{ $itExc }}
+                                </p>
                             @endif
                             @if ($itCta && $itCtaUrl)
                                 <div class="mt-4">
-                                    <a href="{{ $itCtaUrl }}" class="m-2 mt-4 text-xl font-medium text-blue-600 transition-colors duration-150 ease-in-out hover:underline">{{ $itCta }} -&gt</a>
+                                    <a href="{{ $itCtaUrl }}" class="m-2 mt-4 text-xl font-medium transition-colors duration-150 ease-in-out hover:underline" style="color: {{ $ctaColor }};">
+                                        {{ $itCta }} -&gt;
+                                    </a>
                                 </div>
                             @endif
                         </div>
@@ -1869,4 +1920,383 @@
 
         </div>
     </section>
+
+{{-- ══════════════════════════════════════════════════════════════════ --}}
+{{-- Overlay Carousel                                                   --}}
+{{-- ══════════════════════════════════════════════════════════════════ --}}
+@elseif ($type === 'overlayCarousel')
+    @php
+        $ocKicker     = $t($data['kicker']         ?? '', $locale, $fallback);
+        $ocHeading    = $t($data['heading_tabs']   ?? '', $locale, $fallback);
+        $ocSubtitle   = $t($data['subtitle_tabs']  ?? '', $locale, $fallback);
+        $ocInnerHead  = $t($data['inner_heading']  ?? '', $locale, $fallback);
+
+        $ocBgPath     = $data['bg_image_path']     ?? null;
+        $ocBgUrl      = $ocBgPath ? Storage::disk('public')->url($ocBgPath) : null;
+        $ocBgOverlay  = $data['bg_overlay_color']  ?? '#8B0000CC';
+        $ocCardBorder = $data['card_border_color'] ?? '#ffffff';
+        $ocCardOvDef  = $data['card_overlay_color'] ?? '#00000099';
+        $ocNavColor   = $data['nav_btn_color']     ?? '#DAA520';
+        $ocAutoplay   = (bool)  ($data['autoplay']    ?? true);
+        $ocDelay      = max(1000, (int) ($data['autoplay_ms'] ?? 4000));
+        $ocItems      = is_array($data['items'] ?? null) ? $data['items'] : [];
+        $ocTotal      = count($ocItems);
+        $ocId         = 'oc_' . substr(md5(uniqid()), 0, 8);
+    @endphp
+
+    {{-- ── Section meta (hidden, for SEO / page context only) ── --}}
+    @if ($ocKicker || $ocHeading || $ocSubtitle)
+        <div class="mx-auto max-w-7xl px-4 py-6 mt-12">
+            @if ($ocKicker)
+                <div class="font-semibold uppercase tracking-widest text-slate-500 mb-2">
+                    {{ $ocKicker }}
+                </div>
+            @endif
+            @if ($ocHeading)
+                <h2 class="font-light tracking-tight text-slate-800">
+                    {{ $ocHeading }}
+                </h2>
+            @endif
+            @if ($ocSubtitle)
+                <p class="mt-3 text-slate-600">{!! $ocSubtitle !!}</p>
+            @endif
+        </div>
+    @endif
+
+    @if ($ocKicker || $ocHeading || $ocSubtitle)
+    <section
+        id="{{ $ocId }}"
+        class="w-full relative overflow-hidden select-none"
+        style="{{ $ocBgUrl
+            ? "background-image:url('" . e($ocBgUrl) . "');background-size:cover;background-position:center;"
+            : 'background:#1a0000;' }}"
+    >
+    @else
+    <section
+        id="{{ $ocId }}"
+        class="w-full relative overflow-hidden select-none mt-12"
+        style="{{ $ocBgUrl
+            ? "background-image:url('" . e($ocBgUrl) . "');background-size:cover;background-position:center;"
+            : 'background:#1a0000;' }}"
+    >
+    @endif
+        {{-- Background overlay --}}
+        <div class="absolute inset-0 pointer-events-none"
+             style="background-color:{{ $ocBgOverlay }};"></div>
+
+        <div class="mx-auto max-w-7xl px-4 relative z-10 py-14">
+
+            {{-- Inner heading --}}
+            @if ($ocInnerHead)
+                <p class="text-center text-white font-extrabold text-sm tracking-[0.25em] uppercase mb-10 px-4">
+                    {{ $ocInnerHead }}
+                </p>
+            @endif
+
+            {{-- ── Carousel ── --}}
+            <div class="relative" id="{{ $ocId }}_wrap">
+
+                {{-- Prev button --}}
+                <button
+                    type="button"
+                    id="{{ $ocId }}_prev"
+                    aria-label="Previous"
+                    class="absolute left-4 top-1/2 -translate-y-1/2 z-30
+                           w-14 h-14 rounded-full flex items-center justify-center
+                           shadow-lg transition-all duration-300 cursor-pointer"
+                    style="background:none;
+                           border: 3px solid {{ $ocNavColor }};
+                           opacity:0; pointer-events:none;"
+                >
+                    <svg class="w-10 h-10 text-[rgb(218,165,32)]" fill="none" stroke="currentColor"
+                         stroke-width="3" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+
+                {{-- Next button --}}
+                <button
+                    type="button"
+                    id="{{ $ocId }}_next"
+                    aria-label="Next"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 z-30
+                           w-14 h-14 rounded-full flex items-center justify-center
+                           shadow-lg transition-all duration-300 cursor-pointer"
+                    style="background:none;
+                           border: 3px solid {{ $ocNavColor }};
+                           opacity:0; pointer-events:none;"
+                >
+                    <svg class="w-10 h-10 text-[rgb(218,165,32)]" fill="none" stroke="currentColor"
+                         stroke-width="3" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </button>
+
+                {{-- Track --}}
+                <div class="overflow-hidden">
+                    <div id="{{ $ocId }}_track"
+                         class="flex"
+                         style="transition: transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94); will-change: transform;">
+
+                        @foreach ($ocItems as $idx => $item)
+                            @php
+                                $iKicker  = $t($item['kicker_tabs']   ?? '', $locale, $fallback);
+                                $iTitle   = $t($item['title_tabs']    ?? '', $locale, $fallback);
+                                $iSub     = $t($item['subtitle_tabs'] ?? '', $locale, $fallback);
+                                $iImgPath = $item['card_image_path']  ?? null;
+                                $iImgUrl  = $iImgPath
+                                    ? Storage::disk('public')->url($iImgPath)
+                                    : null;
+                                $iOvColor = (!empty($item['card_overlay_color']))
+                                    ? $item['card_overlay_color']
+                                    : $ocCardOvDef;
+                                $iUrl     = $item['link_url'] ?? null;
+                                $iTag     = $iUrl ? 'a' : 'div';
+                                $iHref    = $iUrl ? "href=\"{$iUrl}\"" : '';
+                            @endphp
+
+                            <div class="oc-slide flex-none w-1/4 px-3">
+                                <{{ $iTag }} {{ $iHref }}
+                                    class="oc-card relative block overflow-hidden"
+                                    style="aspect-ratio:1/1;
+                                           border: 2px solid {{ $ocCardBorder }};"
+                                >
+                                    {{-- Card background image --}}
+                                    @if ($iImgUrl)
+                                        <img
+                                            src="{{ $iImgUrl }}"
+                                            alt="{{ $iTitle }}"
+                                            class="absolute inset-0 w-full h-full object-cover
+                                                   transition-transform duration-700 oc-card-img"
+                                            loading="lazy"
+                                        >
+                                    @else
+                                        <div class="absolute inset-0 bg-slate-900"></div>
+                                    @endif
+
+                                    {{-- Card overlay (fades on hover) --}}
+                                    <div
+                                        class="oc-card-overlay absolute inset-0
+                                               transition-opacity duration-500"
+                                        style="background-color:{{ $iOvColor }};"></div>
+
+                                    {{-- Card text content --}}
+                                    <div class="absolute inset-0 flex flex-col justify-end
+                                                p-5 z-10 pointer-events-none">
+                                        @if ($iKicker)
+                                            <p class="text-white/70 text-xs font-semibold
+                                                       uppercase tracking-widest mb-2">
+                                                {{ $iKicker }}
+                                            </p>
+                                        @endif
+                                        {{-- Red accent line --}}
+                                        <div class="w-8 h-1 bg-[rgb(218,165,32)] mb-3"></div>
+                                        @if ($iTitle)
+                                            <h3 class="text-white font-extrabold text-sm
+                                                       uppercase tracking-wide leading-snug">
+                                                {{ $iTitle }}
+                                            </h3>
+                                        @endif
+                                        @if ($iSub)
+                                            <p class="text-white/75 text-xs mt-1 leading-relaxed">
+                                                {{ $iSub }}
+                                            </p>
+                                        @endif
+                                    </div>
+                                </{{ $iTag }}>
+                            </div>
+                        @endforeach
+
+                    </div>{{-- /track --}}
+                </div>{{-- /overflow-hidden --}}
+
+                {{-- Dot indicators --}}
+                <div id="{{ $ocId }}_dots"
+                    class="flex justify-center gap-2 mt-8 flex-wrap min-h-[20px]">
+                </div>
+
+            </div>{{-- /relative wrap --}}
+        </div>{{-- /relative z-10 --}}
+    </section>
+
+    <script>
+        (function () {
+            'use strict';
+
+            const id       = '{{ $ocId }}';
+            const wrap     = document.getElementById(id + '_wrap');
+            const track    = document.getElementById(id + '_track');
+            const prevBtn  = document.getElementById(id + '_prev');
+            const nextBtn  = document.getElementById(id + '_next');
+            const dotsWrap = document.getElementById(id + '_dots');
+            const navColor = '{{ $ocNavColor }}';
+            const autoplay = {{ $ocAutoplay ? 'true' : 'false' }};
+            const delay    = {{ $ocDelay }};
+
+            if (!track) return;
+
+            const slides = Array.from(track.querySelectorAll('.oc-slide'));
+            const total  = slides.length;
+            if (total === 0) return;
+
+            let current = 0;
+            let timer   = null;
+            let dots    = [];
+
+            // ── Responsive visible count ──────────────────────────────────
+            function visibleCount() {
+                const w = window.innerWidth;
+                if (w < 480)  return 1;
+                if (w < 768)  return 2;
+                if (w < 1024) return 3;
+                return 4;
+            }
+
+            function maxIdx() {
+                return Math.max(0, total - visibleCount());
+            }
+
+            // ── Set slide widths ──────────────────────────────────────────
+            function setSizes() {
+                const pct = 100 / visibleCount();
+                slides.forEach(function (s) { s.style.width = pct + '%'; });
+            }
+
+            // ── Build dots dynamically based on position count ────────────
+            function buildDots() {
+                if (!dotsWrap) return;
+                dotsWrap.innerHTML = '';
+                dots = [];
+
+                const count = maxIdx() + 1;
+                if (count <= 1) return;
+
+                for (let i = 0; i < count; i++) {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'oc-dot w-3 h-3 rounded-full transition-all duration-300';
+                    btn.setAttribute('aria-label', 'Go to slide ' + (i + 1));
+                    btn.style.background = 'rgba(255,255,255,0.4)';
+                    btn.addEventListener('click', function () {
+                        stopTimer();
+                        goTo(i);
+                        startTimer();
+                    });
+                    dotsWrap.appendChild(btn);
+                    dots.push(btn);
+                }
+            }
+
+            // ── Navigate ──────────────────────────────────────────────────
+            function goTo(idx) {
+                current = Math.max(0, Math.min(idx, maxIdx()));
+                const pct = current * (100 / visibleCount());
+                track.style.transform = 'translateX(-' + pct + '%)';
+                updateDots();
+            }
+
+            function next() { goTo(current >= maxIdx() ? 0 : current + 1); }
+            function prev() { goTo(current <= 0 ? maxIdx() : current - 1); }
+
+            // ── Dots ─────────────────────────────────────────────────────
+            function updateDots() {
+                dots.forEach(function (dot, i) {
+                    if (i === current) {
+                        dot.style.background = navColor;
+                        dot.style.transform  = 'scale(1.25)';
+                    } else {
+                        dot.style.background = 'rgba(255,255,255,0.4)';
+                        dot.style.transform  = 'scale(1)';
+                    }
+                });
+            }
+
+            // ── Auto-play ────────────────────────────────────────────────
+            function startTimer() {
+                if (!autoplay) return;
+                clearInterval(timer);
+                timer = setInterval(next, delay);
+            }
+            function stopTimer() { clearInterval(timer); }
+
+            // ── Button visibility on section hover ───────────────────────
+            function showNav() {
+                [prevBtn, nextBtn].forEach(function (btn) {
+                    if (!btn) return;
+                    btn.style.opacity       = '1';
+                    btn.style.pointerEvents = 'auto';
+                });
+            }
+            function hideNav() {
+                [prevBtn, nextBtn].forEach(function (btn) {
+                    if (!btn) return;
+                    btn.style.opacity       = '0';
+                    btn.style.pointerEvents = 'none';
+                });
+            }
+
+            // ── Card overlay: hide on card hover ─────────────────────────
+            track.querySelectorAll('.oc-card').forEach(function (card) {
+                const overlay = card.querySelector('.oc-card-overlay');
+                const img     = card.querySelector('.oc-card-img');
+
+                card.addEventListener('mouseenter', function () {
+                    if (overlay) overlay.style.opacity = '0';
+                    if (img)     img.style.transform   = 'scale(1.05)';
+                });
+                card.addEventListener('mouseleave', function () {
+                    if (overlay) overlay.style.opacity = '1';
+                    if (img)     img.style.transform   = 'scale(1)';
+                });
+            });
+
+            // ── Event listeners ──────────────────────────────────────────
+            if (prevBtn) {
+                prevBtn.addEventListener('click', function () {
+                    stopTimer(); prev(); startTimer();
+                });
+            }
+            if (nextBtn) {
+                nextBtn.addEventListener('click', function () {
+                    stopTimer(); next(); startTimer();
+                });
+            }
+
+            if (wrap) {
+                wrap.addEventListener('mouseenter', function () { showNav(); stopTimer(); });
+                wrap.addEventListener('mouseleave', function () { hideNav(); startTimer(); });
+            }
+
+            // ── Touch / swipe ────────────────────────────────────────────
+            let touchStartX = 0;
+            track.addEventListener('touchstart', function (e) {
+                touchStartX = e.touches[0].clientX;
+            }, { passive: true });
+            track.addEventListener('touchend', function (e) {
+                const dx = touchStartX - e.changedTouches[0].clientX;
+                if (Math.abs(dx) > 40) {
+                    stopTimer();
+                    dx > 0 ? next() : prev();
+                    startTimer();
+                }
+            }, { passive: true });
+
+            // ── Resize: rebuild dots + recalculate ───────────────────────
+            let resizeTimer = null;
+            window.addEventListener('resize', function () {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(function () {
+                    setSizes();
+                    buildDots();
+                    goTo(Math.min(current, maxIdx()));
+                }, 100);
+            }, { passive: true });
+
+            // ── Init ─────────────────────────────────────────────────────
+            setSizes();
+            buildDots();
+            goTo(0);
+            startTimer();
+        })();
+    </script>
 @endif

@@ -34,7 +34,7 @@ $metaTitle       = mb_substr(trim($metaTitle), 0, 70);
 $metaDescription = mb_substr(trim($metaDescription), 0, 160);
 
 // OG locale map
-$ogLocaleMap = ['en' => 'en_US', 'tr' => 'tr_TR', 'ar' => 'ar_AR', 'fr' => 'fr_FR'];
+$ogLocaleMap = ['en' => 'en_US', 'tr' => 'tr_TR', 'ar' => 'ar_SR', 'fr' => 'fr_FR'];
 $ogLocale    = $ogLocaleMap[$locale] ?? $ogLocaleMap[$fallback] ?? 'en_US';
 
 // Published/modified times (optional)
