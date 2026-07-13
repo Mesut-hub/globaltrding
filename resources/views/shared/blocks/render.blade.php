@@ -751,9 +751,9 @@
     @php
         $layout     = $data['layout']     ?? 'media-text-links';
         $mediaType  = $data['media_type'] ?? 'image';
-        $mediaWidth = max(30, min(40, (int) ($data['media_width'] ?? 35)));
-        $textWidth  = max(30, min(40, (int) ($data['text_width']  ?? 35)));
-        $linksWidth = max(30, min(40, (int) ($data['links_width'] ?? 35)));
+        $mediaWidth = max(0, min(100, (int) ($data['media_width'] ?? 35)));
+        $textWidth  = max(0, min(100, (int) ($data['text_width']  ?? 35)));
+        $linksWidth = max(0, min(100, (int) ($data['links_width'] ?? 35)));
         $maxH       = is_numeric($data['media_max_h'] ?? null) ? (int) $data['media_max_h'] : null;
 
         $imgUrl    = !empty($data['image'])  ? Storage::disk('public')->url($data['image'])  : null;
@@ -847,11 +847,14 @@
 {{-- ══════════════════════════════════════════════════════════════════ --}}
 @elseif ($type === 'dropdownLinks')
     @php
+
+        $dlKicker = $t($data['kicker'] ?? '', $locale, $fallback) ?: null;
         $dlHeading = $t($data['heading'] ?? '', $locale, $fallback) ?: null;
         $items     = is_array($data['items'] ?? null) ? $data['items'] : [];
     @endphp
     <section class="mx-auto py-12">
-        @if ($dlHeading) <h3 class="gt-acc__heading">{{ $dlHeading }}</h3> @endif
+        @if ($dlKicker) <div class="m-2 text-lg font-semibold text-slate-500">{{ $dlKicker }}</div> @endif
+        @if ($dlHeading) <h3 class="m-2 gt-acc__heading">{{ $dlHeading }}</h3> @endif
         <div class="gt-acc__list">
             @foreach ($items as $i => $row)
             @php
@@ -876,10 +879,12 @@
                 $mediaStyle    = $maxH ? "max-height:{$maxH}px; height:{$maxH}px;" : '';
 
                 [$mediaClass, $textClass] = match($ratio) {
+                    '0-100' => ['lg:col-span-0', 'lg:col-span-12'],
                     '30-70' => ['lg:col-span-4', 'lg:col-span-8'],
                     '40-60' => ['lg:col-span-5', 'lg:col-span-7'],
                     '60-40' => ['lg:col-span-7', 'lg:col-span-5'],
                     '70-30' => ['lg:col-span-8', 'lg:col-span-4'],
+                    '100-0' => ['lg:col-span-12', 'lg:col-span-0'],
                     default => ['lg:col-span-6', 'lg:col-span-6'],
                 };
                 $hasInnerPanel = ($insideTitle || $insideExcerpt || $insideHtml || $imgUrl || $vidUrl);
@@ -1155,7 +1160,7 @@
                             
                             @if ($itExc)
                                 <p class="mt-2" style="font-size: 0.80rem; color: {{ $excerptColor }};">
-                                    {{ $itExc }}
+                                    {!! $itExc !!}
                                 </p>
                             @endif
                             
@@ -1181,7 +1186,7 @@
                             @endif
                             @if ($itExc)
                                 <p class="mt-2 text-sm" style="color: {{ $excerptColor }};">
-                                    {{ $itExc }}
+                                    {!! $itExc !!}
                                 </p>
                             @endif
                             @if ($itCta && $itCtaUrl)
@@ -1206,7 +1211,7 @@
                             @endif
                             @if ($itExc)
                                 <p class="mt-2 text-lg " style="color: {{ $excerptColor }};">
-                                    {{ $itExc }}
+                                    {!! $itExc !!}
                                 </p>
                             @endif
                             @if ($itCta && $itCtaUrl)
@@ -1231,7 +1236,7 @@
                             @endif
                             @if ($itExc)
                                 <p class="m-2 mt-4 text-xl " style="color: {{ $excerptColor }};">
-                                    {{ $itExc }}
+                                    {!! $itExc !!}
                                 </p>
                             @endif
                             @if ($itCta && $itCtaUrl)
@@ -1732,9 +1737,9 @@
         $fwcBg       = $data['section_bg_color'] ?? '#dce9f5';
         $fwcCardBg   = $data['card_bg_color'] ?? 'transparent';
         $fwcColClass = match ($fwcCols) {
-            2       => 'md:grid-cols-2',
-            3       => 'sm:grid-cols-2 lg:grid-cols-3',
-            4       => 'sm:grid-cols-2 lg:grid-cols-4',
+            2       => 'xl:grid-cols-2',
+            3       => 'lg:grid-cols-3',
+            4       => 'md:grid-cols-4',
             default => 'sm:grid-cols-2 lg:grid-cols-3',
         };
         $fwcGapClass = $fwcGap === 'gapless' ? '' : 'gap-6';
@@ -1817,7 +1822,7 @@
                         @endif
                         @if ($itExc)
                             <p class="{{ $fwcItemBody }} text-slate-600 leading-relaxed flex-1">
-                                {{ $itExc }}
+                                {!! $itExc !!}
                             </p>
                         @endif
                         @if ($itCta && $itCtaUrl)

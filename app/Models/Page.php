@@ -23,6 +23,7 @@ class Page extends Model
         'show_in_products',
         'show_in_information',
         'show_in_service',
+        'sort_order',
     ];
 
     protected function casts(): array 
@@ -39,6 +40,7 @@ class Page extends Model
         'show_in_products'    => 'boolean',
         'show_in_information' => 'boolean',
         'show_in_service'     => 'boolean',
+        'sort_order'          => 'int',
         ];
     }
 

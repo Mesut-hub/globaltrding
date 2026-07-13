@@ -56,6 +56,12 @@ class PageResource extends Resource
                 ->afterStateUpdated(fn ($state, callable $set) => $set('slug', Str::slug($state, '-'))),
 
             // FIX: was 'is_active' — PageController and all other code use 'is_published'
+            TextInput::make('sort_order')
+                ->label('Sort order')
+                ->numeric()
+                ->default(0)
+                ->required(),
+
             Toggle::make('is_published')
                 ->label('Published')
                 ->default(true),

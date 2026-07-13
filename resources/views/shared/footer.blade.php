@@ -20,10 +20,17 @@
         ? $footerLogoPath
         : asset(ltrim($footerLogoPath, '/'));
 
+<<<<<<< HEAD
     $companyPages = \App\Models\Page::query()->where('is_published', true)->where('show_in_company', true)->orderBy('slug')->get();
     $productPages = \App\Models\Page::query()->where('is_published', true)->where('show_in_products', true)->orderBy('slug')->get();
     $infoPages    = \App\Models\Page::query()->where('is_published', true)->where('show_in_information', true)->orderBy('slug')->get();
     $servicePages = \App\Models\Page::query()->where('is_published', true)->where('show_in_service', true)->orderBy('slug')->get();
+=======
+    $companyPages = \App\Models\Page::query()->where('is_published', true)->where('show_in_company', true)->orderBy('sort_order')->get();
+    $productPages = \App\Models\Page::query()->where('is_published', true)->where('show_in_products', true)->orderBy('sort_order')->get();
+    $infoPages    = \App\Models\Page::query()->where('is_published', true)->where('show_in_information', true)->orderBy('sort_order')->get();
+    $servicePages = \App\Models\Page::query()->where('is_published', true)->where('show_in_service', true)->orderBy('sort_order')->get();
+>>>>>>> 3497bc5 (correction)
 
     $pageUrl = fn ($slug) => "/{$locale}/pages/{$slug}";
     $year = date('Y');

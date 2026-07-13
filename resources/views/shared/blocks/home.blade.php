@@ -179,42 +179,247 @@
 {{-- INDUSTRIES SLIDER --}}
 @elseif ($type === 'industries_slider')
     @php
-        $sectionTitle = $t($data['title'] ?? ['en'=>'Industries']);
+        $sectionTitle = $t($data['title'] ?? ['en' => 'Industries']);
         $viewAllUrl   = $urlWithLocale($data['view_all_url'] ?? '/{locale}');
-        $industries   = \App\Models\Industry::query()->where('is_published',true)->orderBy('sort_order')->limit(12)->get();
+
+        $indNavColor  = $data['nav_btn_color']      ?? '#DAA520';
+        $indCardBorder= $data['card_border_color']  ?? '#e2e8f0';
+        $indAutoplay  = (bool) ($data['autoplay']    ?? false);
+        $indDelay     = max(1000, (int) ($data['autoplay_ms'] ?? 4000));
+
+        $industries = \App\Models\Industry::query()
+            ->where('is_published', true)
+            ->orderBy('sort_order')
+            ->limit(12)
+            ->get();
+
+        $indId = 'ind_' . substr(md5(uniqid()), 0, 8);
     @endphp
-    <section class="mx-auto max-w-7xl px-4 py-12" data-industry-slider>
+
+    <section class="mx-auto max-w-7xl px-4 py-12" id="{{ $indId }}">
         <div class="flex items-end justify-between gap-4">
             <h2 class="text-4xl font-semibold tracking-tight">{{ $sectionTitle }}</h2>
-            <div class="flex items-center gap-3">
-                <a href="{{ $viewAllUrl }}" class="text-sm text-slate-600 hover:underline">{{ __('ui.view_all') }} →</a>
-            </div>
+            <a href="{{ $viewAllUrl }}" class="text-sm text-slate-600 hover:underline">
+                {{ __('ui.view_all') }} →
+            </a>
         </div>
-        <div class="mt-6 overflow-hidden">
-            <div class="flex gap-4 overflow-x-auto overflow-x-hidden snap-x snap-mandatory scroll-smooth pb-2" data-ind="track">
-                @foreach ($industries as $ind)
-                    @php
-                        $title = data_get($ind->title,$locale) ?: data_get($ind->title,$fallback) ?: $ind->slug;
-                        $img   = $ind->cover_image_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($ind->cover_image_path) : null;
-                        $iUrl=$ind['url'] ?? null;
-                    @endphp
-                    <a href="{{ $iUrl ?: '#' }}" class="snap-start shrink-0 w-[85%] sm:w-[45%] lg:w-[28%] rounded-xl border border-slate-200 bg-white overflow-hidden hover:shadow-sm transition">
-                        <div class="aspect-[16/9] bg-slate-100 overflow-hidden">
-                            @if ($img)<img src="{{ $img }}" alt="{{ $title }}" class="h-full w-full object-cover hover:scale-[1.015] transition"/>@endif
+
+        <div class="relative mt-6" id="{{ $indId }}_wrap">
+
+            {{-- Prev button --}}
+            <button
+                type="button"
+                id="{{ $indId }}_prev"
+                aria-label="Previous"
+                class="absolute left-2 top-1/2 -translate-y-1/2 z-30
+                       w-12 h-12 rounded-full flex items-center justify-center
+                       shadow-lg transition-all duration-300 cursor-pointer bg-white"
+                style="border: 2px solid {{ $indNavColor }}; opacity:0; pointer-events:none;"
+            >
+                <svg class="w-6 h-6" fill="none" stroke="{{ $indNavColor }}" stroke-width="3" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                </svg>
+            </button>
+
+            {{-- Next button --}}
+            <button
+                type="button"
+                id="{{ $indId }}_next"
+                aria-label="Next"
+                class="absolute right-2 top-1/2 -translate-y-1/2 z-30
+                       w-12 h-12 rounded-full flex items-center justify-center
+                       shadow-lg transition-all duration-300 cursor-pointer bg-white"
+                style="border: 2px solid {{ $indNavColor }}; opacity:0; pointer-events:none;"
+            >
+                <svg class="w-6 h-6" fill="none" stroke="{{ $indNavColor }}" stroke-width="3" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                </svg>
+            </button>
+
+            {{-- Track --}}
+            <div class="overflow-hidden">
+                <div id="{{ $indId }}_track"
+                     class="flex"
+                     style="transition: transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94); will-change: transform;">
+
+                    @foreach ($industries as $ind)
+                        @php
+                            $title = data_get($ind->title, $locale) ?: data_get($ind->title, $fallback) ?: $ind->slug;
+                            $img   = $ind->cover_image_path
+                                ? \Illuminate\Support\Facades\Storage::disk('public')->url($ind->cover_image_path)
+                                : null;
+                            $iUrl  = $ind['url'] ?? null;
+                        @endphp
+
+                        <div class="ind-slide flex-none px-2">
+                            <a href="{{ $iUrl ?: '#' }}"
+                               class="block overflow-hidden rounded-xl bg-white hover:shadow-md transition"
+                               style="border: 1px solid {{ $indCardBorder }};"
+                            >
+                                <div class="aspect-[16/9] bg-slate-100 overflow-hidden">
+                                    @if ($img)
+                                        <img src="{{ $img }}" alt="{{ $title }}"
+                                             class="h-full w-full object-cover hover:scale-[1.05] transition duration-500"
+                                             loading="lazy">
+                                    @endif
+                                </div>
+                                <div class="p-4">
+                                    <div class="text-xl font-light tracking-tight">{{ $title }}</div>
+                                    <div class="mt-2 text-sm text-slate-700 hover:underline">Discover more →</div>
+                                </div>
+                            </a>
                         </div>
-                        <div class="p-4">
-                            <div class="text-xl font-light tracking-tight">{{ $title }}</div>
-                            <div class="mt-2 text-sm text-slate-700 hover:underline">Discover more →</div>
-                        </div>
-                    </a>
-                @endforeach
-                @if (count($industries) > 3)
-                    <button type="button" class="ind-btn ind-btn--prev" data-ind="prev" aria-label="Previous">‹</button>
-                <button type="button" class="ind-btn ind-btn--next" data-ind="next" aria-label="Next">›</button>
-                @endif
+                    @endforeach
+
+                </div>
             </div>
+
+            {{-- Dots --}}
+            <div id="{{ $indId }}_dots" class="flex justify-center gap-2 mt-6 flex-wrap min-h-[20px]"></div>
+
         </div>
     </section>
+
+    <script>
+        (function () {
+            'use strict';
+
+            const id       = '{{ $indId }}';
+            const wrap     = document.getElementById(id + '_wrap');
+            const track    = document.getElementById(id + '_track');
+            const prevBtn  = document.getElementById(id + '_prev');
+            const nextBtn  = document.getElementById(id + '_next');
+            const dotsWrap = document.getElementById(id + '_dots');
+            const navColor = '{{ $indNavColor }}';
+            const autoplay = {{ $indAutoplay ? 'true' : 'false' }};
+            const delay    = {{ $indDelay }};
+
+            if (!track) return;
+
+            const slides = Array.from(track.querySelectorAll('.ind-slide'));
+            const total  = slides.length;
+            if (total === 0) return;
+
+            let current = 0;
+            let timer   = null;
+            let dots    = [];
+
+            function visibleCount() {
+                const w = window.innerWidth;
+                if (w < 480)  return 1;
+                if (w < 768)  return 2;
+                if (w < 1024) return 3;
+                return 4;
+            }
+
+            function maxIdx() { return Math.max(0, total - visibleCount()); }
+
+            function setSizes() {
+                const pct = 100 / visibleCount();
+                slides.forEach(function (s) { s.style.width = pct + '%'; });
+            }
+
+            function buildDots() {
+                if (!dotsWrap) return;
+                dotsWrap.innerHTML = '';
+                dots = [];
+
+                const count = maxIdx() + 1;
+                if (count <= 1) return;
+
+                for (let i = 0; i < count; i++) {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'ind-dot w-3 h-3 rounded-full transition-all duration-300';
+                    btn.setAttribute('aria-label', 'Go to slide ' + (i + 1));
+                    btn.style.background = 'rgba(0,0,0,0.2)';
+                    btn.addEventListener('click', function () {
+                        stopTimer(); goTo(i); startTimer();
+                    });
+                    dotsWrap.appendChild(btn);
+                    dots.push(btn);
+                }
+            }
+
+            function goTo(idx) {
+                current = Math.max(0, Math.min(idx, maxIdx()));
+                const pct = current * (100 / visibleCount());
+                track.style.transform = 'translateX(-' + pct + '%)';
+                updateDots();
+            }
+
+            function next() { goTo(current >= maxIdx() ? 0 : current + 1); }
+            function prev() { goTo(current <= 0 ? maxIdx() : current - 1); }
+
+            function updateDots() {
+                dots.forEach(function (dot, i) {
+                    if (i === current) {
+                        dot.style.background = navColor;
+                        dot.style.transform  = 'scale(1.25)';
+                    } else {
+                        dot.style.background = 'rgba(0,0,0,0.2)';
+                        dot.style.transform  = 'scale(1)';
+                    }
+                });
+            }
+
+            function startTimer() {
+                if (!autoplay) return;
+                clearInterval(timer);
+                timer = setInterval(next, delay);
+            }
+            function stopTimer() { clearInterval(timer); }
+
+            function showNav() {
+                [prevBtn, nextBtn].forEach(function (btn) {
+                    if (!btn) return;
+                    btn.style.opacity = '1';
+                    btn.style.pointerEvents = 'auto';
+                });
+            }
+            function hideNav() {
+                [prevBtn, nextBtn].forEach(function (btn) {
+                    if (!btn) return;
+                    btn.style.opacity = '0';
+                    btn.style.pointerEvents = 'none';
+                });
+            }
+
+            if (prevBtn) prevBtn.addEventListener('click', function () { stopTimer(); prev(); startTimer(); });
+            if (nextBtn) nextBtn.addEventListener('click', function () { stopTimer(); next(); startTimer(); });
+
+            if (wrap) {
+                wrap.addEventListener('mouseenter', function () { showNav(); stopTimer(); });
+                wrap.addEventListener('mouseleave', function () { hideNav(); startTimer(); });
+            }
+
+            let touchStartX = 0;
+            track.addEventListener('touchstart', function (e) {
+                touchStartX = e.touches[0].clientX;
+            }, { passive: true });
+            track.addEventListener('touchend', function (e) {
+                const dx = touchStartX - e.changedTouches[0].clientX;
+                if (Math.abs(dx) > 40) {
+                    stopTimer();
+                    dx > 0 ? next() : prev();
+                    startTimer();
+                }
+            }, { passive: true });
+
+            let resizeTimer = null;
+            window.addEventListener('resize', function () {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(function () {
+                    setSizes(); buildDots(); goTo(Math.min(current, maxIdx()));
+                }, 100);
+            }, { passive: true });
+
+            setSizes();
+            buildDots();
+            goTo(0);
+            startTimer();
+        })();
+    </script>
 
 {{-- CTA --}}
 @elseif ($type === 'cta')

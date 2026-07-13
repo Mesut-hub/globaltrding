@@ -14,7 +14,13 @@ class PagesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->reorderable('sort_order')
+            ->defaultSort('sort_order', 'asc')
             ->columns([
+                TextColumn::make('sort_order')
+                    ->label('#')
+                    ->sortable()
+                    ->width('60px'),
                 TextColumn::make('slug')
                     ->searchable(),
                 TextColumn::make('title.en')

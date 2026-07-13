@@ -533,6 +533,7 @@ class PageBlockBuilder
             ->label('Dropdown links (accordion)')
             ->schema([
                 static::blockLocaleTabs('dl_lang', [
+                    ['name' => 'kicker', 'label' => 'Section kicker', 'type' => 'text'],
                     ['name' => 'heading', 'label' => 'Section heading', 'type' => 'text'],
                 ]),
 
@@ -560,7 +561,7 @@ class PageBlockBuilder
                         ->options(['image' => 'Image', 'video' => 'Video'])->default('image'),
 
                     Select::make('media_width')
-                        ->options(['30-70' => '30/70', '40-60' => '40/60', '50-50' => '50/50', '60-40' => '60/40', '70-30' => '70/30'])
+                        ->options(['0-100' => '0/100', '30-70' => '30/70', '40-60' => '40/60', '50-50' => '50/50', '60-40' => '60/40', '70-30' => '70/30', '100-0' => '100/0',])
                         ->default('50-50'),
 
                     FileUpload::make('image')
@@ -825,7 +826,7 @@ class PageBlockBuilder
                         static::blockLocaleTabs('fwc_item_lang', [
                             ['name' => 'kicker_tabs',  'label' => 'Kicker',     'type' => 'text'],
                             ['name' => 'title_tabs',   'label' => 'Title',      'type' => 'text'],
-                            ['name' => 'excerpt_tabs', 'label' => 'Body text',  'type' => 'textarea', 'rows' => 3],
+                            ['name' => 'excerpt_tabs', 'label' => 'Body html',  'type' => 'html', 'rows' => 8],
                             ['name' => 'cta_tabs',     'label' => 'CTA label',  'type' => 'text'],
                         ]),
                         FileUpload::make('cover_image_path')
@@ -1086,7 +1087,7 @@ class PageBlockBuilder
                         static::blockLocaleTabs('colsGrids_item_lang', [
                             ['name' => 'kicker_tabs',   'label' => 'Kicker',   'type' => 'text'],
                             ['name' => 'title_tabs',   'label' => 'Title',   'type' => 'text'],
-                            ['name' => 'excerpt_tabs', 'label' => 'Excerpt', 'type' => 'textarea', 'rows' => 2],
+                            ['name' => 'excerpt_tabs', 'label' => 'Excerpt', 'type' => 'html', 'rows' => 2],
                             ['name' => 'cta_tabs',   'label' => 'CTA Label',   'type' => 'text'],
                         ]),
 
