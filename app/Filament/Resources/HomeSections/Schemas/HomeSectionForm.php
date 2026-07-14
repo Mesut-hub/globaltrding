@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\HomeSections\Schemas;
 
+use App\Filament\Concerns\HasBlockLocaleTabs;
 use Filament\Forms\Components\Builder;
 use Filament\Forms\Components\Builder\Block;
 use Filament\Forms\Components\FileUpload;
@@ -130,14 +131,53 @@ class HomeSectionForm
                     Block::make('industries_slider')
                         ->label('Industries slider (from Industries CMS)')
                         ->schema([
-                            KeyValue::make('title')
-                                ->label('Section title (en,tr,ar,fr)')
-                                ->keyLabel('Locale')
-                                ->valueLabel('Title'),
+                             static::blockLocaleTabs('ind_slider_meta_lang', [
+                                ['name' => 'kicker',        'label' => 'Section kicker',   'type' => 'text'],
+                                ['name' => 'heading_tabs',  'label' => 'Section heading',  'type' => 'text'],
+                                ['name' => 'subtitle_tabs', 'label' => 'Section subtitle', 'type' => 'text'],
+                            ]),
+
+                            // Inner heading (displayed above cards inside the section)
+                            static::blockLocaleTabs('ind_slider_inner_lang', [
+                                ['name' => 'inner_heading', 'label' => 'Inner heading (shown above cards)', 'type' => 'text'],
+                            ]),
+
+                            \Filament\Schemas\Components\Grid::make(2)->schema([
+                                FileUpload::make('bg_image_path')
+                                    ->label('Section background image')
+                                    ->disk('public')
+                                    ->directory('home/industries')
+                                    ->image(),
+                                ColorPicker::make('bg_overlay_color')
+                                    ->label('Background overlay color')
+                                    ->default('#8B0000CC'),
+                            ]),
+ 
+                            \Filament\Schemas\Components\Grid::make(3)->schema([
+                                ColorPicker::make('card_border_color')
+                                    ->label('Card border color')
+                                    ->default('#ffffff'),
+                                ColorPicker::make('card_overlay_color')
+                                    ->label('Card overlay color')
+                                    ->default('#00000099'),
+                                ColorPicker::make('nav_btn_color')
+                                    ->label('Prev / Next button color')
+                                    ->default('#DAA520'),
+                            ]),
+ 
+                            \Filament\Schemas\Components\Grid::make(2)->schema([
+                                Toggle::make('autoplay')
+                                    ->label('Auto-play')
+                                    ->default(true),
+                                TextInput::make('autoplay_ms')
+                                    ->label('Auto-play interval (ms)')
+                                    ->numeric()
+                                    ->default(4000),
+                            ]),
 
                             TextInput::make('view_all_url')
-                                ->label('View all industries URL')
-                                ->default('/{locale}'),
+                                ->label('View-all URL (supports {locale})')
+                                ->default('/{locale}/industries'),
                         ]),
 
                     // Simple CTA block

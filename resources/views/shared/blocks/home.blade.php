@@ -179,12 +179,19 @@
 {{-- INDUSTRIES SLIDER --}}
 @elseif ($type === 'industries_slider')
     @php
-        $sectionTitle = $t($data['title'] ?? ['en' => 'Industries']);
-        $viewAllUrl   = $urlWithLocale($data['view_all_url'] ?? '/{locale}');
+        $indKicker    = $t($data['kicker']         ?? '');
+        $indHeading   = $t($data['heading_tabs']   ?? ($data['title'] ?? ['en' => 'Industries']));
+        $indSubtitle  = $t($data['subtitle_tabs']  ?? '');
+        $indInnerHead = $t($data['inner_heading']  ?? '');
+        $viewAllUrl   = $urlWithLocale($data['view_all_url'] ?? '/{locale}/industries');
 
-        $indNavColor  = $data['nav_btn_color']      ?? '#DAA520';
-        $indCardBorder= $data['card_border_color']  ?? '#e2e8f0';
-        $indAutoplay  = (bool) ($data['autoplay']    ?? false);
+        $indBgPath    = $data['bg_image_path']     ?? null;
+        $indBgUrl     = $indBgPath ? Storage::disk('public')->url($indBgPath) : null;
+        $indBgOverlay = $data['bg_overlay_color']  ?? '#8B0000CC';
+        $indCardBorder= $data['card_border_color'] ?? '#ffffff';
+        $indCardOvDef = $data['card_overlay_color']?? '#00000099';
+        $indNavColor  = $data['nav_btn_color']     ?? '#DAA520';
+        $indAutoplay  = (bool) ($data['autoplay']    ?? true);
         $indDelay     = max(1000, (int) ($data['autoplay_ms'] ?? 4000));
 
         $industries = \App\Models\Industry::query()
@@ -196,88 +203,189 @@
         $indId = 'ind_' . substr(md5(uniqid()), 0, 8);
     @endphp
 
-    <section class="mx-auto max-w-7xl px-4 py-12" id="{{ $indId }}">
-        <div class="flex items-end justify-between gap-4">
-            <h2 class="text-4xl font-semibold tracking-tight">{{ $sectionTitle }}</h2>
-            <a href="{{ $viewAllUrl }}" class="text-sm text-slate-600 hover:underline">
-                {{ __('ui.view_all') }} →
-            </a>
-        </div>
-
-        <div class="relative mt-6" id="{{ $indId }}_wrap">
-
-            {{-- Prev button --}}
-            <button
-                type="button"
-                id="{{ $indId }}_prev"
-                aria-label="Previous"
-                class="absolute left-2 top-1/2 -translate-y-1/2 z-30
-                       w-12 h-12 rounded-full flex items-center justify-center
-                       shadow-lg transition-all duration-300 cursor-pointer bg-white"
-                style="border: 2px solid {{ $indNavColor }}; opacity:0; pointer-events:none;"
-            >
-                <svg class="w-6 h-6" fill="none" stroke="{{ $indNavColor }}" stroke-width="3" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
-                </svg>
-            </button>
-
-            {{-- Next button --}}
-            <button
-                type="button"
-                id="{{ $indId }}_next"
-                aria-label="Next"
-                class="absolute right-2 top-1/2 -translate-y-1/2 z-30
-                       w-12 h-12 rounded-full flex items-center justify-center
-                       shadow-lg transition-all duration-300 cursor-pointer bg-white"
-                style="border: 2px solid {{ $indNavColor }}; opacity:0; pointer-events:none;"
-            >
-                <svg class="w-6 h-6" fill="none" stroke="{{ $indNavColor }}" stroke-width="3" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-                </svg>
-            </button>
-
-            {{-- Track --}}
-            <div class="overflow-hidden">
-                <div id="{{ $indId }}_track"
-                     class="flex"
-                     style="transition: transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94); will-change: transform;">
-
-                    @foreach ($industries as $ind)
-                        @php
-                            $title = data_get($ind->title, $locale) ?: data_get($ind->title, $fallback) ?: $ind->slug;
-                            $img   = $ind->cover_image_path
-                                ? \Illuminate\Support\Facades\Storage::disk('public')->url($ind->cover_image_path)
-                                : null;
-                            $iUrl  = $ind['url'] ?? null;
-                        @endphp
-
-                        <div class="ind-slide flex-none px-2">
-                            <a href="{{ $iUrl ?: '#' }}"
-                               class="block overflow-hidden rounded-xl bg-white hover:shadow-md transition"
-                               style="border: 1px solid {{ $indCardBorder }};"
-                            >
-                                <div class="aspect-[16/9] bg-slate-100 overflow-hidden">
-                                    @if ($img)
-                                        <img src="{{ $img }}" alt="{{ $title }}"
-                                             class="h-full w-full object-cover hover:scale-[1.05] transition duration-500"
-                                             loading="lazy">
-                                    @endif
-                                </div>
-                                <div class="p-4">
-                                    <div class="text-xl font-light tracking-tight">{{ $title }}</div>
-                                    <div class="mt-2 text-sm text-slate-700 hover:underline">Discover more →</div>
-                                </div>
-                            </a>
+    {{-- ── Section meta (kicker / heading / subtitle) ── --}}
+    @if ($indKicker || $indHeading || $indSubtitle)
+        <div class="mx-auto max-w-7xl px-4 py-6 mt-12">
+            <div class="flex items-end justify-between gap-4">
+                <div>
+                    @if ($indKicker)
+                        <div class="font-semibold uppercase tracking-widest text-slate-500 mb-2">
+                            {{ $indKicker }}
                         </div>
-                    @endforeach
-
+                    @endif
+                    @if ($indHeading)
+                        <h2 class="font-light tracking-tight text-slate-800">
+                            {{ $indHeading }}
+                        </h2>
+                    @endif
+                    @if ($indSubtitle)
+                        <p class="mt-3 text-slate-600">{!! $indSubtitle !!}</p>
+                    @endif
                 </div>
+                <a href="{{ $viewAllUrl }}" class="text-sm text-slate-600 hover:underline whitespace-nowrap">
+                    {{ __('ui.view_all') }} →
+                </a>
             </div>
-
-            {{-- Dots --}}
-            <div id="{{ $indId }}_dots" class="flex justify-center gap-2 mt-6 flex-wrap min-h-[20px]"></div>
-
         </div>
+    @endif
+
+    @if ($indKicker || $indHeading || $indSubtitle)
+    <section
+        id="{{ $indId }}"
+        class="w-full relative overflow-hidden select-none"
+        style="{{ $indBgUrl
+            ? "background-image:url('" . e($indBgUrl) . "');background-size:cover;background-position:center;"
+            : 'background:#1a0000;' }}"
+    >
+    @else
+    <section
+        id="{{ $indId }}"
+        class="w-full relative overflow-hidden select-none mt-12"
+        style="{{ $indBgUrl
+            ? "background-image:url('" . e($indBgUrl) . "');background-size:cover;background-position:center;"
+            : 'background:#1a0000;' }}"
+    >
+    @endif
+        {{-- Background overlay --}}
+        <div class="absolute inset-0 pointer-events-none"
+             style="background-color:{{ $indBgOverlay }};"></div>
+
+        <div class="mx-auto max-w-7xl px-4 relative z-10 py-14">
+
+            {{-- Inner heading --}}
+            @if ($indInnerHead)
+                <p class="text-center text-white font-extrabold text-sm tracking-[0.25em] uppercase mb-10 px-4">
+                    {{ $indInnerHead }}
+                </p>
+            @endif
+
+            @if (! $indKicker && ! $indHeading && ! $indSubtitle)
+                <div class="flex items-center justify-end mb-6">
+                    <a href="{{ $viewAllUrl }}" class="text-sm text-white/80 hover:text-white hover:underline">
+                        {{ __('ui.view_all') }} →
+                    </a>
+                </div>
+            @endif
+
+            {{-- ── Carousel ── --}}
+            <div class="relative" id="{{ $indId }}_wrap">
+
+                {{-- Prev button --}}
+                You're right — my last fix only nested a div but kept the buttons positioned at left-4/right-4, which sits inside the card row (overlapping the edge cards), not outside it. To fix both issues — buttons outside the cards, and vertically centered against the cards only (not the dots) — restructure it like this:
+Replace this:
+blade            {{-- ── Carousel ── --}}
+            <div class="relative" id="{{ $indId }}_wrap">
+
+                {{-- Prev button --}}
+                <button
+                    type="button"
+                    id="{{ $indId }}_prev"
+                    aria-label="Previous"
+                    class="absolute left-4 top-1/2 -translate-y-1/2 z-30
+                           w-14 h-14 rounded-full flex items-center justify-center
+                           shadow-lg transition-all duration-300 cursor-pointer"
+                    style="background:none;
+                           border: 3px solid {{ $indNavColor }};
+                           opacity:0; pointer-events:none;"
+                >
+                    <svg class="w-10 h-10 text-[rgb(218,165,32)]" fill="none" stroke="currentColor"
+                         stroke-width="3" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+
+                {{-- Next button --}}
+                <button
+                    type="button"
+                    id="{{ $indId }}_next"
+                    aria-label="Next"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 z-30
+                           w-14 h-14 rounded-full flex items-center justify-center
+                           shadow-lg transition-all duration-300 cursor-pointer"
+                    style="background:none;
+                           border: 3px solid {{ $indNavColor }};
+                           opacity:0; pointer-events:none;"
+                >
+                    <svg class="w-10 h-10 text-[rgb(218,165,32)]" fill="none" stroke="currentColor"
+                         stroke-width="3" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </button>
+
+                {{-- Track --}}
+                <div class="overflow-hidden">
+                    <div id="{{ $indId }}_track"
+                         class="flex"
+                         style="transition: transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94); will-change: transform;">
+
+                        @foreach ($industries as $ind)
+                            @php
+                                $iTitle   = $t($ind->title   ?? []) ?: $ind->slug;
+                                $iSub     = $t($ind->excerpt ?? []);
+                                $iImgUrl  = $ind->cover_image_path
+                                    ? Storage::disk('public')->url($ind->cover_image_path)
+                                    : null;
+                                $iUrl     = $viewAllUrl && $ind->slug
+                                    ? rtrim($viewAllUrl, '/') . '/' . $ind->slug
+                                    : null;
+                            @endphp
+
+                            <div class="ind-slide flex-none w-1/4 px-3">
+                                <a href="{{ $iUrl ?: '#' }}"
+                                    class="ind-card relative block overflow-hidden"
+                                    style="aspect-ratio:1/1;
+                                           border: 2px solid {{ $indCardBorder }};"
+                                >
+                                    {{-- Card background image --}}
+                                    @if ($iImgUrl)
+                                        <img
+                                            src="{{ $iImgUrl }}"
+                                            alt="{{ $iTitle }}"
+                                            class="absolute inset-0 w-full h-full object-cover
+                                                   transition-transform duration-700 ind-card-img"
+                                            loading="lazy"
+                                        >
+                                    @else
+                                        <div class="absolute inset-0 bg-slate-900"></div>
+                                    @endif
+
+                                    {{-- Card overlay (fades on hover) --}}
+                                    <div
+                                        class="ind-card-overlay absolute inset-0
+                                               transition-opacity duration-500"
+                                        style="background-color:{{ $indCardOvDef }};"></div>
+
+                                    {{-- Card text content --}}
+                                    <div class="absolute inset-0 flex flex-col justify-end
+                                                p-5 z-10 pointer-events-none">
+                                        {{-- Gold accent line --}}
+                                        <div class="w-8 h-1 bg-[rgb(218,165,32)] mb-3"></div>
+                                        @if ($iTitle)
+                                            <h3 class="text-white font-extrabold text-sm
+                                                       uppercase tracking-wide leading-snug">
+                                                {{ $iTitle }}
+                                            </h3>
+                                        @endif
+                                        @if ($iSub)
+                                            <p class="text-white/75 text-xs mt-1 leading-relaxed">
+                                                {{ $iSub }}
+                                            </p>
+                                        @endif
+                                    </div>
+                                </a>
+                            </div>
+                        @endforeach
+
+                    </div>{{-- /track --}}
+                </div>{{-- /overflow-hidden --}}
+
+                {{-- Dot indicators --}}
+                <div id="{{ $indId }}_dots"
+                    class="flex justify-center gap-2 mt-8 flex-wrap min-h-[20px]">
+                </div>
+
+            </div>{{-- /relative wrap --}}
+        </div>{{-- /relative z-10 --}}
     </section>
 
     <script>
@@ -304,6 +412,7 @@
             let timer   = null;
             let dots    = [];
 
+            // ── Responsive visible count ──────────────────────────────────
             function visibleCount() {
                 const w = window.innerWidth;
                 if (w < 480)  return 1;
@@ -312,13 +421,17 @@
                 return 4;
             }
 
-            function maxIdx() { return Math.max(0, total - visibleCount()); }
+            function maxIdx() {
+                return Math.max(0, total - visibleCount());
+            }
 
+            // ── Set slide widths ──────────────────────────────────────────
             function setSizes() {
                 const pct = 100 / visibleCount();
                 slides.forEach(function (s) { s.style.width = pct + '%'; });
             }
 
+            // ── Build dots dynamically based on position count ────────────
             function buildDots() {
                 if (!dotsWrap) return;
                 dotsWrap.innerHTML = '';
@@ -332,15 +445,18 @@
                     btn.type = 'button';
                     btn.className = 'ind-dot w-3 h-3 rounded-full transition-all duration-300';
                     btn.setAttribute('aria-label', 'Go to slide ' + (i + 1));
-                    btn.style.background = 'rgba(0,0,0,0.2)';
+                    btn.style.background = 'rgba(255,255,255,0.4)';
                     btn.addEventListener('click', function () {
-                        stopTimer(); goTo(i); startTimer();
+                        stopTimer();
+                        goTo(i);
+                        startTimer();
                     });
                     dotsWrap.appendChild(btn);
                     dots.push(btn);
                 }
             }
 
+            // ── Navigate ──────────────────────────────────────────────────
             function goTo(idx) {
                 current = Math.max(0, Math.min(idx, maxIdx()));
                 const pct = current * (100 / visibleCount());
@@ -351,18 +467,20 @@
             function next() { goTo(current >= maxIdx() ? 0 : current + 1); }
             function prev() { goTo(current <= 0 ? maxIdx() : current - 1); }
 
+            // ── Dots ─────────────────────────────────────────────────────
             function updateDots() {
                 dots.forEach(function (dot, i) {
                     if (i === current) {
                         dot.style.background = navColor;
                         dot.style.transform  = 'scale(1.25)';
                     } else {
-                        dot.style.background = 'rgba(0,0,0,0.2)';
+                        dot.style.background = 'rgba(255,255,255,0.4)';
                         dot.style.transform  = 'scale(1)';
                     }
                 });
             }
 
+            // ── Auto-play ────────────────────────────────────────────────
             function startTimer() {
                 if (!autoplay) return;
                 clearInterval(timer);
@@ -370,29 +488,55 @@
             }
             function stopTimer() { clearInterval(timer); }
 
+            // ── Button visibility on section hover ───────────────────────
             function showNav() {
                 [prevBtn, nextBtn].forEach(function (btn) {
                     if (!btn) return;
-                    btn.style.opacity = '1';
+                    btn.style.opacity       = '1';
                     btn.style.pointerEvents = 'auto';
                 });
             }
             function hideNav() {
                 [prevBtn, nextBtn].forEach(function (btn) {
                     if (!btn) return;
-                    btn.style.opacity = '0';
+                    btn.style.opacity       = '0';
                     btn.style.pointerEvents = 'none';
                 });
             }
 
-            if (prevBtn) prevBtn.addEventListener('click', function () { stopTimer(); prev(); startTimer(); });
-            if (nextBtn) nextBtn.addEventListener('click', function () { stopTimer(); next(); startTimer(); });
+            // ── Card overlay: hide on card hover ─────────────────────────
+            track.querySelectorAll('.ind-card').forEach(function (card) {
+                const overlay = card.querySelector('.ind-card-overlay');
+                const img     = card.querySelector('.ind-card-img');
+
+                card.addEventListener('mouseenter', function () {
+                    if (overlay) overlay.style.opacity = '0';
+                    if (img)     img.style.transform   = 'scale(1.05)';
+                });
+                card.addEventListener('mouseleave', function () {
+                    if (overlay) overlay.style.opacity = '1';
+                    if (img)     img.style.transform   = 'scale(1)';
+                });
+            });
+
+            // ── Event listeners ──────────────────────────────────────────
+            if (prevBtn) {
+                prevBtn.addEventListener('click', function () {
+                    stopTimer(); prev(); startTimer();
+                });
+            }
+            if (nextBtn) {
+                nextBtn.addEventListener('click', function () {
+                    stopTimer(); next(); startTimer();
+                });
+            }
 
             if (wrap) {
                 wrap.addEventListener('mouseenter', function () { showNav(); stopTimer(); });
                 wrap.addEventListener('mouseleave', function () { hideNav(); startTimer(); });
             }
 
+            // ── Touch / swipe ────────────────────────────────────────────
             let touchStartX = 0;
             track.addEventListener('touchstart', function (e) {
                 touchStartX = e.touches[0].clientX;
@@ -406,14 +550,18 @@
                 }
             }, { passive: true });
 
+            // ── Resize: rebuild dots + recalculate ───────────────────────
             let resizeTimer = null;
             window.addEventListener('resize', function () {
                 clearTimeout(resizeTimer);
                 resizeTimer = setTimeout(function () {
-                    setSizes(); buildDots(); goTo(Math.min(current, maxIdx()));
+                    setSizes();
+                    buildDots();
+                    goTo(Math.min(current, maxIdx()));
                 }, 100);
             }, { passive: true });
 
+            // ── Init ─────────────────────────────────────────────────────
             setSizes();
             buildDots();
             goTo(0);
