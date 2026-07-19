@@ -89,7 +89,30 @@
             'cta1_url'   => $s['cta1_url'] ?? null,
             'cta2_label' => $t($s['cta2_label'] ?? '', $locale, $fallback),
             'cta2_url'   => $s['cta2_url'] ?? null,
+            'cta3_label' => $t($s['cta3_label'] ?? '', $locale, $fallback),
+            'cta3_url'   => $s['cta3_url'] ?? null,
         ])->all();
+        if ($mediaType === 'image' && count($imageUrls) > 1) {
+            $slidesForJs = [];
+
+            foreach (array_keys($imageUrls) as $i) {
+                // Use the text slide at this image's index if it exists,
+                // otherwise fall back to the first text slide.
+                $s = $slides[$i] ?? $slides[0] ?? [];
+
+                $slidesForJs[] = [
+                    'kicker'     => $t($s['kicker']     ?? '', $locale, $fallback),
+                    'title'      => $t($s['title']      ?? '', $locale, $fallback),
+                    'lead'       => $t($s['lead']       ?? '', $locale, $fallback),
+                    'cta1_label' => $t($s['cta1_label'] ?? '', $locale, $fallback),
+                    'cta1_url'   => $s['cta1_url'] ?? null,
+                    'cta2_label' => $t($s['cta2_label'] ?? '', $locale, $fallback),
+                    'cta2_url'   => $s['cta2_url'] ?? null,
+                    'cta3_label' => $t($s['cta3_label'] ?? '', $locale, $fallback),
+                    'cta3_url'   => $s['cta3_url'] ?? null,
+                ];
+            }
+        }
     @endphp
     <section class="relative text-white hero-shell {{ $heightClass }}" 
             data-hero
@@ -1508,8 +1531,10 @@
         $rtKicker = $t($data['kicker'] ?? '', $locale, $fallback);
         $rtHeading = $t($data['heading'] ?? '', $locale, $fallback);
         $rtHtml    = $th($data['html']   ?? '', $locale, $fallback);
+        $sectionType = $data['section_type'] ?? 'nofull';
+        $sectionBgColor = $data['section_bg_color'] ?? '#F3F4F6';
     @endphp
-    <section class="mt-4 gt-rich-text">
+    <section class="{{ $sectionType === 'full' ? 'w-full' : 'max-w-4xl mx-auto' }} mt-4 gt-rich-text" style="background-color: {{ $sectionBgColor }};">
         @if ($rtKicker)
             <div class="m-2 text-lg font-semibold text-slate-500">{{ $rtKicker }}</div>
         @endif
@@ -1825,7 +1850,7 @@
                                 {!! $itExc !!}
                             </p>
                         @endif
-                        @if ($itCta && $itCtaUrl)
+                        @if ($itCta)
                             <div class="mt-5">
                                 <a href="{{ $itCtaUrl }}"
                                    class="{{ $fwcItemCta }} font-medium text-blue-600 inline-flex items-center gap-2 hover:gap-3 transition-all duration-200">
@@ -1999,128 +2024,133 @@
             @endif
 
             {{-- ── Carousel ── --}}
-            <div class="relative" id="{{ $ocId }}_wrap">
+            <div class="relative px-8 sm:px-12 lg:px-16"
+                id="{{ $ocId }}_carousel">
 
-                {{-- Prev button --}}
-                <button
-                    type="button"
-                    id="{{ $ocId }}_prev"
-                    aria-label="Previous"
-                    class="absolute left-4 top-1/2 -translate-y-1/2 z-30
-                           w-14 h-14 rounded-full flex items-center justify-center
-                           shadow-lg transition-all duration-300 cursor-pointer"
-                    style="background:none;
-                           border: 3px solid {{ $ocNavColor }};
-                           opacity:0; pointer-events:none;"
-                >
-                    <svg class="w-10 h-10 text-[rgb(218,165,32)]" fill="none" stroke="currentColor"
-                         stroke-width="3" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
-                    </svg>
-                </button>
+                <div class="relative"
+                    id="{{ $ocId }}_wrap">
 
-                {{-- Next button --}}
-                <button
-                    type="button"
-                    id="{{ $ocId }}_next"
-                    aria-label="Next"
-                    class="absolute right-4 top-1/2 -translate-y-1/2 z-30
-                           w-14 h-14 rounded-full flex items-center justify-center
-                           shadow-lg transition-all duration-300 cursor-pointer"
-                    style="background:none;
-                           border: 3px solid {{ $ocNavColor }};
-                           opacity:0; pointer-events:none;"
-                >
-                    <svg class="w-10 h-10 text-[rgb(218,165,32)]" fill="none" stroke="currentColor"
-                         stroke-width="3" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-                    </svg>
-                </button>
+                    {{-- Prev button --}}
+                    <button
+                        type="button"
+                        id="{{ $ocId }}_prev"
+                        aria-label="Previous"
+                        class="absolute -left-8 sm:-left-12 lg:-left-16 top-1/2 -translate-y-1/2 z-30
+                            w-14 h-14 rounded-full flex items-center justify-center
+                            shadow-lg transition-all duration-300 cursor-pointer"
+                        style="background:none;
+                            border: 3px solid {{ $ocNavColor }};
+                            opacity:0; pointer-events:none;"
+                    >
+                        <svg class="w-10 h-10 text-[rgb(218,165,32)]" fill="none" stroke="currentColor"
+                            stroke-width="3" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                    </button>
 
-                {{-- Track --}}
-                <div class="overflow-hidden">
-                    <div id="{{ $ocId }}_track"
-                         class="flex"
-                         style="transition: transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94); will-change: transform;">
+                    {{-- Next button --}}
+                    <button
+                        type="button"
+                        id="{{ $ocId }}_next"
+                        aria-label="Next"
+                        class="absolute -right-8 sm:-right-12 lg:-right-16 4 top-1/2 -translate-y-1/2 z-30
+                            w-14 h-14 rounded-full flex items-center justify-center
+                            shadow-lg transition-all duration-300 cursor-pointer"
+                        style="background:none;
+                            border: 3px solid {{ $ocNavColor }};
+                            opacity:0; pointer-events:none;"
+                    >
+                        <svg class="w-10 h-10 text-[rgb(218,165,32)]" fill="none" stroke="currentColor"
+                            stroke-width="3" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </button>
 
-                        @foreach ($ocItems as $idx => $item)
-                            @php
-                                $iKicker  = $t($item['kicker_tabs']   ?? '', $locale, $fallback);
-                                $iTitle   = $t($item['title_tabs']    ?? '', $locale, $fallback);
-                                $iSub     = $t($item['subtitle_tabs'] ?? '', $locale, $fallback);
-                                $iImgPath = $item['card_image_path']  ?? null;
-                                $iImgUrl  = $iImgPath
-                                    ? Storage::disk('public')->url($iImgPath)
-                                    : null;
-                                $iOvColor = (!empty($item['card_overlay_color']))
-                                    ? $item['card_overlay_color']
-                                    : $ocCardOvDef;
-                                $iUrl     = $item['link_url'] ?? null;
-                                $iTag     = $iUrl ? 'a' : 'div';
-                                $iHref    = $iUrl ? "href=\"{$iUrl}\"" : '';
-                            @endphp
+                    {{-- Track --}}
+                    <div class="overflow-hidden">
+                        <div id="{{ $ocId }}_track"
+                            class="flex"
+                            style="transition: transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94); will-change: transform;">
 
-                            <div class="oc-slide flex-none w-1/4 px-3">
-                                <{{ $iTag }} {{ $iHref }}
-                                    class="oc-card relative block overflow-hidden"
-                                    style="aspect-ratio:1/1;
-                                           border: 2px solid {{ $ocCardBorder }};"
-                                >
-                                    {{-- Card background image --}}
-                                    @if ($iImgUrl)
-                                        <img
-                                            src="{{ $iImgUrl }}"
-                                            alt="{{ $iTitle }}"
-                                            class="absolute inset-0 w-full h-full object-cover
-                                                   transition-transform duration-700 oc-card-img"
-                                            loading="lazy"
-                                        >
-                                    @else
-                                        <div class="absolute inset-0 bg-slate-900"></div>
-                                    @endif
+                            @foreach ($ocItems as $idx => $item)
+                                @php
+                                    $iKicker  = $t($item['kicker_tabs']   ?? '', $locale, $fallback);
+                                    $iTitle   = $t($item['title_tabs']    ?? '', $locale, $fallback);
+                                    $iSub     = $t($item['subtitle_tabs'] ?? '', $locale, $fallback);
+                                    $iImgPath = $item['card_image_path']  ?? null;
+                                    $iImgUrl  = $iImgPath
+                                        ? Storage::disk('public')->url($iImgPath)
+                                        : null;
+                                    $iOvColor = (!empty($item['card_overlay_color']))
+                                        ? $item['card_overlay_color']
+                                        : $ocCardOvDef;
+                                    $iUrl     = $item['link_url'] ?? null;
+                                    $iTag     = $iUrl ? 'a' : 'div';
+                                    $iHref    = $iUrl ? "href=\"{$iUrl}\"" : '';
+                                @endphp
 
-                                    {{-- Card overlay (fades on hover) --}}
-                                    <div
-                                        class="oc-card-overlay absolute inset-0
-                                               transition-opacity duration-500"
-                                        style="background-color:{{ $iOvColor }};"></div>
-
-                                    {{-- Card text content --}}
-                                    <div class="absolute inset-0 flex flex-col justify-end
-                                                p-5 z-10 pointer-events-none">
-                                        @if ($iKicker)
-                                            <p class="text-white/70 text-xs font-semibold
-                                                       uppercase tracking-widest mb-2">
-                                                {{ $iKicker }}
-                                            </p>
+                                <div class="oc-slide flex-none w-1/4 px-3">
+                                    <{{ $iTag }} {{ $iHref }}
+                                        class="oc-card relative block overflow-hidden"
+                                        style="aspect-ratio:1/1;
+                                            border: 2px solid {{ $ocCardBorder }};"
+                                    >
+                                        {{-- Card background image --}}
+                                        @if ($iImgUrl)
+                                            <img
+                                                src="{{ $iImgUrl }}"
+                                                alt="{{ $iTitle }}"
+                                                class="absolute inset-0 w-full h-full object-cover
+                                                    transition-transform duration-700 oc-card-img"
+                                                loading="lazy"
+                                            >
+                                        @else
+                                            <div class="absolute inset-0 bg-slate-900"></div>
                                         @endif
-                                        {{-- Red accent line --}}
-                                        <div class="w-8 h-1 bg-[rgb(218,165,32)] mb-3"></div>
-                                        @if ($iTitle)
-                                            <h3 class="text-white font-extrabold text-sm
-                                                       uppercase tracking-wide leading-snug">
-                                                {{ $iTitle }}
-                                            </h3>
-                                        @endif
-                                        @if ($iSub)
-                                            <p class="text-white/75 text-xs mt-1 leading-relaxed">
-                                                {{ $iSub }}
-                                            </p>
-                                        @endif
-                                    </div>
-                                </{{ $iTag }}>
-                            </div>
-                        @endforeach
 
-                    </div>{{-- /track --}}
-                </div>{{-- /overflow-hidden --}}
+                                        {{-- Card overlay (fades on hover) --}}
+                                        <div
+                                            class="oc-card-overlay absolute inset-0
+                                                transition-opacity duration-500"
+                                            style="background-color:{{ $iOvColor }};"></div>
 
-                {{-- Dot indicators --}}
-                <div id="{{ $ocId }}_dots"
-                    class="flex justify-center gap-2 mt-8 flex-wrap min-h-[20px]">
-                </div>
+                                        {{-- Card text content --}}
+                                        <div class="absolute inset-0 flex flex-col justify-end
+                                                    p-5 z-10 pointer-events-none">
+                                            @if ($iKicker)
+                                                <p class="text-white/70 text-xs font-semibold
+                                                        uppercase tracking-widest mb-2">
+                                                    {{ $iKicker }}
+                                                </p>
+                                            @endif
+                                            {{-- Red accent line --}}
+                                            <div class="w-8 h-1 bg-[rgb(218,165,32)] mb-3"></div>
+                                            @if ($iTitle)
+                                                <h3 class="text-white font-extrabold text-sm
+                                                        uppercase tracking-wide leading-snug">
+                                                    {{ $iTitle }}
+                                                </h3>
+                                            @endif
+                                            @if ($iSub)
+                                                <p class="text-white/75 text-xs mt-1 leading-relaxed">
+                                                    {{ $iSub }}
+                                                </p>
+                                            @endif
+                                        </div>
+                                    </{{ $iTag }}>
+                                </div>
+                            @endforeach
 
-            </div>{{-- /relative wrap --}}
+                        </div>{{-- /track --}}
+                    </div>{{-- /overflow-hidden --}}
+                    </div>{{-- /relative wrap --}}
+                    {{-- Dot indicators --}}
+                    <div id="{{ $ocId }}_dots"
+                        class="flex justify-center gap-2 mt-8 flex-wrap min-h-[20px]">
+                    </div>
+
+                
+            </div>{{-- /relative carousel --}}
         </div>{{-- /relative z-10 --}}
     </section>
 
@@ -2129,6 +2159,7 @@
             'use strict';
 
             const id       = '{{ $ocId }}';
+            const section = document.getElementById(id);
             const wrap     = document.getElementById(id + '_wrap');
             const track    = document.getElementById(id + '_track');
             const prevBtn  = document.getElementById(id + '_prev');
@@ -2267,9 +2298,9 @@
                 });
             }
 
-            if (wrap) {
-                wrap.addEventListener('mouseenter', function () { showNav(); stopTimer(); });
-                wrap.addEventListener('mouseleave', function () { hideNav(); startTimer(); });
+            if (section) {
+                section.addEventListener('mouseenter', function () { showNav(); stopTimer(); });
+                section.addEventListener('mouseleave', function () { hideNav(); startTimer(); });
             }
 
             // ── Touch / swipe ────────────────────────────────────────────

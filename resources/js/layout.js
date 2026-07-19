@@ -394,6 +394,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const cta1Url   = (s.cta1_url   || '').trim();
       const cta2Label = (s.cta2_label || '').trim();
       const cta2Url   = (s.cta2_url   || '').trim();
+      const cta3Label = (s.cta3_label || '').trim();
+      const cta3Url   = (s.cta3_url   || '').trim();
 
       if (kickerEl) {
           kickerEl.textContent = kicker;
@@ -406,23 +408,31 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (ctaWrap) {
           ctaWrap.innerHTML = '';
+
+          const makeBtn = (label, url, className) => {
+              const a = document.createElement('a');
+              a.href = url;
+              a.textContent = label;
+              a.className = className;
+              return a;
+          };
+
+          const primaryClass   = 'rounded-md bg-white px-5 py-2.5 text-slate-900 font-medium hover:bg-slate-100';
+          const secondaryClass = 'rounded-md border border-white/30 px-5 py-2.5 font-medium hover:bg-white/10';
+
           if (cta1Label && cta1Url) {
-              const a1 = document.createElement('a');
-              a1.href = cta1Url;
-              a1.textContent = cta1Label;
-              a1.className = 'rounded-md border border-white/30 px-5 py-2.5 font-medium hover:bg-white/50';
-              ctaWrap.appendChild(a1);
+              ctaWrap.appendChild(makeBtn(cta1Label, cta1Url, primaryClass));
           }
           if (cta2Label && cta2Url) {
-              const a2 = document.createElement('a');
-              a2.href = cta2Url;
-              a2.textContent = cta2Label;
-              a2.className = 'rounded-md border border-white/30 px-5 py-2.5 font-medium hover:bg-white/50';
-              ctaWrap.appendChild(a2);
+              ctaWrap.appendChild(makeBtn(cta2Label, cta2Url, secondaryClass));
           }
-          ctaWrap.classList.toggle('hidden', !cta1Label && !cta2Label);
+          if (cta3Label && cta3Url) {
+              ctaWrap.appendChild(makeBtn(cta3Label, cta3Url, secondaryClass));
+          }
+
+          ctaWrap.classList.toggle('hidden', !cta1Label && !cta2Label && !cta3Label);
       }
-  };
+    };
 
     const set = (i) => {
       idx = (i + slides.length) % slides.length;

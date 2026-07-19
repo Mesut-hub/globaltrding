@@ -267,124 +267,121 @@
                 </div>
             @endif
 
-            {{-- ── Carousel ── --}}
-            <div class="relative" id="{{ $indId }}_wrap">
+            {{-- ── Carousel (side padding leaves room for arrows outside the cards) ── --}}
+            <div class="relative px-8 sm:px-12 lg:px-16" id="{{ $indId }}_carousel">
 
-                {{-- Prev button --}}
-                You're right — my last fix only nested a div but kept the buttons positioned at left-4/right-4, which sits inside the card row (overlapping the edge cards), not outside it. To fix both issues — buttons outside the cards, and vertically centered against the cards only (not the dots) — restructure it like this:
-Replace this:
-blade            {{-- ── Carousel ── --}}
-            <div class="relative" id="{{ $indId }}_wrap">
+                {{-- Wrap contains ONLY the card row, so buttons center on the cards, not the dots below --}}
+                <div class="relative" id="{{ $indId }}_wrap">
 
-                {{-- Prev button --}}
-                <button
-                    type="button"
-                    id="{{ $indId }}_prev"
-                    aria-label="Previous"
-                    class="absolute left-4 top-1/2 -translate-y-1/2 z-30
-                           w-14 h-14 rounded-full flex items-center justify-center
-                           shadow-lg transition-all duration-300 cursor-pointer"
-                    style="background:none;
-                           border: 3px solid {{ $indNavColor }};
-                           opacity:0; pointer-events:none;"
-                >
-                    <svg class="w-10 h-10 text-[rgb(218,165,32)]" fill="none" stroke="currentColor"
-                         stroke-width="3" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
-                    </svg>
-                </button>
+                    {{-- Prev button — sits outside the card row --}}
+                    <button
+                        type="button"
+                        id="{{ $indId }}_prev"
+                        aria-label="Previous"
+                        class="absolute -left-8 sm:-left-12 lg:-left-16 top-1/2 -translate-y-1/2 z-30
+                               w-14 h-14 rounded-full flex items-center justify-center
+                               shadow-lg transition-all duration-300 cursor-pointer"
+                        style="background:none;
+                               border: 3px solid {{ $indNavColor }};
+                               opacity:0; pointer-events:none;">
+                        <svg class="w-10 h-10 text-[rgb(218,165,32)]" fill="none" stroke="currentColor"
+                             stroke-width="3" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                    </button>
 
-                {{-- Next button --}}
-                <button
-                    type="button"
-                    id="{{ $indId }}_next"
-                    aria-label="Next"
-                    class="absolute right-4 top-1/2 -translate-y-1/2 z-30
-                           w-14 h-14 rounded-full flex items-center justify-center
-                           shadow-lg transition-all duration-300 cursor-pointer"
-                    style="background:none;
-                           border: 3px solid {{ $indNavColor }};
-                           opacity:0; pointer-events:none;"
-                >
-                    <svg class="w-10 h-10 text-[rgb(218,165,32)]" fill="none" stroke="currentColor"
-                         stroke-width="3" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-                    </svg>
-                </button>
+                    {{-- Next button — sits outside the card row --}}
+                    <button
+                        type="button"
+                        id="{{ $indId }}_next"
+                        aria-label="Next"
+                        class="absolute -right-8 sm:-right-12 lg:-right-16 top-1/2 -translate-y-1/2 z-30
+                               w-14 h-14 rounded-full flex items-center justify-center
+                               shadow-lg transition-all duration-300 cursor-pointer"
+                        style="background:none;
+                               border: 3px solid {{ $indNavColor }};
+                               opacity:0; pointer-events:none;">
+                        <svg class="w-10 h-10 text-[rgb(218,165,32)]" fill="none" stroke="currentColor"
+                             stroke-width="3" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </button>
 
-                {{-- Track --}}
-                <div class="overflow-hidden">
-                    <div id="{{ $indId }}_track"
-                         class="flex"
-                         style="transition: transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94); will-change: transform;">
+                    {{-- Track --}}
+                    <div class="overflow-hidden">
+                        <div id="{{ $indId }}_track"
+                             class="flex"
+                             style="transition: transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94); will-change: transform;">
 
-                        @foreach ($industries as $ind)
-                            @php
-                                $iTitle   = $t($ind->title   ?? []) ?: $ind->slug;
-                                $iSub     = $t($ind->excerpt ?? []);
-                                $iImgUrl  = $ind->cover_image_path
-                                    ? Storage::disk('public')->url($ind->cover_image_path)
-                                    : null;
-                                $iUrl     = $viewAllUrl && $ind->slug
-                                    ? rtrim($viewAllUrl, '/') . '/' . $ind->slug
-                                    : null;
-                            @endphp
+                            @foreach ($industries as $ind)
+                                @php
+                                    $iTitle   = $t($ind->title   ?? []) ?: $ind->slug;
+                                    $iSub     = $t($ind->excerpt ?? []);
+                                    $iImgUrl  = $ind->cover_image_path
+                                        ? Storage::disk('public')->url($ind->cover_image_path)
+                                        : null;
+                                    $iUrl     = $viewAllUrl && $ind->slug
+                                        ? rtrim($viewAllUrl, '/') . '/' . $ind->slug
+                                        : null;
+                                @endphp
 
-                            <div class="ind-slide flex-none w-1/4 px-3">
-                                <a href="{{ $iUrl ?: '#' }}"
-                                    class="ind-card relative block overflow-hidden"
-                                    style="aspect-ratio:1/1;
-                                           border: 2px solid {{ $indCardBorder }};"
-                                >
-                                    {{-- Card background image --}}
-                                    @if ($iImgUrl)
-                                        <img
-                                            src="{{ $iImgUrl }}"
-                                            alt="{{ $iTitle }}"
-                                            class="absolute inset-0 w-full h-full object-cover
-                                                   transition-transform duration-700 ind-card-img"
-                                            loading="lazy"
-                                        >
-                                    @else
-                                        <div class="absolute inset-0 bg-slate-900"></div>
-                                    @endif
-
-                                    {{-- Card overlay (fades on hover) --}}
-                                    <div
-                                        class="ind-card-overlay absolute inset-0
-                                               transition-opacity duration-500"
-                                        style="background-color:{{ $indCardOvDef }};"></div>
-
-                                    {{-- Card text content --}}
-                                    <div class="absolute inset-0 flex flex-col justify-end
-                                                p-5 z-10 pointer-events-none">
-                                        {{-- Gold accent line --}}
-                                        <div class="w-8 h-1 bg-[rgb(218,165,32)] mb-3"></div>
-                                        @if ($iTitle)
-                                            <h3 class="text-white font-extrabold text-sm
-                                                       uppercase tracking-wide leading-snug">
-                                                {{ $iTitle }}
-                                            </h3>
+                                <div class="ind-slide flex-none w-1/4 px-3">
+                                    <a href="{{ $iUrl ?: '#' }}"
+                                        class="ind-card relative block overflow-hidden"
+                                        style="aspect-ratio:1/1;
+                                               border: 2px solid {{ $indCardBorder }};"
+                                    >
+                                        {{-- Card background image --}}
+                                        @if ($iImgUrl)
+                                            <img
+                                                src="{{ $iImgUrl }}"
+                                                alt="{{ $iTitle }}"
+                                                class="absolute inset-0 w-full h-full object-cover
+                                                       transition-transform duration-700 ind-card-img"
+                                                loading="lazy"
+                                            >
+                                        @else
+                                            <div class="absolute inset-0 bg-slate-900"></div>
                                         @endif
-                                        @if ($iSub)
-                                            <p class="text-white/75 text-xs mt-1 leading-relaxed">
-                                                {{ $iSub }}
-                                            </p>
-                                        @endif
-                                    </div>
-                                </a>
-                            </div>
-                        @endforeach
 
-                    </div>{{-- /track --}}
-                </div>{{-- /overflow-hidden --}}
+                                        {{-- Card overlay (fades on hover) --}}
+                                        <div
+                                            class="ind-card-overlay absolute inset-0
+                                                   transition-opacity duration-500"
+                                            style="background-color:{{ $indCardOvDef }};"></div>
+
+                                        {{-- Card text content --}}
+                                        <div class="absolute inset-0 flex flex-col justify-end
+                                                    p-5 z-10 pointer-events-none">
+                                            {{-- Gold accent line --}}
+                                            <div class="w-8 h-1 bg-[rgb(218,165,32)] mb-3"></div>
+                                            @if ($iTitle)
+                                                <h3 class="text-white font-extrabold text-sm
+                                                           uppercase tracking-wide leading-snug">
+                                                    {{ $iTitle }}
+                                                </h3>
+                                            @endif
+                                            @if ($iSub)
+                                                <p class="text-white/75 text-xs mt-1 leading-relaxed">
+                                                    {{ $iSub }}
+                                                </p>
+                                            @endif
+                                        </div>
+                                    </a>
+                                </div>
+                            @endforeach
+
+                        </div>{{-- /track --}}
+                    </div>{{-- /overflow-hidden --}}
+
+                </div>{{-- /wrap --}}
 
                 {{-- Dot indicators --}}
                 <div id="{{ $indId }}_dots"
                     class="flex justify-center gap-2 mt-8 flex-wrap min-h-[20px]">
                 </div>
 
-            </div>{{-- /relative wrap --}}
+            </div>{{-- /carousel --}}
         </div>{{-- /relative z-10 --}}
     </section>
 
@@ -393,6 +390,7 @@ blade            {{-- ── Carousel ── --}}
             'use strict';
 
             const id       = '{{ $indId }}';
+            const section = document.getElementById(id);
             const wrap     = document.getElementById(id + '_wrap');
             const track    = document.getElementById(id + '_track');
             const prevBtn  = document.getElementById(id + '_prev');
@@ -531,9 +529,9 @@ blade            {{-- ── Carousel ── --}}
                 });
             }
 
-            if (wrap) {
-                wrap.addEventListener('mouseenter', function () { showNav(); stopTimer(); });
-                wrap.addEventListener('mouseleave', function () { hideNav(); startTimer(); });
+            if (section) {
+                section.addEventListener('mouseenter', function () { showNav(); stopTimer(); });
+                section.addEventListener('mouseleave', function () { hideNav(); startTimer(); });
             }
 
             // ── Touch / swipe ────────────────────────────────────────────
@@ -591,18 +589,79 @@ blade            {{-- ── Carousel ── --}}
 {{-- CARDS GRID --}}
 @elseif ($type === 'cards')
     @php 
-        $title=$t($data['title'] ?? '', $locale, $fallback); 
+        $sectionKicker    = $t($data['kicker']         ?? '');
+        $sectionHeading   = $t($data['heading_tabs']   ?? ($data['title'] ?? ['en' => 'Industries']));
+        $sectionSubtitle  = $t($data['subtitle_tabs']  ?? '');
+        $title=$t($data['title'] ?? '', $locale, $fallback);
+        $sectionType = $data['section_type'] ?? 'nofull';
+        $sectionBgColor = $data['section_bg_color'] ?? '#F3F4F6';
+        $titleColor = $data['title_color'] ?? '#1F2937';
+        $sectionBgPath    = $data['bg_image_path']     ?? null;
+        $sectionBgUrl     = $sectionBgPath ? Storage::disk('public')->url($sectionBgPath) : null;
+        $sectionBgOverlay = $data['bg_overlay_color']  ?? '#8B0000CC';
         $items=$data['items']??[]; 
         $viewAllUrl   = $urlWithLocale($data['view_all_url'] ?? '/{locale}');
+        $sectionNavColor  = $data['nav_btn_color']     ?? '#DAA520';
+        $sectionId = 'ind_' . substr(md5(uniqid()), 0, 8);
     @endphp
-    <section class="mx-auto max-w-7xl px-4 py-12" data-industry-slider>
-        <div class="flex items-end justify-between gap-4">
-            @if ($title)<h2 class="text-2xl font-semibold tracking-tight">{{ $title }}</h2>@endif
-            <div class="flex items-center gap-3">
-                <a href="{{ $viewAllUrl }}" class="text-sm text-slate-600 hover:underline">{{ __('ui.view_all') }} →</a>
+    {{-- ── Section meta (kicker / heading / subtitle) ── --}}
+    @if ($sectionKicker || $sectionHeading || $sectionSubtitle)
+        <div class="mx-auto max-w-7xl px-4 py-6 mt-12">
+            <div class="flex items-end justify-between gap-4">
+                <div>
+                    @if ($sectionKicker)
+                        <div class="font-semibold uppercase tracking-widest text-slate-500 mb-2">
+                            {{ $sectionKicker }}
+                        </div>
+                    @endif
+                    @if ($sectionHeading)
+                        <h2 class="font-light tracking-tight text-slate-800">
+                            {{ $sectionHeading }}
+                        </h2>
+                    @endif
+                    @if ($sectionSubtitle)
+                        <p class="mt-3 text-slate-600">{!! $sectionSubtitle !!}</p>
+                    @endif
+                </div>
+                <a href="{{ $viewAllUrl }}" class="text-sm text-slate-600 hover:underline whitespace-nowrap">
+                    {{ __('ui.view_all') }} →
+                </a>
             </div>
         </div>
-        <div class="mt-6 overflow-hidden">
+    @endif
+    @if ($sectionType === 'full')
+        <section class="relative w-full px-4 py-12" style="background-color: {{ $sectionBgColor }}; {{ $sectionBgUrl
+            ? "background-image:url('" . e($sectionBgUrl) . "');background-size:cover;background-position:center;"
+            : '' }}">
+            {{-- Background overlay --}}
+            <div class="absolute inset-0 pointer-events-none"
+                style="background-color:{{ $sectionBgOverlay }};"></div>
+            <div class="relative z-10 mx-auto max-w-7xl px-4 flex items-end justify-between gap-4">
+                @if ($title)
+                    <h2 class="text-2xl font-semibold tracking-tight" style="color: {{ $titleColor }};">
+                        {{ $title }}
+                    </h2>
+
+                    <div class="flex items-center gap-3">
+                        <a href="{{ $viewAllUrl }}" class="text-sm hover:underline" style="color: {{ $titleColor }};">{{ __('ui.view_all') }} →</a>
+                    </div>
+                @endif
+            </div>
+            <div class="relative z-10 mx-auto max-w-7xl px-4 mt-6 overflow-hidden">
+    @else
+        <section class="mx-auto max-w-7xl px-4 py-12">
+            <div class="flex items-end justify-between gap-4">
+                @if ($title)
+                    <h2 class="text-2xl font-semibold tracking-tight" style="color: {{ $titleColor }};">
+                        {{ $title }}
+                    </h2>
+                    <div class="flex items-center gap-3">
+                        <a href="{{ $viewAllUrl }}" class="text-sm hover:underline" style="color: {{ $titleColor }};">{{ __('ui.view_all') }} →</a>
+                    </div>
+                @endif
+            </div>
+            <div class="mt-6 overflow-hidden">
+    @endif
             <div class="flex gap-4 overflow-x-auto overflow-x-hidden snap-x snap-mandatory scroll-smooth pb-2" data-ind="track">
                 @foreach ($items as $item)
                     @php
@@ -617,19 +676,52 @@ blade            {{-- ── Carousel ── --}}
                     @endphp
                     <div class="snap-start shrink-0 w-[85%] sm:w-[45%] lg:w-[32%] rounded-xl border border-slate-200 bg-white overflow-hidden hover:shadow-sm transition">
                         <div class="aspect-[16/9] bg-slate-100 overflow-hidden">
-                            @if ($imgUrl)<img src="{{ $imgUrl }}" alt="{{ $iTitle }}" class="h-full w-full object-cover hover:scale-[1.015] transition"/>@endif
+                            @if ($imgUrl)<img loading="lazy" decoding="async" src="{{ $imgUrl }}" alt="{{ $iTitle }}" class="h-full w-full object-cover hover:scale-[1.015] transition"/>@endif
                         </div>
                         <div class="p-4">
                             <div class="mt-2 text-lg text-slate-600">{{ $iTitle }}</div>
                             @if ($iText)<div class="text-xl font-semibold leading-snug">{{ $iText }}</div>@endif
                             @if ($mtHtml)<div class="mt-3 prose prose-slate max-w-none">{!! $mtHtml !!}</div> @endif
+                            @if($iUrl && $ctaLabel)
                             <a href="{{ $iUrl }}" class="inline-flex items-center rounded-md px-4 py-2 text-slate-600 hover:text-black">{{ $ctaLabel }} →</a>
+                            @endif
                         </div>
                     </div>
                 @endforeach
                 @if (count($items) > 3)
-                    <button type="button" class="ind-btn ind-btn--prev" data-ind="prev" aria-label="Previous">‹</button>
-                    <button type="button" class="ind-btn ind-btn--next" data-ind="next" aria-label="Next">›</button>
+                    {{-- Prev button — sits outside the card row --}}
+                    <button
+                        type="button"
+                        id="{{ $sectionId }}_prev"
+                        aria-label="Previous"
+                        class="absolute -left-8 sm:-left-12 lg:-left-16 top-1/2 -translate-y-1/2 z-30
+                               w-14 h-14 rounded-full flex items-center justify-center
+                               shadow-lg transition-all duration-300 cursor-pointer"
+                        style="background:none;
+                               border: 3px solid {{ $sectionNavColor }};
+                               opacity:0; pointer-events:none;">
+                        <svg class="w-10 h-10 text-[rgb(218,165,32)]" fill="none" stroke="currentColor"
+                             stroke-width="3" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                    </button>
+
+                    {{-- Next button — sits outside the card row --}}
+                    <button
+                        type="button"
+                        id="{{ $sectionId }}_next"
+                        aria-label="Next"
+                        class="absolute -right-8 sm:-right-12 lg:-right-16 top-1/2 -translate-y-1/2 z-30
+                               w-14 h-14 rounded-full flex items-center justify-center
+                               shadow-lg transition-all duration-300 cursor-pointer"
+                        style="background:none;
+                               border: 3px solid {{ $sectionNavColor }};
+                               opacity:0; pointer-events:none;">
+                        <svg class="w-10 h-10 text-[rgb(218,165,32)]" fill="none" stroke="currentColor"
+                             stroke-width="3" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </button>
                 @endif
             </div>
         </div>

@@ -31,8 +31,8 @@ class IndustryForm
                 ->unique(ignoreRecord: true),
 
             static::blockLocaleTabs('colsGrids_item_lang', [
-                    ['name' => 'title_tabs', 'label' => 'Title', 'type' => 'text'],
-                    ['name' => 'excerpt_tabs',  'label' => 'Excerpt',  'type' => 'textarea', 'rows' => 2],
+                    ['name' => 'title', 'label' => 'Title', 'type' => 'text'],
+                    ['name' => 'excerpt',  'label' => 'Excerpt',  'type' => 'textarea', 'rows' => 2],
                 ]),
 
             FileUpload::make('cover_image_path')

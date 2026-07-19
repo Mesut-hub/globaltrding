@@ -371,11 +371,34 @@ class PageBlockBuilder
         return Block::make('cards')
             ->label('Cards grid (3-up)')
             ->schema([
+                static::blockLocaleTabs('ind_slider_meta_lang', [
+                    ['name' => 'kicker',        'label' => 'Section kicker',   'type' => 'text'],
+                    ['name' => 'heading_tabs',  'label' => 'Section heading',  'type' => 'text'],
+                    ['name' => 'subtitle_tabs', 'label' => 'Section subtitle', 'type' => 'text'],
+                ]),
+                ColorPicker::make('title_color')->label('Title color')->default('#F3F4F6'),
                 static::blockLocaleTabs('cards_lang', [
                     ['name' => 'title', 'label' => 'Heading', 'type' => 'text'],
-                    ['name' => 'lead',  'label' => 'Lead',    'type' => 'textarea', 'rows' => 2],
                 ]),
-
+                Select::make('section_type')
+                    ->label('Section type')
+                    ->options(['full' => 'Full width', 'nofull' => 'No full width'])
+                    ->default('nofull'),
+                ColorPicker::make('section_bg_color')->label('Section background color')->default('#F3F4F6'),
+                ColorPicker::make('nav_btn_color')
+                                    ->label('Prev / Next button color')
+                                    ->default('#DAA520'),
+                FileUpload::make('bg_image_path')
+                    ->label('Section background image')
+                    ->disk('public')
+                    ->directory('pages/cards')
+                    ->image(),
+                ColorPicker::make('bg_overlay_color')
+                    ->label('Background overlay color')
+                    ->default('#8B0000CC'),
+                TextInput::make('view_all_url')
+                    ->label('View-all URL (supports {locale})')
+                    ->default('/{locale}/en'),
                 Repeater::make('items')->label('Cards')->minItems(1)->schema([
                     FileUpload::make('image')->disk('public')->directory('pages/cards')->image(),
                     TextInput::make('url')->label('Card URL'),
@@ -1171,6 +1194,11 @@ class PageBlockBuilder
                         ['name' => 'heading',  'label' => 'Heading', 'type' => 'text'],
                         ['name' => 'html',   'label' => 'HTML content',   'type' => 'html', 'rows' => 10, 'helper' => 'Use this for long-form content.'],
                     ]),
+                Select::make('section_type')
+                    ->label('Section type')
+                    ->options(['full' => 'Full width', 'nofull' => 'No full width'])
+                    ->default('nofull'),
+                ColorPicker::make('section_bg_color')->label('Section background color')->default('#F3F4F6'),
             ]);
     }
 
