@@ -70,6 +70,27 @@
             'cta2_label' => $t($s['cta2_label'] ?? []),
             'cta2_url'   => $s['cta2_url'] ?? null,
         ])->all();
+        if ($mediaType === 'image' && count($imageUrls) > 1) {
+            $slidesForJs = [];
+
+            foreach (array_keys($imageUrls) as $i) {
+                // Use the text slide at this image's index if it exists,
+                // otherwise fall back to the first text slide.
+                $s = $slides[$i] ?? $slides[0] ?? [];
+
+                $slidesForJs[] = [
+                    'kicker'     => $t($s['kicker']     ?? '', $locale, $fallback),
+                    'title'      => $t($s['title']      ?? '', $locale, $fallback),
+                    'lead'       => $t($s['lead']       ?? '', $locale, $fallback),
+                    'cta1_label' => $t($s['cta1_label'] ?? '', $locale, $fallback),
+                    'cta1_url'   => $s['cta1_url'] ?? null,
+                    'cta2_label' => $t($s['cta2_label'] ?? '', $locale, $fallback),
+                    'cta2_url'   => $s['cta2_url'] ?? null,
+                    'cta3_label' => $t($s['cta3_label'] ?? '', $locale, $fallback),
+                    'cta3_url'   => $s['cta3_url'] ?? null,
+                ];
+            }
+        }
     @endphp
     <section class="relative text-white hero-shell {{ $heightClass }}" 
             data-hero

@@ -1648,7 +1648,7 @@ body.has-hero-header .gt-hero{
 .gt-mtl3__grid{
   display: grid;
   gap: 22px;
-  grid-template-columns: 35% 1fr 320px;
+  grid-template-columns: var(--gt-mtl3-cols, 35% 1fr 320px);
   align-items: start;
 }
 

@@ -19,7 +19,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'search.throttle'   => RateLimitSearch::class,
-            'customer.status'   => CheckCustomerStatus::class,  // ← new
+            'customer.status'   => CheckCustomerStatus::class,
+            'portal.status' => \App\Http\Middleware\CheckCustomerPortalStatus::class,
         ]);
 
         $middleware->prependToGroup(

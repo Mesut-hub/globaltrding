@@ -2139,9 +2139,11 @@ img, video, canvas, svg {
 .gt-insights { padding: clamp(24px, 4vw, 64px) clamp(12px, 4vw, 56px); }
 .gt-insights__heading { font-size: var(--text-3xl); }
 
-.gt-insights__row--top {
-  grid-template-columns: 1.35fr 1fr;
-  min-height: min(420px, 50svh);
+@media (min-width: 1101px) {
+  .gt-insights__row--top {
+    grid-template-columns: 1.35fr 1fr;
+    min-height: min(420px, 50svh);
+  }
 }
 
 /* ─── 14. REGISTER / LOGIN FORMS — RESPONSIVE ───────────── */

@@ -170,7 +170,7 @@
             <div class="gt-hero__content {{ $contentPosClass }} {{ $textAlignClass }}"
                 style="max-width: {{ $maxW }}px; transform: translate({{ $offX }}px, {{ $offY }}px);"
                 data-hero-content
-                data-hero-slides='@json($slidesForJs, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)'>
+                data-hero-slides='@json($slidesForJs, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_APOS)'>
 
                 @if ($heroKicker)
                     <div class="gt-hero__kicker" data-hero-kicker>{{ $heroKicker }}</div>
@@ -189,11 +189,11 @@
                 <div class="mt-8 flex flex-wrap gap-3" data-hero-cta-wrap>
                     @if ($heroCta1 && $heroCta1Url && $heroCta2 && $heroCta2Url && $heroCta3 && $heroCta3Url)
                         <a href="{{ $heroCta1Url }}" class="rounded-md bg-white px-5 py-2.5 text-slate-900 font-medium hover:bg-slate-100">{{ $heroCta1 }}</a>
-                        <a href="{{ $heroCta2Url }}" class="rounded-md border border-white/30 px-5 py-2.5 font-medium hover:bg-white/10">{{ $heroCta2 }}</a>
-                        <a href="{{ $heroCta3Url }}" class="rounded-md border border-white/30 px-5 py-2.5 font-medium hover:bg-white/10">{{ $heroCta3 }}</a>
+                        <a href="{{ $heroCta2Url }}" class="rounded-md border border-white/30 px-5 py-2.5 text-white font-medium hover:bg-white/10">{{ $heroCta2 }}</a>
+                        <a href="{{ $heroCta3Url }}" class="rounded-md border border-white/30 px-5 py-2.5 text-white font-medium hover:bg-white/10">{{ $heroCta3 }}</a>
                     @elseif ($heroCta1 && $heroCta1Url && $heroCta2 && $heroCta2Url)
                         <a href="{{ $heroCta1Url }}" class="rounded-md bg-white px-5 py-2.5 text-slate-900 font-medium hover:bg-slate-100">{{ $heroCta1 }}</a>
-                        <a href="{{ $heroCta2Url }}" class="rounded-md border border-white/30 px-5 py-2.5 font-medium hover:bg-white/10">{{ $heroCta2 }}</a>
+                        <a href="{{ $heroCta2Url }}" class="rounded-md border border-white/30 px-5 py-2.5 text-white font-medium hover:bg-white/10">{{ $heroCta2 }}</a>
                     @elseif ($heroCta1 && $heroCta1Url)
                         <a href="{{ $heroCta1Url }}" class="rounded-md bg-white px-5 py-2.5 text-slate-900 font-medium hover:bg-slate-100">{{ $heroCta1 }}</a>
                     @else
@@ -665,45 +665,74 @@
 {{-- ══════════════════════════════════════════════════════════════════ --}}
 @elseif ($type === 'metrics')
     @php
-        $bg          = $data['bg']    ?? 'slate';
-        $metricTitle = $t($data['title'] ?? '', $locale, $fallback);
-        $items       = is_array($data['items'] ?? null) ? $data['items'] : [];
-        $animate     = (bool) ($data['animate'] ?? true);
+        $meLayout     = $data['layout']           ?? 'contained';
+        $meSectionBg  = $data['section_bg_color'] ?? '#f8fafc';
+        $meHeadingCol = $data['heading_color']     ?? '#0f172a';
+        $meItemBg     = $data['item_bg_color']     ?? '#ffffff';
+        $meValueCol   = $data['value_color']       ?? '#0f172a';
+        $meLabelCol   = $data['label_color']       ?? '#64748b';
+        $meAnimate    = (bool) ($data['animate']   ?? true);
+        $meTitle      = $t($data['title'] ?? '', $locale, $fallback);
+        $meItems      = is_array($data['items'] ?? null) ? $data['items'] : [];
+        $meN          = max(1, count($meItems));
 
-        $wrapClass = match($bg) {
-            'dark'  => 'bg-slate-900 text-white border-white/10',
-            'white' => 'bg-white text-slate-900 border-slate-200',
-            default => 'bg-slate-50 text-slate-900 border-slate-200',
-        };
+        // Value font size scales with item count
+        $meValueClass = $meN <= 3
+            ? 'gt-m__val--xl'
+            : ($meN === 4 ? 'gt-m__val--lg' : 'gt-m__val--md');
 
-        $n          = max(1, count($items));
-        $valueClass = $n <= 3 ? 'gt-m__val--xl' : ($n === 4 ? 'gt-m__val--lg' : 'gt-m__val--md');
+        // Grid: inline style avoids responsive.css override
+        $meGridStyle = "grid-template-columns: repeat(" . min($meN, 4) . ", minmax(0, 1fr)); gap: 1rem;";
+
+        // Inner content width: full_width = no cap, contained = max-w-7xl
+        $meInnerClass = $meLayout === 'full_width'
+            ? 'w-full px-6 md:px-12'
+            : 'mx-auto max-w-7xl px-4';
+        $msHeadingSize  = $data['heading_size']     ?? 'text-xl';
+        $msValueSize    = $data['value_size']       ?? 'text-3xl';
+        $msLabelSize    = $data['label_size']       ?? 'text-sm';
     @endphp
-    <section class="mx-auto max-w-7xl px-4 py-12">
-        <div class="mt-8 rounded-2xl border {{ $wrapClass }} p-6 md:p-10">
-            @if ($metricTitle) <h3 class="text-xl font-semibold tracking-tight">{{ $metricTitle }}</h3> @endif
-            <div class="mt-5 grid gap-4"
-                style="grid-template-columns: repeat({{ min($n, 4) }}, minmax(0, 1fr));">
-                @foreach ($items as $it)
-                @php
-                    $raw    = (string) ($it['value'] ?? '');
-                    $label  = $t($it['label'] ?? '', $locale, $fallback);
-                    $num    = preg_replace('/[^0-9.]/', '', $raw);
-                    $suffix = trim(str_replace($num, '', $raw));
-                    $numVal = is_numeric($num) ? (float) $num : null;
-                @endphp
-                <div class="rounded-xl border {{ $bg === 'dark' ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white' }} p-4">
-                    <div class="gt-m__value {{ $valueClass }}"
-                        @if ($animate && $numVal !== null)
-                            data-countup="{{ $numVal }}"
-                            data-countup-suffix="{{ e($suffix) }}"
-                        @endif>
-                        {{ $raw }}
+
+    <section
+        class="w-full py-12"
+        style="background-color:{{ $meSectionBg }};"
+    >
+        <div class="{{ $meInnerClass }}">
+
+            @if ($meTitle)
+                <h2 class="mx-auto max-w-7xl px-4 {{ $msHeadingSize }} font-semibold tracking-tight mb-8"
+                    style="color:{{ $meHeadingCol }};">
+                    {{ $meTitle }}
+                </h2>
+            @endif
+
+            <div class="mx-auto max-w-7xl px-4 grid" style="{{ $meGridStyle }}">
+                @foreach ($meItems as $it)
+                    @php
+                        $raw    = (string) ($it['value'] ?? '');
+                        $label  = $t($it['label'] ?? '', $locale, $fallback);
+                        $num    = preg_replace('/[^0-9.]/', '', $raw);
+                        $suffix = trim(str_replace($num, '', $raw));
+                        $numVal = is_numeric($num) ? (float) $num : null;
+                    @endphp
+                    <div class="rounded-xl border border-slate-200 p-6"
+                         style="background-color:{{ $meItemBg }};">
+                        <div class="gt-m__value {{ $msValueSize }}"
+                             style="color:{{ $meValueCol }};"
+                             @if ($meAnimate && $numVal !== null)
+                                 data-countup="{{ $numVal }}"
+                                 data-countup-suffix="{{ e($suffix) }}"
+                             @endif>
+                            {{ $raw }}
+                        </div>
+                        <div class="mt-2 {{ $msLabelSize }} font-medium"
+                             style="color:{{ $meLabelCol }};">
+                            {{ $label }}
+                        </div>
                     </div>
-                    <div class="mt-1 text-sm opacity-80">{{ $label }}</div>
-                </div>
                 @endforeach
             </div>
+
         </div>
     </section>
 
@@ -813,7 +842,7 @@
         $linksRowColor = $data['links_row_color'] ?? '#0ea5e9';
     @endphp
     <section class="mx-auto py-12">
-        <div class="gt-mtl3__grid" style="grid-template-columns: {{ $gridCols }};">
+        <div class="gt-mtl3__grid" style="--gt-mtl3-cols: {{ $gridCols }};">
             @foreach ($colOrder as $col)
                 @if ($col === 'media')
                     <div class="gt-mtl3__media">
@@ -1523,7 +1552,7 @@
     </section>
 
 
-    {{-- ══════════════════════════════════════════════════════════════════ --}}
+{{-- ══════════════════════════════════════════════════════════════════ --}}
 {{-- RICH TEXT                                                          --}}
 {{-- ══════════════════════════════════════════════════════════════════ --}}
 @elseif ($type === 'richText')
@@ -1533,19 +1562,72 @@
         $rtHtml    = $th($data['html']   ?? '', $locale, $fallback);
         $sectionType = $data['section_type'] ?? 'nofull';
         $sectionBgColor = $data['section_bg_color'] ?? '#F3F4F6';
+
+        $rtStyleMap = [
+            'normal'      => '',
+            'bold'        => 'font-bold',
+            'italic'      => 'italic',
+            'bold_italic' => 'font-bold italic',
+            'narrow'      => 'tracking-tight',
+        ];
+
+        $rtKickerColor = $data['kicker_color']     ?? '#64748b';
+        $rtKickerSize  = $data['kicker_font_size'] ?? 'text-lg';
+        $rtKickerStyle = $rtStyleMap[$data['kicker_style'] ?? 'bold'] ?? '';
+
+        $rtHeadingColor = $data['heading_color']     ?? '#0f172a';
+        $rtHeadingSize  = $data['heading_font_size'] ?? 'text-4xl';
+        $rtHeadingStyle = $rtStyleMap[$data['heading_style'] ?? 'bold'] ?? '';
+
+        $rtHtmlColor = $data['html_color']     ?? '#334155';
+        $rtHtmlSize  = $data['html_font_size'] ?? 'text-base';
+        $rtHtmlStyle = $rtStyleMap[$data['html_style'] ?? 'normal'] ?? '';
+
+        $rtCtas = is_array($data['ctas'] ?? null) ? $data['ctas'] : [];
     @endphp
-    <section class="{{ $sectionType === 'full' ? 'w-full' : 'max-w-4xl mx-auto' }} mt-4 gt-rich-text" style="background-color: {{ $sectionBgColor }};">
-        @if ($rtKicker)
-            <div class="m-2 text-lg font-semibold text-slate-500">{{ $rtKicker }}</div>
-        @endif
-        @if ($rtHeading)
-            <h2 class="m-2 text-4xl md:text-3xl font-semibold tracking-tight mb-4">{{ $rtHeading }}</h2>
-        @endif
-        @if ($rtHtml)
-            <div class="m-2 text-2xl prose prose-slate max-w-none">{!! $rtHtml !!}</div>
-        @endif
+        @if ($sectionType === 'full')
+        <section class="w-full py-10 gt-rich-text" style="background-color: {{ $sectionBgColor }};">
+            <div class="mx-auto max-w-7xl px-4">
+    @else
+        <section class="mx-auto max-w-7xl px-4 mt-4 mb-4 py-10 gt-rich-text" style="background-color: {{ $sectionBgColor }};">
+            <div>
+    @endif
+            @if ($rtKicker)
+                <div class="m-2 {{ $rtKickerSize }} {{ $rtKickerStyle }}" style="color: {{ $rtKickerColor }};">{{ $rtKicker }}</div>
+            @endif
+            @if ($rtHeading)
+                <h2 class="m-2 {{ $rtHeadingSize }} {{ $rtHeadingStyle }} tracking-tight mb-4" style="color: {{ $rtHeadingColor }};">{{ $rtHeading }}</h2>
+            @endif
+            @if ($rtHtml)
+                <div class="m-2 {{ $rtHtmlSize }} {{ $rtHtmlStyle }} prose prose-slate max-w-none" style="color: {{ $rtHtmlColor }};">{!! $rtHtml !!}</div>
+            @endif
+
+            @if (count($rtCtas))
+                <div class="m-2 mt-6 flex flex-wrap items-center gap-3">
+                    @foreach ($rtCtas as $rtCta)
+                        @php
+                            $rtCtaLabel = $t($rtCta['label'] ?? '', $locale, $fallback);
+                            $rtCtaUrl   = $rtCta['url'] ?? '#';
+                            $rtCtaBg    = $rtCta['bg_color']   ?? '#0f172a';
+                            $rtCtaText  = $rtCta['text_color'] ?? '#ffffff';
+                        @endphp
+                        @if ($rtCtaLabel)
+                            
+                                href="{{ $rtCtaUrl }}"
+                                class="inline-flex items-center px-5 py-2.5 rounded-lg text-sm font-semibold transition hover:opacity-90"
+                                style="background-color: {{ $rtCtaBg }}; color: {{ $rtCtaText }};"
+                            >
+                                {{ $rtCtaLabel }}
+                            </a>
+                        @endif
+                    @endforeach
+                </div>
+            @endif
+        </div>
     </section>
-{{-- RICH TEXT 2                                                          --}}
+    
+{{-- ══════════════════════════════════════════════════════════════════ --}}
+{{-- RICH TEXT 2                                                        --}}
 {{-- ══════════════════════════════════════════════════════════════════ --}}
 @elseif ($type === 'richText2')
     @php
@@ -1693,10 +1775,21 @@
             'db'        => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4"><path d="M8 7c3.314 0 6-1.343 6-3s-2.686-3-6-3-6 1.343-6 3 2.686 3 6 3Z" /><path d="M8 8.5c1.84 0 3.579-.37 4.914-1.037A6.33 6.33 0 0 0 14 6.78V8c0 1.657-2.686 3-6 3S2 9.657 2 8V6.78c.346.273.72.5 1.087.683C4.42 8.131 6.16 8.5 8 8.5Z" /><path d="M8 12.5c1.84 0 3.579-.37 4.914-1.037.366-.183.74-.41 1.086-.684V12c0 1.657-2.686 3-6 3s-6-1.343-6-3v-1.22c.346.273.72.5 1.087.683C4.42 12.131 6.16 12.5 8 12.5Z" /></svg>',
             'cube'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4"><path d="M8.372 1.349a.75.75 0 0 0-.744 0l-4.81 2.748L8 7.131l5.182-3.034-4.81-2.748ZM14 5.357 8.75 8.43v6.005l4.872-2.784A.75.75 0 0 0 14 11V5.357ZM7.25 14.435V8.43L2 5.357V11c0 .27.144.518.378.651l4.872 2.784Z" /></svg>',
         ];
+            $csSectionWidth = $data['section_width'] ?? 'contained';
     @endphp
 
-    <section class="mx-auto max-w-7xl px-4 py-12">
-        <div class="rounded-2xl bg-slate-950 text-white px-8 py-12 md:px-14 md:py-16">
+    @if ($csSectionWidth === 'full')
+        <section class="w-full py-12">
+            <div class="bg-slate-950 text-white px-8 py-12 md:px-14 md:py-16">
+                <div class="mx-auto max-w-7xl">
+
+                    {{-- Heading + subtitle --}}
+    @else
+        <section class="mx-auto max-w-7xl px-4 py-12">
+            <div class="rounded-2xl bg-slate-950 text-white px-8 py-12 md:px-14 md:py-16">
+
+                {{-- Heading + subtitle --}}
+    @endif
 
             {{-- Heading + subtitle --}}
             @if ($csHeading || $csSubtitle)
@@ -1749,6 +1842,109 @@
                 </div>
             @endif
 
+        @if ($csSectionWidth === 'full')
+                </div>
+            </div>
+        </section>
+    @else
+            </div>
+        </section>
+    @endif
+    
+{{-- ══════════════════════════════════════════════════════════════════ --}}
+{{-- Supply concentration bars — severity index with progress bars      --}}
+{{-- ══════════════════════════════════════════════════════════════════ --}}
+@elseif ($type === 'supplyConcentrationBars')
+    @php
+        $scbKicker  = $t($data['kicker']  ?? '', $locale, $fallback);
+        $scbHeading = $t($data['heading'] ?? '', $locale, $fallback);
+
+        $scbSectionWidth = $data['section_width']       ?? 'full';
+        $scbSectionBg    = $data['section_bg_color']    ?? '#0b1220';
+        $scbKickerColor  = $data['kicker_color']        ?? '#f97316';
+        $scbHeadingColor = $data['heading_color']       ?? '#ffffff';
+        $scbAccentColor  = $data['heading_accent_color'] ?? '#f97316';
+        $scbTitleColor   = $data['title_text_color']    ?? '#ffffff';
+        $scbDescColor    = $data['description1_text_color'] ?? '#94a3b8';
+        $scbDesc2Color   = $data['description2_text_color'] ?? '#94a3b8';
+        $scbDividerColor = $data['divider_color']       ?? '#1e293b';
+        $scbTrackColor   = $data['bar_track_color']     ?? '#1e293b';
+
+        $scbItems = is_array($data['items'] ?? null) ? $data['items'] : [];
+    @endphp
+
+    <section
+        class="{{ $scbSectionWidth === 'full' ? 'w-full' : '' }} py-14"
+        style="background-color: {{ $scbSectionBg }};"
+    >
+        <div class="mx-auto max-w-7xl px-4">
+
+            @if ($scbKicker)
+                <div class="text-xs font-bold uppercase tracking-widest mb-3" style="color: {{ $scbKickerColor }};">
+                    {{ $scbKicker }}
+                </div>
+            @endif
+
+            @if ($scbHeading)
+                <h2 class="text-2xl md:text-3xl font-semibold tracking-tight mb-2 break-words" style="color: {{ $scbHeadingColor }};">
+                    {!! $scbHeading !!}
+                </h2>
+                <div class="w-10 h-1 rounded-full mb-8" style="background-color: {{ $scbAccentColor }};"></div>
+            @endif
+
+            <div>
+                @foreach ($scbItems as $scbIdx => $scbItem)
+                    @php
+                        $scbTitle      = $t($scbItem['title']       ?? '', $locale, $fallback);
+                        $scbDesc       = $t($scbItem['description1'] ?? '', $locale, $fallback);
+                        $scbBadgeLabel = $t($scbItem['badge_label'] ?? '', $locale, $fallback);
+                        $scbDesc2      = $t($scbItem['description2'] ?? '', $locale, $fallback);
+                        $scbPercent    = max(0, min(100, (float) ($scbItem['percent'] ?? 0)));
+
+                        $scbFillColor   = $scbItem['bar_fill_color']     ?? '#ef4444';
+                        $scbBadgeBg     = $scbItem['badge_bg_color']     ?? '#ffffff';
+                        $scbBadgeText   = $scbItem['badge_text_color']  ?? '#dc2626';
+                        $scbBadgeBorder = $scbItem['badge_border_color'] ?? '#dc2626';
+                    @endphp
+
+                    <div class="py-5" @if ($scbIdx > 0) style="border-top: 1px solid {{ $scbDividerColor }};" @endif>
+
+                        {{-- Title + badge — wraps to a stacked layout on narrow screens --}}
+                        <div class="flex flex-wrap items-start justify-between gap-3 mb-3">
+                            @if ($scbTitle)
+                                <h3 class="text-base font-bold break-words" style="color: {{ $scbTitleColor }};">
+                                    {!! $scbTitle !!}
+                                </h3>
+                            @endif
+                            @if ($scbDesc)
+                                <p class="text-sm leading-relaxed break-words" style="color: {{ $scbDescColor }};">
+                                    {!! $scbDesc !!}
+                                </p>
+                            @endif
+                            @if ($scbBadgeLabel)
+                                <span
+                                    class="text-xs font-semibold px-3 py-1 rounded whitespace-nowrap border"
+                                    style="background-color: {{ $scbBadgeBg }}; color: {{ $scbBadgeText }}; border-color: {{ $scbBadgeBorder }};"
+                                >
+                                    {{ $scbBadgeLabel }}
+                                </span>
+                            @endif
+                        </div>
+
+                        {{-- Concentration bar — percentage width, fully fluid --}}
+                        <div class="w-full rounded-full overflow-hidden mb-3" style="height: 6px; background-color: {{ $scbTrackColor }};">
+                            <div style="width: {{ $scbPercent }}%; height: 100%; background-color: {{ $scbFillColor }};"></div>
+                        </div>
+
+                        @if ($scbDesc2)
+                            <p class="text-sm leading-relaxed break-words" style="color: {{ $scbDesc2Color }};">
+                                {!! $scbDesc2 !!}
+                            </p>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+
         </div>
     </section>
 
@@ -1761,6 +1957,12 @@
         $fwcGap      = $data['grid_type'] ?? 'gaped';
         $fwcBg       = $data['section_bg_color'] ?? '#dce9f5';
         $fwcCardBg   = $data['card_bg_color'] ?? 'transparent';
+        $fwcKickerColor   = $data['section_kicker_color'] ?? '#64748B';
+        $fwcHeadingColor  = $data['section_heading_color'] ?? '#1E293B';
+        $fwcSubtitleColor = $data['section_subtitle_color'] ?? '#475569';
+        $fwcCardKickerColor   = $data['card_kicker_color'] ?? '#64748B';
+        $fwcCardTitleColor  = $data['card_title_color'] ?? '#1E293B';
+        $fwcCardBodyColor = $data['card_body_color'] ?? '#475569';
         $fwcColClass = match ($fwcCols) {
             2       => 'xl:grid-cols-2',
             3       => 'lg:grid-cols-3',
@@ -1792,17 +1994,17 @@
         @if ($fwcKicker || $fwcHeading || $fwcSubtitle)
             <div class="mx-auto max-w-7xl px-4 mb-10">
                 @if ($fwcKicker)
-                    <div class="{{ $fwcKickerSize }} font-semibold uppercase tracking-widest text-slate-500 mb-2">
+                    <div class="{{ $fwcKickerSize }} font-semibold uppercase tracking-widest mb-2" style="color:{{$fwcKickerColor}}">
                         {{ $fwcKicker }}
                     </div>
                 @endif
                 @if ($fwcHeading)
-                    <h2 class="{{ $fwcHeadingSize }} font-light tracking-tight text-slate-800">
+                    <h2 class="{{ $fwcHeadingSize }} font-light tracking-tight" style="color:{{$fwcHeadingColor}}">
                         {{ $fwcHeading }}
                     </h2>
                 @endif
                 @if ($fwcSubtitle)
-                    <p class="mt-3 {{ $fwcSubtitleSize }} text-slate-600">{!! $fwcSubtitle !!}</p>
+                    <p class="mt-3 {{ $fwcSubtitleSize }}" style="color:{{$fwcSubtitleColor}}">{!! $fwcSubtitle !!}</p>
                 @endif
             </div>
         @endif
@@ -1836,17 +2038,17 @@
 
                     <div class="pt-6 pb-4 flex flex-col flex-1">
                         @if ($itKicker)
-                            <div class="{{ $fwcItemKicker }} font-semibold uppercase tracking-widest text-slate-500 mb-2">
+                            <div class="{{ $fwcItemKicker }} font-semibold uppercase tracking-widest mb-2" style="color:{{$fwcCardKickerColor}}">
                                 {{ $itKicker }}
                             </div>
                         @endif
                         @if ($itTitle)
-                            <div class="{{ $fwcItemTitle }} font-light tracking-tight text-slate-800 mb-3 {{ $itUrl ? 'group-hover:underline' : '' }}">
+                            <div class="{{ $fwcItemTitle }} font-light tracking-tight mb-3 {{ $itUrl ? 'group-hover:underline' : '' }}" style="color:{{$fwcCardTitleColor}}">
                                 {{ $itTitle }}
                             </div>
                         @endif
                         @if ($itExc)
-                            <p class="{{ $fwcItemBody }} text-slate-600 leading-relaxed flex-1">
+                            <p class="{{ $fwcItemBody }} leading-relaxed flex-1" style="color:{{$fwcCardBodyColor}}">
                                 {!! $itExc !!}
                             </p>
                         @endif
@@ -1909,47 +2111,237 @@
         // RTL: Arabic flips the border side
         $qBorderClass = $locale === 'ar' ? 'border-r-2 border-l-0' : 'border-l-2';
     @endphp
-
     <section class="w-full py-16 px-6 {{ $qSectionClass }}"
-             @if ($locale === 'ar') dir="rtl" @endif>
-        <div class="mx-auto max-w-3xl">
-
-            {{-- Accent top line --}}
-            <div class="w-12 h-0.5 mb-8" style="background:{{ $qAccent }};"></div>
-
-            {{-- Opening quotation mark --}}
-            <div class="text-7xl font-light leading-none mb-2 select-none"
-                 style="color:{{ $qAccent }}; font-family:Georgia,'Times New Roman',serif; opacity:.35;"
-                 aria-hidden="true">"</div>
-
-            {{-- Quote text --}}
-            @if ($qQuote)
-                <blockquote class="text-xl md:text-2xl font-light leading-relaxed {{ $qTextClass }} mb-8"
-                            style="font-family:Georgia,'Times New Roman',serif;">
-                    {{ $qQuote }}
-                </blockquote>
-            @endif
-
-            {{-- Attribution --}}
-            @if ($qAuthorName || $qAuthorTitle)
-                <footer class="pt-6 border-t {{ $qDividerClass }} {{ $qBorderClass }} pl-4"
-                        style="border-color: {{ $qAccent }}20;">
-                    @if ($qAuthorName)
-                        <div class="text-sm font-semibold tracking-wide"
-                             style="color:{{ $qAccent }};">
-                            {{ $qAuthorName }}
-                        </div>
-                    @endif
-                    @if ($qAuthorTitle)
-                        <div class="mt-1 text-sm {{ $qAttrClass }}">
-                            {{ $qAuthorTitle }}
-                        </div>
-                    @endif
-                </footer>
-            @endif
-
-        </div>
+        @if ($locale === 'ar') dir="rtl" @endif>
+            <div class="mx-auto max-w-3xl">
+                {{-- Accent top line --}}
+                <div class="w-12 h-0.5 mb-8" style="background:{{ $qAccent }};"></div>
+                {{-- Opening quotation mark --}}
+                <div class="text-7xl font-light leading-none mb-2 select-none"
+                    style="color:{{ $qAccent }}; font-family:Georgia,'Times New Roman',serif; opacity:.35;"
+                    aria-hidden="true">"</div>
+                {{-- Quote text --}}
+                @if ($qQuote)
+                    <blockquote class="text-xl md:text-2xl font-light leading-relaxed {{ $qTextClass }} mb-8"
+                                style="font-family:Georgia,'Times New Roman',serif;">
+                        {{ $qQuote }}
+                    </blockquote>
+                @endif
+                {{-- Attribution --}}
+                @if ($qAuthorName || $qAuthorTitle)
+                    <footer class="pt-6 border-t {{ $qDividerClass }} {{ $qBorderClass }} pl-4"
+                            style="border-color: {{ $qAccent }}20;">
+                        @if ($qAuthorName)
+                            <div class="text-sm font-semibold tracking-wide"
+                                style="color:{{ $qAccent }};">
+                                {{ $qAuthorName }}
+                            </div>
+                        @endif
+                        @if ($qAuthorTitle)
+                            <div class="mt-1 text-sm {{ $qAttrClass }}">
+                                {{ $qAuthorTitle }}
+                            </div>
+                        @endif
+                    </footer>
+                @endif
+            </div>
     </section>
+
+{{-- ══════════════════════════════════════════════════════════════════ --}}
+{{-- Spec table — grouped multi-column comparison (e.g. valve types)    --}}
+{{-- ══════════════════════════════════════════════════════════════════ --}}
+@elseif ($type === 'specTable')
+    @php
+        $stKicker  = $t($data['kicker']  ?? '', $locale, $fallback);
+        $stHeading = $t($data['heading'] ?? '', $locale, $fallback);
+
+        $stShowHeaders = (bool) ($data['show_column_headers'] ?? false);
+
+        $stColumnKeys = ['name', 'standards', 'pressure_class', 'materials', 'seat_trim', 'ends', 'features'];
+
+        $stColumnLabels = [
+            'name'           => $t($data['col_name_label']      ?? '', $locale, $fallback),
+            'standards'      => $t($data['col_standards_label']  ?? '', $locale, $fallback),
+            'pressure_class' => $t($data['col_class_label']      ?? '', $locale, $fallback),
+            'materials'      => $t($data['col_materials_label']  ?? '', $locale, $fallback),
+            'seat_trim'      => $t($data['col_trim_label']       ?? '', $locale, $fallback),
+            'ends'           => $t($data['col_ends_label']       ?? '', $locale, $fallback),
+            'features'       => $t($data['col_features_label']   ?? '', $locale, $fallback),
+        ];
+
+        // Per-column field map — links each column key to its width/color field names
+        $stColumnFieldMap = [
+            'name'           => ['width' => 'col_name_width',      'color' => 'col_name_text_color',      'defW' => 16, 'defC' => '#1e293b'],
+            'standards'      => ['width' => 'col_standards_width', 'color' => 'col_standards_text_color', 'defW' => 14, 'defC' => '#475569'],
+            'pressure_class' => ['width' => 'col_class_width',     'color' => 'col_class_text_color',     'defW' => 13, 'defC' => '#475569'],
+            'materials'      => ['width' => 'col_materials_width', 'color' => 'col_materials_text_color', 'defW' => 16, 'defC' => '#475569'],
+            'seat_trim'      => ['width' => 'col_trim_width',      'color' => 'col_trim_text_color',      'defW' => 15, 'defC' => '#475569'],
+            'ends'           => ['width' => 'col_ends_width',      'color' => 'col_ends_text_color',      'defW' => 12, 'defC' => '#475569'],
+            'features'       => ['width' => 'col_features_width',  'color' => 'col_features_text_color',  'defW' => 14, 'defC' => '#475569'],
+        ];
+
+        $stColumnWeights = [];
+        $stColumnColors  = [];
+        foreach ($stColumnKeys as $stColKey) {
+            $stMap = $stColumnFieldMap[$stColKey];
+            $stColumnWeights[$stColKey] = (float) ($data[$stMap['width']] ?? $stMap['defW']);
+            $stColumnColors[$stColKey]  = $data[$stMap['color']] ?? $stMap['defC'];
+        }
+
+        $stGroups = is_array($data['groups'] ?? null) ? $data['groups'] : [];
+
+        // ── Determine which columns actually have content anywhere ─────
+        $stColHasContent = array_fill_keys($stColumnKeys, false);
+        foreach ($stGroups as $stGroup) {
+            $stGroupRows = is_array($stGroup['rows'] ?? null) ? $stGroup['rows'] : [];
+            foreach ($stGroupRows as $stGroupRow) {
+                foreach ($stColumnKeys as $stColKey) {
+                    if ($stColHasContent[$stColKey]) continue;
+                    $stCellCheck = $t($stGroupRow[$stColKey] ?? '', $locale, $fallback);
+                    if (trim(strip_tags($stCellCheck)) !== '') {
+                        $stColHasContent[$stColKey] = true;
+                    }
+                }
+            }
+        }
+
+        $stVisibleCols = array_values(array_filter($stColumnKeys, fn ($k) => $stColHasContent[$k]));
+        if (empty($stVisibleCols)) {
+            $stVisibleCols = $stColumnKeys; // safety net — never render a table with zero columns
+        }
+
+        $stVisibleWeightSum = array_sum(array_map(fn ($k) => $stColumnWeights[$k], $stVisibleCols));
+        $stVisibleColWidths = [];
+        foreach ($stVisibleCols as $stColKey) {
+            $stVisibleColWidths[$stColKey] = $stVisibleWeightSum > 0
+                ? round(($stColumnWeights[$stColKey] / $stVisibleWeightSum) * 100, 4)
+                : (100 / count($stVisibleCols));
+        }
+
+        // Appearance
+        $stSectionWidth  = $data['section_width']        ?? 'contained';
+        $stSectionBg     = $data['section_bg_color']     ?? null;
+        $stHeaderBg      = $data['header_row_bg_color']  ?? '#f1f5f9';
+        $stHeaderTextColor = $data['header_text_color']  ?? '#64748b';
+        $stHeaderFontSize = $data['header_font_size']    ?? 'text-xs';
+        $stAccentColor   = $data['heading_accent_color'] ?? '#f97316';
+        $stGroupBg       = $data['group_title_bg_color'] ?? '#f0f9ff';
+        $stGroupTextColor = $data['group_title_text_color'] ?? '#334155';
+        $stGroupHoverBg  = $data['group_title_hover_bg_color'] ?? '#e0f2fe';
+        $stGroupFontSize = $data['group_title_font_size'] ?? 'text-xs';
+        $stRowBg         = $data['row_bg_color']         ?? '#ffffff';
+        $stRowBgAlt      = $data['row_bg_color_alt']     ?? '#f8fafc';
+        $stRowHoverBg    = $data['row_hover_bg_color']   ?? '#eff6ff';
+        $stRowFontSize   = $data['row_font_size']        ?? 'text-sm';
+
+        $stTableId = 'spec_' . substr(md5(uniqid()), 0, 8);
+    @endphp
+
+    <style>
+        #{{ $stTableId }} tbody tr.spec-row:hover {
+            background-color: {{ $stRowHoverBg }} !important;
+        }
+        #{{ $stTableId }} tbody tr.spec-group-row:hover {
+            background-color: {{ $stGroupHoverBg }} !important;
+        }
+        #{{ $stTableId }}_scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        #{{ $stTableId }} {
+            width: 100%;
+            table-layout: auto;
+            min-width: 720px;
+        }
+        @media (min-width: 640px) {
+            #{{ $stTableId }} {
+                table-layout: fixed;
+                min-width: 0;
+            }
+        }
+    </style>
+
+    @if ($stSectionWidth === 'full')
+        <section class="w-full py-12" @if ($stSectionBg) style="background-color: {{ $stSectionBg }};" @endif>
+            <div class="mx-auto max-w-7xl px-4">
+    @else
+        <section class="mx-auto max-w-7xl px-4 py-12" @if ($stSectionBg) style="background-color: {{ $stSectionBg }};" @endif>
+            <div>
+    @endif
+
+                @if ($stKicker || $stHeading)
+                    <div class="mb-6">
+                        @if ($stKicker)
+                            <div class="font-semibold uppercase tracking-widest text-slate-500 mb-2">
+                                {{ $stKicker }}
+                            </div>
+                        @endif
+                        @if ($stHeading)
+                            <h2 class="text-3xl font-light tracking-tight text-slate-800">
+                                {{ $stHeading }}
+                            </h2>
+                            <div class="w-10 h-1 rounded-full mb-8" style="background-color: {{ $stAccentColor }};"></div>
+                        @endif
+                    </div>
+                @endif
+
+                <div id="{{ $stTableId }}_scroll" class="rounded-lg border border-slate-200">
+                    <table id="{{ $stTableId }}" class="border-collapse {{ $stRowFontSize }}">
+                        <colgroup>
+                            @foreach ($stVisibleCols as $stColKey)
+                                <col style="width: {{ $stVisibleColWidths[$stColKey] }}%;">
+                            @endforeach
+                        </colgroup>
+                        @if ($stShowHeaders)
+                            <thead>
+                                <tr class="text-left {{ $stHeaderFontSize }} font-semibold uppercase tracking-wide"
+                                    style="background-color: {{ $stHeaderBg }}; color: {{ $stHeaderTextColor }};">
+                                    @foreach ($stVisibleCols as $stColKey)
+                                        <th class="px-4 py-3 break-words">{{ $stColumnLabels[$stColKey] }}</th>
+                                    @endforeach
+                                </tr>
+                            </thead>
+                        @endif
+                        <tbody>
+                            @foreach ($stGroups as $stGroup)
+                                @php
+                                    $stGroupTitle = $t($stGroup['group_title'] ?? '', $locale, $fallback);
+                                    $stRows       = is_array($stGroup['rows'] ?? null) ? $stGroup['rows'] : [];
+                                @endphp
+
+                                @if ($stGroupTitle)
+                                    <tr class="spec-group-row">
+                                        <td colspan="{{ count($stVisibleCols) }}"
+                                            class="px-4 py-2 {{ $stGroupFontSize }} font-bold uppercase tracking-wider"
+                                            style="background-color: {{ $stGroupBg }}; color: {{ $stGroupTextColor }};">
+                                            {{ $stGroupTitle }}
+                                        </td>
+                                    </tr>
+                                @endif
+
+                                @foreach ($stRows as $stRowIdx => $stRow)
+                                    @php $stRowBgUse = $stRowIdx % 2 === 1 ? $stRowBgAlt : $stRowBg; @endphp
+                                    <tr class="spec-row border-t border-slate-100" style="background-color: {{ $stRowBgUse }};">
+                                        @foreach ($stVisibleCols as $stColKey)
+                                            @php
+                                                $stCellValue = $t($stRow[$stColKey] ?? '', $locale, $fallback);
+                                                $stIsName    = $stColKey === 'name';
+                                            @endphp
+                                            <td
+                                                class="px-4 py-3 align-top break-words {{ $stIsName ? 'font-semibold' : '' }}"
+                                                style="color: {{ $stColumnColors[$stColKey] }};"
+                                            >
+                                                {!! $stCellValue !!}
+                                            </td>
+                                        @endforeach
+                                    </tr>
+                                @endforeach
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
 
 {{-- ══════════════════════════════════════════════════════════════════ --}}
 {{-- Overlay Carousel                                                   --}}

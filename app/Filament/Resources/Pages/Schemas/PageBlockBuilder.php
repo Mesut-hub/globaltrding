@@ -37,10 +37,12 @@ class PageBlockBuilder
             static::dropdownLinksBlock(),
             static::timelineBlock(),
             static::ctaStatsBlock(),
+            static::supplyConcentrationBarsBlock(),
             static::richText2Block(),
             static::pullQuoteBlock(),
             static::overlayCarouselBlock(),
             static::fullWidthCardsBlock(),
+            static::specTableBlock(),
             ...static::homeOnlyBlocks(),
             ...static::industryOnlyBlocks(),
         ];
@@ -49,6 +51,7 @@ class PageBlockBuilder
     protected static function fontSizeOptions(): array
     {
         return [
+            'text-xs'   => 'XS – 10px',
             'text-xs'   => 'XS – 12px',
             'text-sm'   => 'SM – 14px',
             'text-base' => 'Base – 16px',
@@ -415,25 +418,79 @@ class PageBlockBuilder
 
     // ── Metrics ───────────────────────────────────────────────────────────────
 
-    private static function metricsBlock(): Block
+    public static function metricsBlock(): Block
     {
         return Block::make('metrics')
-            ->label('Metrics / statistics')
+            ->label('Metrics / Statistics')
             ->schema([
-                Select::make('bg')->options(['slate' => 'Slate', 'white' => 'White', 'dark' => 'Dark'])->default('slate'),
-                Toggle::make('animate')->label('Animate numbers')->default(true),
 
-                static::blockLocaleTabs('metrics_lang', [
-                    ['name' => 'title', 'label' => 'Section heading', 'type' => 'text'],
+                \Filament\Schemas\Components\Grid::make(2)->schema([
+                    Select::make('layout')
+                        ->label('Layout')
+                        ->options(['contained' => 'Contained (max-w-7xl)', 'full_width' => 'Full Width'])
+                        ->default('contained'),
+                    \Filament\Forms\Components\Toggle::make('animate')
+                        ->label('Animate numbers on scroll')
+                        ->default(true),
                 ]),
 
-                Repeater::make('items')->label('Metric items')->minItems(1)->schema([
-                    TextInput::make('value')->label('Value (e.g. 12,000+)')->required(),
+                \Filament\Schemas\Components\Grid::make(2)->schema([
+                    \Filament\Forms\Components\ColorPicker::make('section_bg_color')
+                        ->label('Section background color')
+                        ->default('#f8fafc'),
+                    \Filament\Forms\Components\ColorPicker::make('heading_color')
+                        ->label('Section heading color')
+                        ->default('#0f172a'),
+                ]),
 
-                    static::blockLocaleTabs('metrics_item_lang', [
-                        ['name' => 'label', 'label' => 'Label', 'type' => 'text'],
+                \Filament\Schemas\Components\Grid::make(3)->schema([
+                    \Filament\Forms\Components\ColorPicker::make('item_bg_color')
+                        ->label('Metric card background')
+                        ->default('#ffffff'),
+                    \Filament\Forms\Components\ColorPicker::make('value_color')
+                        ->label('Value color')
+                        ->default('#0f172a'),
+                    \Filament\Forms\Components\ColorPicker::make('label_color')
+                        ->label('Label color')
+                        ->default('#64748b'),
+                ]),
+
+                \Filament\Schemas\Components\Section::make('Card font sizes')
+                    ->collapsed()
+                    ->schema([
+                        \Filament\Schemas\Components\Grid::make(4)->schema([
+                            Select::make('heading_size')
+                                ->label('Heading')
+                                ->options(static::fontSizeOptions())
+                                ->default('text-xl'),
+                            Select::make('value_size')
+                                ->label('Value')
+                                ->options(static::fontSizeOptions())
+                                ->default('text-3xl'),
+                            Select::make('label_size')
+                                ->label('Label')
+                                ->options(static::fontSizeOptions())
+                                ->default('text-sm'),
+                        ]),
                     ]),
-                ])->columns(2),
+
+                static::blockLocaleTabs('metrics_heading_lang', [
+                    ['name' => 'title', 'label' => 'Section heading (optional)', 'type' => 'text'],
+                ]),
+
+                Repeater::make('items')
+                    ->label('Metric items')
+                    ->minItems(1)
+                    ->schema([
+                        TextInput::make('value')
+                            ->label('Value (e.g. 250+ or 98.5)')
+                            ->required(),
+                        static::blockLocaleTabs('metrics_item_lang', [
+                            ['name' => 'label', 'label' => 'Label', 'type' => 'text'],
+                        ]),
+                    ])
+                    ->columns(1)
+                    ->collapsible(),
             ]);
     }
 
@@ -653,6 +710,16 @@ class PageBlockBuilder
         return Block::make('ctaStats')
             ->label('CTA panel with stats row')
             ->schema([
+                Select::make('section_width')
+                    ->label('Section background width')
+                    ->options([
+                        'contained' => 'Contained (current — centered, max width)',
+                        'full'      => 'Full width (edge-to-edge)',
+                    ])
+                    ->default('contained')
+                    ->helperText('Full width makes the dark panel itself stretch edge-to-edge; its content stays centered and readable.')
+                    ->native(false),
+
                 static::blockLocaleTabs('cs_main_lang', [
                     ['name' => 'heading',  'label' => 'Heading',                    'type' => 'text'],
                     ['name' => 'subtitle', 'label' => 'Subtitle (1–2 lines)',        'type' => 'textarea', 'rows' => 2],
@@ -711,6 +778,117 @@ class PageBlockBuilder
                     ->columns(1),
             ]);
     }
+    
+        // ── Supply concentration bars (severity index with progress bars) ──────────
+
+    private static function supplyConcentrationBarsBlock(): Block
+    {
+        return Block::make('supplyConcentrationBars')
+            ->label('Supply concentration bars — severity index with progress bars')
+            ->schema([
+                // ── Section appearance ──────────────────────────────────
+                \Filament\Schemas\Components\Grid::make(2)->schema([
+                    Select::make('section_width')
+                        ->label('Section background width')
+                        ->options([
+                            'contained' => 'Contained (centered, max width)',
+                            'full'      => 'Full width (edge-to-edge)',
+                        ])
+                        ->default('full')
+                        ->helperText('Full width makes the dark panel stretch edge-to-edge; its content stays centered and readable.')
+                        ->native(false),
+
+                    ColorPicker::make('section_bg_color')
+                        ->label('Section background color')
+                        ->default('#0b1220'),
+                ]),
+
+                static::blockLocaleTabs('scb_header_lang', [
+                    ['name' => 'kicker',  'label' => 'Eyebrow / kicker text', 'type' => 'text'],
+                    ['name' => 'heading', 'label' => 'Heading',               'type' => 'html'],
+                ]),
+
+                \Filament\Schemas\Components\Grid::make(3)->schema([
+                    ColorPicker::make('kicker_color')
+                        ->label('Kicker text color')
+                        ->default('#f97316'),
+
+                    ColorPicker::make('heading_color')
+                        ->label('Heading text color')
+                        ->default('#ffffff'),
+
+                    ColorPicker::make('heading_accent_color')
+                        ->label('Heading underline accent color')
+                        ->default('#f97316'),
+                ]),
+
+                \Filament\Schemas\Components\Grid::make(3)->schema([
+                    ColorPicker::make('title_text_color')
+                        ->label('Row title text color')
+                        ->default('#ffffff'),
+
+                    ColorPicker::make('description1_text_color')
+                        ->label('Row description text color')
+                        ->default('#94a3b8'),
+                        
+                    ColorPicker::make('description2_text_color')
+                        ->label('Row description text color')
+                        ->default('#94a3b8'),
+
+                    ColorPicker::make('divider_color')
+                        ->label('Row divider line color')
+                        ->default('#1e293b'),
+                ]),
+
+                ColorPicker::make('bar_track_color')
+                    ->label('Bar track (unfilled portion) background color')
+                    ->default('#1e293b'),
+
+                // ── Items ────────────────────────────────────────────────
+                Repeater::make('items')
+                    ->label('Concentration items')
+                    ->minItems(1)
+                    ->schema([
+                        static::blockLocaleTabs('scb_item_lang', [
+                            ['name' => 'title',       'label' => 'Item title (e.g. Adiponitrile (ADN))', 'type' => 'html'],
+                            ['name' => 'description1', 'label' => 'Description-1',                          'type' => 'html'],
+                            ['name' => 'badge_label', 'label' => 'Badge label (e.g. Extreme — 4 producers · 100%)', 'type' => 'text'],
+                            ['name' => 'description2', 'label' => 'Description-2',                          'type' => 'html'],
+                        ]),
+
+                        TextInput::make('percent')
+                            ->label('Concentration percent (0–100, controls bar fill width)')
+                            ->numeric()
+                            ->minValue(0)
+                            ->maxValue(100)
+                            ->suffix('%')
+                            ->required(),
+
+                        \Filament\Schemas\Components\Grid::make(4)->schema([
+                            ColorPicker::make('bar_fill_color')
+                                ->label('Bar fill color')
+                                ->default('#ef4444'),
+
+                            ColorPicker::make('badge_bg_color')
+                                ->label('Badge background color')
+                                ->default('#ffffff'),
+
+                            ColorPicker::make('badge_text_color')
+                                ->label('Badge text color')
+                                ->default('#dc2626'),
+
+                            ColorPicker::make('badge_border_color')
+                                ->label('Badge border color')
+                                ->default('#dc2626'),
+                        ]),
+                    ])
+                    ->itemLabel(fn (array $state): ?string => is_array($state['title'] ?? null)
+                        ? strip_tags($state['title']['en'] ?? '')
+                        : strip_tags((string) ($state['title'] ?? '')))
+                    ->collapsible()
+                    ->columns(1),
+            ]);
+    }
 
     private static function richText2Block(): Block
     {
@@ -718,10 +896,10 @@ class PageBlockBuilder
             ->label('Rich text 2')
             ->schema([
                 static::blockLocaleTabs('dl_item_lang', [
-                        ['name' => 'kicker',  'label' => 'Kicker', 'type' => 'text'],
-                        ['name' => 'heading',  'label' => 'Heading', 'type' => 'text'],
-                        ['name' => 'html',   'label' => 'HTML content',   'type' => 'html', 'rows' => 10, 'helper' => 'Use this for long-form content.'],
-                    ]),
+                    ['name' => 'kicker',  'label' => 'Kicker', 'type' => 'text'],
+                    ['name' => 'heading',  'label' => 'Heading', 'type' => 'text'],
+                    ['name' => 'html',   'label' => 'HTML content',   'type' => 'html', 'rows' => 10, 'helper' => 'Use this for long-form content.'],
+                ]),
             ]);
     }
 
@@ -785,13 +963,34 @@ class PageBlockBuilder
                         ->default('gaped'),
                 ]),
 
-                \Filament\Schemas\Components\Grid::make(2)->schema([
+                \Filament\Schemas\Components\Grid::make(4)->schema([
                     \Filament\Forms\Components\ColorPicker::make('section_bg_color')
                         ->label('Section background color')
                         ->default('#dce9f5'),
                     \Filament\Forms\Components\ColorPicker::make('card_bg_color')
                         ->label('Card background color')
                         ->default('#00000000'),  // transparent
+                    \Filament\Forms\Components\ColorPicker::make('section_kicker_color')
+                        ->label('Section kicker color')
+                        ->default('#64748B'),
+                    \Filament\Forms\Components\ColorPicker::make('section_heading_color')
+                        ->label('Section heading color')
+                        ->default('#1E293B'),
+                ]),
+                
+                \Filament\Schemas\Components\Grid::make(4)->schema([
+                    \Filament\Forms\Components\ColorPicker::make('section_subtitle_color')
+                        ->label('Section subtitle color')
+                        ->default('#475569'),
+                    \Filament\Forms\Components\ColorPicker::make('card_kicker_color')
+                        ->label('Card kicker color')
+                        ->default('#64748B'),
+                    \Filament\Forms\Components\ColorPicker::make('card_title_color')
+                        ->label('Card title color')
+                        ->default('#1E293B'),
+                    \Filament\Forms\Components\ColorPicker::make('card_body_color')
+                        ->label('Card body color')
+                        ->default('#475569'),
                 ]),
 
                 \Filament\Schemas\Components\Section::make('Section header font sizes')
@@ -866,6 +1065,180 @@ class PageBlockBuilder
                     ])
                     ->columns(1)
                     ->collapsible(),
+            ]);
+    }
+
+    // ── Spec table (grouped multi-column comparison, e.g. valve types) ─────────
+    public static function specTableBlock(): Block
+    {
+        $fontSizeOptions = [
+            'text-xs'   => 'Extra small',
+            'text-sm'   => 'Small',
+            'text-base' => 'Base',
+            'text-lg'   => 'Large',
+            'text-xl'   => 'Extra large',
+        ];
+
+        return Block::make('specTable')
+            ->label('Spec table — grouped multi-column comparison (e.g. valve/product types)')
+            ->schema([
+                static::blockLocaleTabs('spec_header_lang', [
+                    ['name' => 'kicker',  'label' => 'Section kicker (optional)', 'type' => 'text'],
+                    ['name' => 'heading', 'label' => 'Section heading (optional)', 'type' => 'text'],
+                    ['name' => 'html',   'label' => 'HTML content',   'type' => 'html', 'rows' => 2, 'helper' => 'Use this for long-form content.'],
+                ]),
+
+                Toggle::make('show_column_headers')
+                    ->label('Show a column header row above the groups')
+                    ->default(false),
+
+                static::blockLocaleTabs('spec_cols_lang', [
+                    ['name' => 'col_name_label',      'label' => 'Column header — Name',                    'type' => 'text'],
+                    ['name' => 'col_standards_label',  'label' => 'Column header — Standards',               'type' => 'text'],
+                    ['name' => 'col_class_label',      'label' => 'Column header — Pressure class',          'type' => 'text'],
+                    ['name' => 'col_materials_label',  'label' => 'Column header — Materials',               'type' => 'text'],
+                    ['name' => 'col_trim_label',       'label' => 'Column header — Seat / trim',             'type' => 'text'],
+                    ['name' => 'col_ends_label',       'label' => 'Column header — Ends',                    'type' => 'text'],
+                    ['name' => 'col_features_label',   'label' => 'Column header — Features / certifications', 'type' => 'text'],
+                ]),
+
+                \Filament\Schemas\Components\Grid::make(2)->schema([
+                    Select::make('section_width')
+                        ->label('Section background width')
+                        ->options([
+                            'contained' => 'Contained (current — centered, max width)',
+                            'full'      => 'Full width (edge-to-edge)',
+                        ])
+                        ->default('contained')
+                        ->helperText('The table itself always stays centered at max-w-7xl — this only changes how far the background color extends.')
+                        ->native(false),
+
+                    ColorPicker::make('section_bg_color')
+                        ->label('Section background color (optional)')
+                        ->nullable(),
+                ]),
+
+                \Filament\Schemas\Components\Grid::make(3)->schema([
+                    ColorPicker::make('header_row_bg_color')
+                        ->label('Header row background color')
+                        ->default('#f1f5f9'),
+
+                    ColorPicker::make('header_text_color')
+                        ->label('Header row text color')
+                        ->default('#64748b'),
+
+                    Select::make('header_font_size')
+                        ->label('Header row font size')
+                        ->options($fontSizeOptions)
+                        ->default('text-xs')
+                        ->native(false),
+                ]),
+
+                \Filament\Schemas\Components\Grid::make(4)->schema([
+                    ColorPicker::make('group_title_bg_color')
+                        ->label('Group title row background color')
+                        ->default('#f0f9ff'),
+
+                    ColorPicker::make('group_title_text_color')
+                        ->label('Group title row text color')
+                        ->default('#334155'),
+
+                    ColorPicker::make('group_title_hover_bg_color')
+                        ->label('Group title row hover/highlight background color')
+                        ->default('#e0f2fe'),
+
+                    Select::make('group_title_font_size')
+                        ->label('Group title font size')
+                        ->options($fontSizeOptions)
+                        ->default('text-xs')
+                        ->native(false),
+                ]),
+
+                ColorPicker::make('heading_accent_color')
+                    ->label('Heading underline accent color')
+                    ->default('#f97316'),
+
+                \Filament\Schemas\Components\Grid::make(4)->schema([
+                    ColorPicker::make('row_bg_color')
+                        ->label('Data row background color')
+                        ->default('#ffffff'),
+
+                    ColorPicker::make('row_bg_color_alt')
+                        ->label('Data row alternate background color (zebra striping)')
+                        ->default('#f8fafc'),
+
+                    ColorPicker::make('row_hover_bg_color')
+                        ->label('Data row hover/highlight background color')
+                        ->default('#eff6ff'),
+
+                    Select::make('row_font_size')
+                        ->label('Data row font size')
+                        ->options($fontSizeOptions)
+                        ->default('text-sm')
+                        ->native(false),
+                ]),
+
+                \Filament\Schemas\Components\Section::make('Column text colors')
+                    ->collapsed()
+                    ->schema([
+                        \Filament\Schemas\Components\Grid::make(4)->schema([
+                            ColorPicker::make('col_name_text_color')->label('Name column')->default('#1e293b'),
+                            ColorPicker::make('col_standards_text_color')->label('Standards column')->default('#475569'),
+                            ColorPicker::make('col_class_text_color')->label('Pressure class column')->default('#475569'),
+                            ColorPicker::make('col_materials_text_color')->label('Materials column')->default('#475569'),
+                            ColorPicker::make('col_trim_text_color')->label('Seat / trim column')->default('#475569'),
+                            ColorPicker::make('col_ends_text_color')->label('Ends column')->default('#475569'),
+                            ColorPicker::make('col_features_text_color')->label('Features / certifications column')->default('#475569'),
+                        ]),
+                    ]),
+
+                \Filament\Schemas\Components\Section::make('Column widths (relative — auto-redistributed among visible columns)')
+                    ->collapsed()
+                    ->schema([
+                        \Filament\Schemas\Components\Grid::make(4)->schema([
+                            TextInput::make('col_name_width')->label('Name')->numeric()->default(16),
+                            TextInput::make('col_standards_width')->label('Standards')->numeric()->default(14),
+                            TextInput::make('col_class_width')->label('Pressure class')->numeric()->default(13),
+                            TextInput::make('col_materials_width')->label('Materials')->numeric()->default(16),
+                            TextInput::make('col_trim_width')->label('Seat / trim')->numeric()->default(15),
+                            TextInput::make('col_ends_width')->label('Ends')->numeric()->default(12),
+                            TextInput::make('col_features_width')->label('Features / certifications')->numeric()->default(14),
+                        ]),
+                    ]),
+
+                Repeater::make('groups')
+                    ->label('Category groups')
+                    ->minItems(1)
+                    ->schema([
+                        static::blockLocaleTabs('spec_group_lang', [
+                            ['name' => 'group_title', 'label' => 'Group title (e.g. BALL VALVES)', 'type' => 'text'],
+                        ]),
+
+                        Repeater::make('rows')
+                            ->label('Rows')
+                            ->minItems(1)
+                            ->schema([
+                                static::blockLocaleTabs('spec_row_lang', [
+                                    ['name' => 'name',           'label' => 'Product / type name',        'type' => 'html', 'rows' => 2],
+                                    ['name' => 'standards',       'label' => 'Standards',                   'type' => 'html', 'rows' => 2],
+                                    ['name' => 'pressure_class',  'label' => 'Pressure class',              'type' => 'html', 'rows' => 2],
+                                    ['name' => 'materials',       'label' => 'Materials',                   'type' => 'html', 'rows' => 2],
+                                    ['name' => 'seat_trim',       'label' => 'Seat / trim',                 'type' => 'html', 'rows' => 2],
+                                    ['name' => 'ends',            'label' => 'Ends',                        'type' => 'html', 'rows' => 2],
+                                    ['name' => 'features',        'label' => 'Features / certifications',   'type' => 'html', 'rows' => 2],
+                                ]),
+                            ])
+                            ->itemLabel(fn (array $state): ?string => is_array($state['name'] ?? null)
+                                ? ($state['name']['en'] ?? null)
+                                : ($state['name'] ?? null))
+                            ->collapsible()
+                            ->columns(1),
+                    ])
+                    ->itemLabel(fn (array $state): ?string => is_array($state['group_title'] ?? null)
+                        ? ($state['group_title']['en'] ?? null)
+                        : ($state['group_title'] ?? null))
+                    ->collapsible()
+                    ->columns(1),
             ]);
     }
 
@@ -1186,6 +1559,25 @@ class PageBlockBuilder
 
     private static function richTextBlock(): Block
     {
+        $fontSizeOptions = [
+            'text-sm'  => 'Small',
+            'text-base' => 'Base',
+            'text-lg'  => 'Large',
+            'text-xl'  => 'Extra large',
+            'text-2xl' => '2X large',
+            'text-3xl' => '3X large',
+            'text-4xl' => '4X large',
+            'text-5xl' => '5X large',
+        ];
+
+        $styleOptions = [
+            'normal'      => 'Normal',
+            'bold'        => 'Bold',
+            'italic'      => 'Italic',
+            'bold_italic' => 'Bold italic',
+            'narrow'      => 'Narrow (tight letter-spacing)',
+        ];
+
         return Block::make('richText')
             ->label('Rich text')
             ->schema([
@@ -1194,11 +1586,99 @@ class PageBlockBuilder
                         ['name' => 'heading',  'label' => 'Heading', 'type' => 'text'],
                         ['name' => 'html',   'label' => 'HTML content',   'type' => 'html', 'rows' => 10, 'helper' => 'Use this for long-form content.'],
                     ]),
-                Select::make('section_type')
-                    ->label('Section type')
-                    ->options(['full' => 'Full width', 'nofull' => 'No full width'])
-                    ->default('nofull'),
-                ColorPicker::make('section_bg_color')->label('Section background color')->default('#F3F4F6'),
+
+                // ── Section width & background ──────────────────────────
+                \Filament\Schemas\Components\Grid::make(2)->schema([
+                    Select::make('section_type')
+                        ->label('Section width')
+                        ->options(['full' => 'Full width', 'nofull' => 'Contained'])
+                        ->default('nofull')
+                        ->helperText('Full width only stretches the background — kicker, heading and content always stay centered at max-w-7xl.')
+                        ->native(false),
+
+                    ColorPicker::make('section_bg_color')
+                        ->label('Section background color')
+                        ->default('#F3F4F6'),
+                ]),
+
+                // ── Kicker style ─────────────────────────────────────────
+                \Filament\Schemas\Components\Grid::make(3)->schema([
+                    ColorPicker::make('kicker_color')
+                        ->label('Kicker text color')
+                        ->default('#64748b'),
+                    Select::make('kicker_font_size')
+                        ->label('Kicker font size')
+                        ->options($fontSizeOptions)
+                        ->default('text-lg')
+                        ->native(false),
+                    Select::make('kicker_style')
+                        ->label('Kicker style')
+                        ->options($styleOptions)
+                        ->default('bold')
+                        ->native(false),
+                ]),
+
+                // ── Heading style ────────────────────────────────────────
+                \Filament\Schemas\Components\Grid::make(3)->schema([
+                    ColorPicker::make('heading_color')
+                        ->label('Heading text color')
+                        ->default('#0f172a'),
+                    Select::make('heading_font_size')
+                        ->label('Heading font size')
+                        ->options($fontSizeOptions)
+                        ->default('text-4xl')
+                        ->native(false),
+                    Select::make('heading_style')
+                        ->label('Heading style')
+                        ->options($styleOptions)
+                        ->default('bold')
+                        ->native(false),
+                ]),
+
+                // ── HTML content style ───────────────────────────────────
+                \Filament\Schemas\Components\Grid::make(3)->schema([
+                    ColorPicker::make('html_color')
+                        ->label('Content text color')
+                        ->default('#334155'),
+                    Select::make('html_font_size')
+                        ->label('Content font size')
+                        ->options($fontSizeOptions)
+                        ->default('text-base')
+                        ->native(false),
+                    Select::make('html_style')
+                        ->label('Content style')
+                        ->options($styleOptions)
+                        ->default('normal')
+                        ->native(false),
+                ]),
+
+                // ── CTAs ─────────────────────────────────────────────────
+                Repeater::make('ctas')
+                    ->label('Call-to-action buttons')
+                    ->helperText('Added buttons are laid out in a horizontal row (wrapping on small screens) in the order listed below.')
+                    ->schema([
+                        static::blockLocaleTabs('rt_cta_lang', [
+                            ['name' => 'label', 'label' => 'Button label', 'type' => 'text'],
+                        ]),
+
+                        TextInput::make('url')
+                            ->label('Button URL')
+                            ->required(),
+
+                        \Filament\Schemas\Components\Grid::make(2)->schema([
+                            ColorPicker::make('bg_color')
+                                ->label('Button background color')
+                                ->default('#0f172a'),
+                            ColorPicker::make('text_color')
+                                ->label('Button label text color')
+                                ->default('#ffffff'),
+                        ]),
+                    ])
+                    ->itemLabel(fn (array $state): ?string => is_array($state['label'] ?? null)
+                        ? ($state['label']['en'] ?? null)
+                        : ($state['label'] ?? null))
+                    ->collapsible()
+                    ->columns(1),
             ]);
     }
 

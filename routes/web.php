@@ -153,11 +153,21 @@ Route::get('/robots.txt', function () {
     return response($content, 200, ['Content-Type' => 'text/plain']);
 });
 
+// Legacy site — old top-level .html URLs, pre-dating this rebuild
+Route::get('/{page}.html', function () {
+    return redirect('/en', 301);
+})->where('page', '.*');
+
 Route::prefix('{locale}')
     ->whereIn('locale', config('locales.supported'))
     ->middleware(['customer.status'])
     ->group(function () {
         Route::get('/', HomeController::class)->name('home');
+        
+        // Legacy site — old locale-prefixed .html URLs, pre-dating this rebuild
+        Route::get('/{page}.html', function (string $locale, string $page) {
+            return redirect("/{$locale}", 301);
+        })->where('page', '.*');
 
         Route::get('/pages/{slug}', [PageController::class, 'show'])->name('pages.show');
         Route::get('/news', [NewsController::class, 'index'])->name('news.index');
@@ -178,6 +188,24 @@ Route::prefix('{locale}')
         Route::get('/market/data', [MarketController::class, 'data'])->name('market.data');
 
         Route::get('/industries', [IndustryController::class, 'index'])->name('industries.index');
+
+        // Legacy industry slugs — redirect to their current equivalents (301)
+        Route::get('/industries/{oldSlug}', function (string $locale, string $oldSlug) {
+            $map = [
+                'security-inspection-scanning-systems' => 'security-and-screening-system',
+                'industrial-materials'                 => 'industrial-materials-and-equipment',
+                'energy-and-resources'                 => 'energy-and-power',
+                'upstream'                              => 'oilandgas',
+            ];
+
+            return redirect("/{$locale}/industries/{$map[$oldSlug]}", 301);
+        })->where('oldSlug', implode('|', [
+            'security-inspection-scanning-systems',
+            'industrial-materials',
+            'energy-and-resources',
+            'upstream',
+        ]));
+
         Route::get('/industries/{industry:slug}', [IndustryController::class, 'show'])->name('industries.show');
 
         Route::get('/search', [SearchController::class, 'index'])
@@ -211,6 +239,28 @@ Route::prefix('{locale}')
         Route::get('/cookie-consent/payload', [CookieConsentController::class, 'payload'])
             ->name('cookie.consent.payload');
     });
+    
+// Document file download — streams with correct original filename header
+Route::get('/document-download', \App\Http\Controllers\DocumentDownloadController::class)
+    ->name('document.download');
 
-Route::get('/document-download', DocumentDownloadController::class)
-            ->name('document.download');
+Route::prefix('{locale}/portal')
+    ->whereIn('locale', config('locales.supported'))
+    ->name('portal.')
+    ->group(function () {
+        Route::get('/login', [\App\Http\Controllers\Portal\PortalAuthController::class, 'showLogin'])->name('login');
+        Route::post('/login', [\App\Http\Controllers\Portal\PortalAuthController::class, 'login'])->name('login.post');
+        Route::post('/logout', [\App\Http\Controllers\Portal\PortalAuthController::class, 'logout'])->name('logout');
+        Route::get('/reset', [\App\Http\Controllers\Portal\PortalAuthController::class, 'showReset'])->name('reset');
+        Route::post('/reset', [\App\Http\Controllers\Portal\PortalAuthController::class, 'reset'])->name('reset.post');
+
+        Route::middleware(['auth:customer', 'portal.status'])->group(function () {
+            Route::get('/change-password', [\App\Http\Controllers\Portal\PortalAuthController::class, 'showChangePassword'])->name('password.change');
+            Route::post('/change-password', [\App\Http\Controllers\Portal\PortalAuthController::class, 'changePassword'])->name('password.change.post');
+
+            Route::get('/', [\App\Http\Controllers\Portal\PortalDashboardController::class, 'home'])->name('home');
+            Route::get('/orders', [\App\Http\Controllers\Portal\PortalDashboardController::class, 'orders'])->name('orders.index');
+            Route::get('/orders/{order}', [\App\Http\Controllers\Portal\PortalDashboardController::class, 'orderShow'])->name('orders.show');
+            Route::get('/status/{order?}', [\App\Http\Controllers\Portal\PortalDashboardController::class, 'status'])->name('status');
+        });
+    });

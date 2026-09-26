@@ -60,19 +60,30 @@ document.addEventListener('DOMContentLoaded', () => {
   if (countEls.length) {
     const seen = new WeakSet();
 
-    const format = (n) => {
+    /*const format = (n) => {
       // integer formatting
       return Math.round(n).toLocaleString();
-    };
+    };*/
 
     const animate = (el) => {
       if (seen.has(el)) return;
       seen.add(el);
 
-      const target = Number(el.getAttribute('data-countup') || '0');
+      const rawTarget = el.getAttribute('data-countup') || '0';
+      const target = Number(rawTarget);
       const suffix = el.getAttribute('data-countup-suffix') || '';
       const start = 0;
       const dur = 900;
+
+      // Detect how many decimal places the raw string has (e.g. "1.8" -> 1, "250" -> 0)
+      const decimals = (rawTarget.split('.')[1] || '').length;
+
+      const format = (n) => {
+        return n.toLocaleString(undefined, {
+          minimumFractionDigits: decimals,
+          maximumFractionDigits: decimals
+        });
+      };
 
       const t0 = performance.now();
 
@@ -418,7 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
           };
 
           const primaryClass   = 'rounded-md bg-white px-5 py-2.5 text-slate-900 font-medium hover:bg-slate-100';
-          const secondaryClass = 'rounded-md border border-white/30 px-5 py-2.5 font-medium hover:bg-white/10';
+          const secondaryClass = 'rounded-md border border-white/30 px-5 py-2.5 text-white font-medium hover:bg-white/10';
 
           if (cta1Label && cta1Url) {
               ctaWrap.appendChild(makeBtn(cta1Label, cta1Url, primaryClass));

@@ -68,7 +68,7 @@
 
         {{-- Render remaining blocks — full-width types break out of container --}}
     @php
-        $fullWidthBlocks = ['fullWidthCards', 'insightsGrid', 'market_belt', 'overlayCarousel'];
+        $fullWidthBlocks = ['fullWidthCards', 'insightsGrid', 'market_belt', 'overlayCarousel', 'ctaStats', 'specTable', 'supplyConcentrationBars','richText', 'metrics'];
     @endphp
 
     @foreach (array_slice($blocks, 1) as $block)
@@ -104,7 +104,7 @@
         </div>
 
         @php
-            $fullWidthBlocks = ['fullWidthCards', 'insightsGrid', 'market_belt', 'overlayCarousel'];
+            $fullWidthBlocks = ['fullWidthCards', 'insightsGrid', 'market_belt', 'overlayCarousel', 'ctaStats', 'specTable', 'supplyConcentrationBars','richText', 'metrics'];
         @endphp
 
         @if (is_array($blocks) && count($blocks))
