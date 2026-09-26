@@ -7,9 +7,9 @@
 <body class="bg-slate-50">
 <div class="flex min-h-screen">
   <div class="flex-1 flex items-center justify-center p-10">
-    <div class="w-full max-w-sm" x-data="{ showReset: false }">
+    <div class="w-full max-w-sm">
 
-      <div x-show="!showReset">
+      <div id="loginForm">
         <p class="text-xs font-bold text-[#7A5A1E] uppercase tracking-wide mb-2">Customer portal</p>
         <h1 class="text-2xl font-bold mb-1">Sign in to your account</h1>
         <p class="text-sm text-slate-500 mb-6">Track your orders and shipments with Global Trading.</p>
@@ -32,11 +32,11 @@
           <button class="w-full bg-[#C99A3D] hover:bg-[#B98A2E] text-[#241A05] font-bold py-2.5 rounded-lg text-sm">Log in</button>
         </form>
         <div class="text-center mt-4">
-          <button @click="showReset = true" class="text-sm font-semibold text-[#7A5A1E] hover:underline">Forgot password?</button>
+          <button type="button" id="showResetBtn" class="text-sm font-semibold text-[#7A5A1E] hover:underline">Forgot password?</button>
         </div>
       </div>
 
-      <div x-show="showReset" x-cloak>
+      <div id="resetForm" style="display:none;">
         <p class="text-xs font-bold text-[#7A5A1E] uppercase tracking-wide mb-2">Reset access</p>
         <h1 class="text-2xl font-bold mb-1">Reset your password</h1>
         <p class="text-sm text-slate-500 mb-6">Confirm the details on file and we'll email a new password to your registered contacts.</p>
@@ -53,7 +53,7 @@
           <button class="w-full bg-[#C99A3D] hover:bg-[#B98A2E] text-[#241A05] font-bold py-2.5 rounded-lg text-sm">Reset password</button>
         </form>
         <div class="text-center mt-4">
-          <button @click="showReset = false" class="text-sm font-semibold text-[#7A5A1E] hover:underline">Back to sign in</button>
+          <button type="button" id="backToLoginBtn" class="text-sm font-semibold text-[#7A5A1E] hover:underline">Back to sign in</button>
         </div>
       </div>
 
@@ -68,5 +68,19 @@
   </div>
 </div>
 @if($recaptchaSiteKey)<script src="https://www.google.com/recaptcha/api.js" async defer></script>@endif
+<script>
+  document.getElementById('showResetBtn').addEventListener('click', function () {
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('resetForm').style.display = '';
+  });
+  document.getElementById('backToLoginBtn').addEventListener('click', function () {
+    document.getElementById('resetForm').style.display = 'none';
+    document.getElementById('loginForm').style.display = '';
+  });
+  @if(session('reset_submitted'))
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('resetForm').style.display = '';
+  @endif
+</script>
 </body>
 </html>
