@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
-class OpsCustomerController extends Controller
+class OpsOrderController extends Controller
 {
     public function companies()
     {
