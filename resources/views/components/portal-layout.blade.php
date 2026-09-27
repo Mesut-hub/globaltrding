@@ -33,23 +33,23 @@
         </form>
       </div>
     </div>
-    <script>
-      document.getElementById('companyMenuBtn').addEventListener('click', function (e) {
-        e.stopPropagation();
-        const menu = document.getElementById('companyMenu');
-        menu.style.display = menu.style.display === 'none' ? '' : 'none';
-      });
-      document.addEventListener('click', function (e) {
-        const menu = document.getElementById('companyMenu');
-        if (menu.style.display !== 'none' && !e.target.closest('#companyMenu') && !e.target.closest('#companyMenuBtn')) {
-          menu.style.display = 'none';
-        }
-      });
-    </script>
     <main class="p-7">
       {{ $slot }}
     </main>
   </div>
 </div>
+<script>
+  document.getElementById('companyMenuBtn').addEventListener('click', function (e) {
+    e.stopPropagation();
+    const menu = document.getElementById('companyMenu');
+    menu.style.display = menu.style.display === 'none' ? '' : 'none';
+  });
+  document.addEventListener('click', function (e) {
+    const menu = document.getElementById('companyMenu');
+    if (menu.style.display !== 'none' && !e.target.closest('#companyMenu') && !e.target.closest('#companyMenuBtn')) {
+      menu.style.display = 'none';
+    }
+  });
+</script>
 </body>
 </html>

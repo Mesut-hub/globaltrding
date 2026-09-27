@@ -192,9 +192,6 @@
       <a href="/adminhmt">Overview</a>
       <a href="{{ route('ops.customers.index') }}" class="{{ request()->routeIs('ops.customers.*') ? 'active' : '' }}">Customer registration</a>
       <a href="{{ route('ops.orders.companies') }}" class="{{ request()->routeIs('ops.orders.*') ? 'active' : '' }}">Orders</a>
-      <a href="/adminhmt/industries">Industries</a>
-      <a href="/adminhmt/pages">Pages</a>
-      <a href="/adminhmt">Settings</a>
     </nav>
     <div class="foot">Signed in as {{ auth()->user()->name }}</div>
   </aside>
