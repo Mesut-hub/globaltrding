@@ -254,7 +254,7 @@ Route::prefix('{locale}/portal')
         Route::get('/reset', [\App\Http\Controllers\Portal\PortalAuthController::class, 'showReset'])->name('reset');
         Route::post('/reset', [\App\Http\Controllers\Portal\PortalAuthController::class, 'reset'])->name('reset.post');
 
-        Route::middleware(['auth:customer', 'portal.status'])->group(function () {
+        Route::middleware(['customer.auth', 'portal.status'])->group(function () {
             Route::get('/change-password', [\App\Http\Controllers\Portal\PortalAuthController::class, 'showChangePassword'])->name('password.change');
             Route::post('/change-password', [\App\Http\Controllers\Portal\PortalAuthController::class, 'changePassword'])->name('password.change.post');
 
@@ -263,4 +263,20 @@ Route::prefix('{locale}/portal')
             Route::get('/orders/{order}', [\App\Http\Controllers\Portal\PortalDashboardController::class, 'orderShow'])->name('orders.show');
             Route::get('/status/{order?}', [\App\Http\Controllers\Portal\PortalDashboardController::class, 'status'])->name('status');
         });
+    });
+
+Route::prefix('adminhmt/ops')
+    ->middleware(['web', 'admin.auth', \App\Http\Middleware\EnsureOpsAccess::class])
+    ->name('ops.')
+    ->group(function () {
+        Route::get('/customer-registration', [\App\Http\Controllers\Admin\OpsCustomerController::class, 'index'])->name('customers.index');
+        Route::post('/customer-registration', [\App\Http\Controllers\Admin\OpsCustomerController::class, 'store'])->name('customers.store');
+        Route::post('/customer-registration/{customer}/send', [\App\Http\Controllers\Admin\OpsCustomerController::class, 'send'])->name('customers.send');
+        Route::post('/customer-registration/{customer}/reset-password', [\App\Http\Controllers\Admin\OpsCustomerController::class, 'resetPassword'])->name('customers.reset');
+
+        Route::get('/orders', [\App\Http\Controllers\Admin\OpsOrderController::class, 'companies'])->name('orders.companies');
+        Route::get('/orders/{customer}', [\App\Http\Controllers\Admin\OpsOrderController::class, 'company'])->name('orders.company');
+        Route::post('/orders/{customer}', [\App\Http\Controllers\Admin\OpsOrderController::class, 'storeOrder'])->name('orders.store');
+        Route::post('/orders/{customer}/orders/{order}/send', [\App\Http\Controllers\Admin\OpsOrderController::class, 'sendOrder'])->name('orders.send');
+        Route::post('/orders/{customer}/orders/{order}/status', [\App\Http\Controllers\Admin\OpsOrderController::class, 'storeStatus'])->name('orders.status.store');
     });

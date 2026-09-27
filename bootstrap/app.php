@@ -21,6 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'search.throttle'   => RateLimitSearch::class,
             'customer.status'   => CheckCustomerStatus::class,
             'portal.status' => \App\Http\Middleware\CheckCustomerPortalStatus::class,
+            'customer.auth' => \App\Http\Middleware\EnsureCustomerAuthenticated::class,
+            'admin.auth' => \App\Http\Middleware\EnsureAdminAuthenticated::class,
         ]);
 
         $middleware->prependToGroup(

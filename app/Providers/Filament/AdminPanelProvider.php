@@ -18,6 +18,7 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\Navigation\NavigationItem;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -54,6 +55,16 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+            ])
+            ->navigationItems([
+                NavigationItem::make('Customer Registration')
+                    ->icon('heroicon-o-user-group')
+                    ->url('/adminhmt/ops/customer-registration')
+                    ->sort(2),
+                NavigationItem::make('Orders')
+                    ->icon('heroicon-o-squares-2x2')
+                    ->url('/adminhmt/ops/orders')
+                    ->sort(3),
             ]);
     }
 }
