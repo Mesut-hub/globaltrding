@@ -265,18 +265,27 @@ Route::prefix('{locale}/portal')
         });
     });
 
-Route::prefix('adminhmt/ops')
+Route::prefix('adminhmt')
     ->middleware(['web', 'admin.auth', \App\Http\Middleware\EnsureOpsAccess::class])
     ->name('ops.')
     ->group(function () {
         Route::get('/customer-registration', [\App\Http\Controllers\Admin\OpsCustomerController::class, 'index'])->name('customers.index');
         Route::post('/customer-registration', [\App\Http\Controllers\Admin\OpsCustomerController::class, 'store'])->name('customers.store');
+        Route::put('/customer-registration/{customer}', [\App\Http\Controllers\Admin\OpsCustomerController::class, 'update'])->name('customers.update');
         Route::post('/customer-registration/{customer}/send', [\App\Http\Controllers\Admin\OpsCustomerController::class, 'send'])->name('customers.send');
         Route::post('/customer-registration/{customer}/reset-password', [\App\Http\Controllers\Admin\OpsCustomerController::class, 'resetPassword'])->name('customers.reset');
+        Route::post('/customer-registration/{customer}/suspend', [\App\Http\Controllers\Admin\OpsCustomerController::class, 'suspend'])->name('customers.suspend');
+        Route::post('/customer-registration/{customer}/block', [\App\Http\Controllers\Admin\OpsCustomerController::class, 'block'])->name('customers.block');
+        Route::post('/customer-registration/{customer}/reactivate', [\App\Http\Controllers\Admin\OpsCustomerController::class, 'reactivate'])->name('customers.reactivate');
+        Route::delete('/customer-registration/{customer}', [\App\Http\Controllers\Admin\OpsCustomerController::class, 'destroy'])->name('customers.destroy');
 
         Route::get('/orders', [\App\Http\Controllers\Admin\OpsOrderController::class, 'companies'])->name('orders.companies');
         Route::get('/orders/{customer}', [\App\Http\Controllers\Admin\OpsOrderController::class, 'company'])->name('orders.company');
         Route::post('/orders/{customer}', [\App\Http\Controllers\Admin\OpsOrderController::class, 'storeOrder'])->name('orders.store');
+        Route::put('/orders/{customer}/orders/{order}', [\App\Http\Controllers\Admin\OpsOrderController::class, 'updateOrder'])->name('orders.update');
         Route::post('/orders/{customer}/orders/{order}/send', [\App\Http\Controllers\Admin\OpsOrderController::class, 'sendOrder'])->name('orders.send');
         Route::post('/orders/{customer}/orders/{order}/status', [\App\Http\Controllers\Admin\OpsOrderController::class, 'storeStatus'])->name('orders.status.store');
+        Route::put('/orders/{customer}/orders/{order}/status/{update}', [\App\Http\Controllers\Admin\OpsOrderController::class, 'updateStatus'])->name('orders.status.update');
+        Route::post('/orders/{customer}/orders/{order}/status/{update}/resend', [\App\Http\Controllers\Admin\OpsOrderController::class, 'resendStatus'])->name('orders.status.resend');
+        Route::delete('/orders/{customer}/orders/{order}/status/{update}', [\App\Http\Controllers\Admin\OpsOrderController::class, 'deleteStatus'])->name('orders.status.delete');
     });

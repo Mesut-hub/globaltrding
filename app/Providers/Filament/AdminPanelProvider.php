@@ -59,11 +59,11 @@ class AdminPanelProvider extends PanelProvider
             ->navigationItems([
                 NavigationItem::make('Customer Registration')
                     ->icon('heroicon-o-user-group')
-                    ->url('/adminhmt/ops/customer-registration')
+                    ->url('/adminhmt/customer-registration')
                     ->sort(2),
                 NavigationItem::make('Orders')
                     ->icon('heroicon-o-squares-2x2')
-                    ->url('/adminhmt/ops/orders')
+                    ->url('/adminhmt/orders')
                     ->sort(3),
             ]);
     }
