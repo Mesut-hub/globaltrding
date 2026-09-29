@@ -21,7 +21,8 @@ class CustomerPasswordResetMail extends Mailable
     public function build()
     {
         return $this
-            ->subject('Your Global Trading portal password has been reset')
+            ->locale($this->customer->preferred_locale)
+            ->subject(__('portal.mail.password_reset.subject'))
             ->view('emails.customer-password-reset');
     }
 }

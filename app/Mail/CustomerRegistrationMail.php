@@ -21,7 +21,8 @@ class CustomerRegistrationMail extends Mailable
     public function build()
     {
         return $this
-            ->subject('Your Global Trading customer account is ready')
+            ->locale($this->customer->preferred_locale)
+            ->subject(__('portal.mail.registration.subject'))
             ->view('emails.customer-registration');
     }
 }

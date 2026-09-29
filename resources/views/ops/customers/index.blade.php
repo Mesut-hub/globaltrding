@@ -32,6 +32,13 @@
             <div class="field"><label>Phone</label><input name="phone" value="{{ old('phone', $editing->phone ?? '') }}"></div>
             <div class="field"><label>Website</label><input name="website" value="{{ old('website', $editing->website ?? '') }}"></div>
             <div class="field"><label>Company email</label><input name="email" type="email" value="{{ old('email', $editing->email ?? '') }}" required></div>
+            <div class="field"><label>Language</label>
+              <select name="preferred_locale">
+                @foreach(['en'=>'English','tr'=>'Türkçe','ar'=>'العربية','fr'=>'Français'] as $val=>$lbl)
+                  <option value="{{ $val }}" {{ old('preferred_locale', $editing->preferred_locale ?? 'en') === $val ? 'selected' : '' }}>{{ $lbl }}</option>
+                @endforeach
+              </select>
+            </div>
           </div>
         </div>
 

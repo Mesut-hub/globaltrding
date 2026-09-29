@@ -2,15 +2,15 @@
 @include('emails.partials.shell-start')
   @php($customer = $order->customer)
   <p style="display:inline-block;background:{{ $isDelivered ? '#E7F6EC' : '#FBF1DD' }};color:{{ $isDelivered ? '#15803D' : '#7A5A1E' }};font-weight:700;font-size:13px;padding:6px 12px;border-radius:999px;margin:0 0 16px;">
-    {{ $isDelivered ? 'Load is delivered successfully' : 'Shipment status update' }}
+      {{ $isDelivered ? __('portal.mail.status_update.badge_delivered') : __('portal.mail.status_update.badge') }}
   </p>
-  <h2 style="margin:0 0 6px;color:#0F172A;font-size:19px;">Order {{ $order->order_number }}</h2>
-  <p style="margin:0 0 20px;color:#475569;font-size:13.5px;line-height:1.6;">Hello {{ $contact->name }}, here's the latest on your shipment.</p>
+  <h2 style="margin:0 0 6px;color:#0F172A;font-size:19px;">{{ __('portal.mail.status_update.heading', ['number' => $order->order_number]) }}</h2>
+  <p style="margin:0 0 20px;color:#475569;font-size:13.5px;line-height:1.6;">{{ __('portal.mail.status_update.intro', ['name' => $contact->name]) }}</p>
 
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #E4E7EC;border-radius:8px;">
     <tr><td style="padding:14px 16px;">
       <p style="margin:0 0 4px;font-size:11.5px;color:#64748B;">{{ $update->stage_date->format('d M Y') }}</p>
-      <p style="margin:0;font-size:15px;font-weight:700;color:#0F172A;">{{ $update->stage_label }}</p>
+        <p style="margin:0;font-size:15px;font-weight:700;color:#0F172A;">{{ \App\Enums\OrderStatusStage::tryFrom($update->stage_key)?->label() ?? $update->stage_label }}</p>
       @if($update->notes)
         <p style="margin:8px 0 0;font-size:13px;color:#475569;">{{ $update->notes }}</p>
       @endif
@@ -18,6 +18,6 @@
   </table>
 
   @if($isDelivered)
-    <p style="margin:18px 0 0;color:#475569;font-size:13px;line-height:1.7;">Thank you for trading with Global Trading — we look forward to your next order.</p>
+    <p style="margin:18px 0 0;color:#475569;font-size:13px;line-height:1.7;">{{ __('portal.mail.status_update.thanks') }}</p>
   @endif
 @include('emails.partials.shell-end')

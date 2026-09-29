@@ -21,10 +21,13 @@ class OrderStatusUpdateMail extends Mailable
 
     public function build()
     {
-        $subject = $this->update->stage_key === \App\Enums\OrderStatusStage::DELIVERED->value
-            ? "Delivered — order {$this->order->order_number}"
-            : "Shipment update — order {$this->order->order_number}";
+        $key = $this->update->stage_key === \App\Enums\OrderStatusStage::DELIVERED->value
+            ? 'portal.mail.status_update.subject_delivered'
+            : 'portal.mail.status_update.subject';
 
-        return $this->subject($subject)->view('emails.order-status-update');
+        return $this
+            ->locale($this->order->customer->preferred_locale)
+            ->subject(__($key, ['number' => $this->order->order_number]))
+            ->view('emails.order-status-update');
     }
 }

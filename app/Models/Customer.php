@@ -22,7 +22,7 @@ class Customer extends Authenticatable
         'customer_code', 'company_name', 'full_commercial_name', 'registration_number',
         'phone', 'website', 'email', 'username', 'password', 'must_change_password',
         'status', 'registration_sent_at', 'blocked_at', 'blocked_reason',
-        'suspended_until', 'suspended_reason', 'notes', 'created_by',
+        'suspended_until', 'suspended_reason', 'notes', 'created_by', 'preferred_locale',
     ];
 
     protected $hidden = ['password'];

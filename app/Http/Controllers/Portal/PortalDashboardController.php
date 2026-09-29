@@ -42,12 +42,14 @@ class PortalDashboardController extends Controller
     {
         $query = $this->customer()->orders()->where('status', \App\Models\Order::STATUS_SENT);
 
+        $allOrders = (clone $query)->latest('order_date')->get();
+
         $order = $order
             ? $query->findOrFail($order)
-            : $query->latest('order_date')->first();
+            : $allOrders->first();
 
         $updates = $order ? $order->statusUpdates()->get() : collect();
 
-        return view('portal.status', ['order' => $order, 'updates' => $updates]);
+        return view('portal.status', ['order' => $order, 'updates' => $updates, 'allOrders' => $allOrders]);
     }
 }

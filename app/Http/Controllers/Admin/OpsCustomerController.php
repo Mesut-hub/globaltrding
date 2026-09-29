@@ -2,198 +2,136 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\OrderStatusStage;
 use App\Http\Controllers\Controller;
-use App\Mail\OrderConfirmedMail;
-use App\Mail\OrderStatusUpdateMail;
 use App\Models\Customer;
-use App\Models\Order;
-use App\Models\OrderStatusUpdate;
+use App\Services\CustomerCredentialService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 
-class OpsOrderController extends Controller
+class OpsCustomerController extends Controller
 {
-    public function companies()
+    public function index(Request $request)
     {
-        $customers = Customer::withCount([
-            'orders as open_orders_count' => fn ($q) => $q->where('status', Order::STATUS_SENT),
-            'orders as in_transit_count' => fn ($q) => $q->where('status', Order::STATUS_SENT)
-                ->whereDoesntHave('statusUpdates', fn ($q2) => $q2->where('stage_key', OrderStatusStage::DELIVERED->value)),
-        ])->orderBy('company_name')->get();
+        $customers = Customer::with(['contacts' => fn ($q) => $q->orderBy('sort_order')])->latest()->get();
 
-        return view('ops.orders.companies', compact('customers'));
-    }
+        $editing = $request->filled('edit') ? $customers->firstWhere('id', (int) $request->query('edit')) : null;
 
-    public function company(Request $request, Customer $customer)
-    {
-        $orders = $customer->orders()->with(['responsiblePersons', 'statusUpdates'])->latest('order_date')->get();
-        $tab = $request->query('tab', 'orders');
-
-        $selectedOrder = $request->query('order')
-            ? $orders->firstWhere('id', (int) $request->query('order'))
-            : $orders->firstWhere('status', Order::STATUS_SENT);
-
-        $editingOrder = $request->filled('edit_order') ? $orders->firstWhere('id', (int) $request->query('edit_order')) : null;
-
-        $editingStatus = null;
-        if ($request->filled('edit_status') && $selectedOrder) {
-            $editingStatus = $selectedOrder->statusUpdates->firstWhere('id', (int) $request->query('edit_status'));
-        }
-
-        return view('ops.orders.company', [
-            'customer' => $customer,
-            'orders' => $orders,
-            'tab' => $tab,
-            'showAddForm' => $request->boolean('new') || $editingOrder,
-            'editingOrder' => $editingOrder,
-            'selectedOrder' => $selectedOrder,
-            'editingStatus' => $editingStatus,
-            'stageOptions' => OrderStatusStage::options(),
+        return view('ops.customers.index', [
+            'customers' => $customers,
+            'stats' => [
+                'total' => $customers->count(),
+                'draft' => $customers->where('status', Customer::STATUS_DRAFT)->count(),
+                'active' => $customers->where('status', Customer::STATUS_ACTIVE)->count(),
+                'blocked' => $customers->whereIn('status', [Customer::STATUS_BLOCKED, Customer::STATUS_SUSPENDED])->count(),
+            ],
+            'showAddForm' => $request->boolean('new') || $editing !== null,
+            'editing' => $editing,
         ]);
     }
 
-    private function orderRules(): array
+    private function rules(): array
     {
         return [
-            'order_number' => ['required', 'string', 'max:100'],
-            'order_date' => ['nullable', 'date'],
-            'delivered_date' => ['nullable', 'date'],
-            'balanced_finished_date' => ['nullable', 'date'],
-            'product_name' => ['nullable', 'string', 'max:255'],
-            'payment_term' => ['nullable', 'string', 'max:255'],
-            'quantity' => ['nullable', 'numeric'],
-            'quantity_unit' => ['nullable', 'string', 'max:20'],
-            'delivery_time' => ['nullable', 'string', 'max:255'],
-            'shipping_term' => ['nullable', 'string', 'max:100'],
-            'delivery_point' => ['nullable', 'string', 'max:100'],
-            'delivery_address' => ['nullable', 'string', 'max:500'],
-            'description' => ['nullable', 'string'],
-            'responsible_persons' => ['array'],
-            'responsible_persons.*' => ['integer', 'exists:customer_contacts,id'],
-            'action' => ['required', 'in:save,send'],
+            'company_name' => ['required', 'string', 'max:255'],
+            'full_commercial_name' => ['nullable', 'string', 'max:255'],
+            'registration_number' => ['nullable', 'string', 'max:100'],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'website' => ['nullable', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255'],
+            'contacts' => ['array'],
+            'contacts.*.role' => ['required', 'in:owner,contact_person,other'],
+            'contacts.*.name' => ['nullable', 'string', 'max:255'],
+            'contacts.*.phone' => ['nullable', 'string', 'max:50'],
+            'contacts.*.email' => ['nullable', 'email', 'max:255'],
+            'preferred_locale' => ['required', 'in:en,tr,ar,fr'],
+            'action' => ['nullable', 'in:save,send'],
         ];
     }
 
-    private function emailOrderConfirmation(Order $order): void
+    private function hasNotifiableContact(Customer $customer): bool
     {
-        $recipients = $order->responsiblePersons()->where('receives_notifications', true)->whereNotNull('email')->get();
-        foreach ($recipients as $contact) {
-            Mail::to($contact->email)->send(new OrderConfirmedMail($order, $contact));
-        }
-        $order->update(['status' => Order::STATUS_SENT, 'sent_at' => now()]);
+        return $customer->contacts()->where('receives_notifications', true)->whereNotNull('email')->exists();
     }
 
-    public function storeOrder(Request $request, Customer $customer)
+    public function store(Request $request, CustomerCredentialService $credentials)
     {
-        $data = $request->validate($this->orderRules());
+        $data = $request->validate($this->rules());
 
-        $order = $customer->orders()->create([
-            ...collect($data)->except(['responsible_persons', 'action'])->toArray(),
-            'is_contracted' => $request->boolean('is_contracted'),
-            'status' => Order::STATUS_DRAFT,
-            'created_by' => auth()->id(),
-        ]);
+        $customer = $credentials->saveDraft(
+            collect($data)->except(['contacts', 'action'])->toArray(),
+            $data['contacts'] ?? []
+        );
 
-        $order->responsiblePersons()->sync($data['responsible_persons'] ?? []);
-
-        if ($data['action'] === 'send') {
-            $this->emailOrderConfirmation($order);
+        if (($data['action'] ?? 'save') === 'send') {
+            abort_unless($this->hasNotifiableContact($customer), 422, 'No notifiable contact with an email on file.');
+            $credentials->sendRegistration($customer, auth()->id());
         }
 
-        return redirect()->route('ops.orders.company', $customer)->with('status', 'Order saved.');
+        return redirect()->route('ops.customers.index')->with('status', "Saved {$customer->company_name}.");
     }
 
-    public function updateOrder(Request $request, Customer $customer, Order $order)
+    public function update(Request $request, Customer $customer, CustomerCredentialService $credentials)
     {
-        $data = $request->validate($this->orderRules());
+        $data = $request->validate($this->rules());
 
-        $order->update([
-            ...collect($data)->except(['responsible_persons', 'action'])->toArray(),
-            'is_contracted' => $request->boolean('is_contracted'),
-        ]);
-        $order->responsiblePersons()->sync($data['responsible_persons'] ?? []);
+        $credentials->saveDraft(
+            collect($data)->except(['contacts', 'action'])->toArray(),
+            $data['contacts'] ?? [],
+            $customer
+        );
 
-        if ($data['action'] === 'send' && $order->status === Order::STATUS_DRAFT) {
-            $this->emailOrderConfirmation($order);
+        if (($data['action'] ?? 'save') === 'send' && $customer->isDraft()) {
+            abort_unless($this->hasNotifiableContact($customer), 422, 'No notifiable contact with an email on file.');
+            $credentials->sendRegistration($customer, auth()->id());
         }
 
-        return redirect()->route('ops.orders.company', $customer)->with('status', 'Order updated.');
+        return redirect()->route('ops.customers.index')->with('status', "Updated {$customer->company_name}.");
     }
 
-    public function sendOrder(Customer $customer, Order $order)
+    public function send(Customer $customer, CustomerCredentialService $credentials)
     {
-        $this->emailOrderConfirmation($order);
-        return back()->with('status', 'Order sent.');
+        abort_unless($this->hasNotifiableContact($customer), 422, 'No notifiable contact with an email on file.');
+        $credentials->sendRegistration($customer, auth()->id());
+
+        return back()->with('status', 'Registration sent.');
     }
 
-    public function storeStatus(Request $request, Customer $customer, Order $order)
+    public function resetPassword(Customer $customer, CustomerCredentialService $credentials)
     {
-        $data = $request->validate([
-            'stage_key' => ['required', 'string'],
-            'custom_label' => ['nullable', 'string', 'max:255'],
-            'stage_date' => ['required', 'date'],
-            'notes' => ['nullable', 'string'],
+        $credentials->resetPassword($customer, auth()->id());
+
+        return back()->with('status', 'New password sent.');
+    }
+
+    public function suspend(Customer $customer)
+    {
+        $customer->update(['status' => Customer::STATUS_SUSPENDED, 'suspended_reason' => 'Suspended from admin']);
+
+        return back()->with('status', 'Customer suspended.');
+    }
+
+    public function block(Customer $customer)
+    {
+        $customer->update(['status' => Customer::STATUS_BLOCKED, 'blocked_at' => now(), 'blocked_reason' => 'Blocked from admin']);
+
+        return back()->with('status', 'Customer blocked.');
+    }
+
+    public function reactivate(Customer $customer)
+    {
+        $customer->update([
+            'status' => Customer::STATUS_ACTIVE,
+            'blocked_at' => null, 'blocked_reason' => null,
+            'suspended_until' => null, 'suspended_reason' => null,
         ]);
 
-        $label = $data['stage_key'] === 'custom' ? $data['custom_label'] : OrderStatusStage::from($data['stage_key'])->label();
-
-        $update = OrderStatusUpdate::create([
-            'order_id' => $order->id,
-            'stage_key' => $data['stage_key'] === 'custom' ? Str::slug($label, '_') : $data['stage_key'],
-            'stage_label' => $label,
-            'stage_date' => $data['stage_date'],
-            'notes' => $data['notes'] ?? null,
-            'created_by' => auth()->id(),
-        ]);
-
-        if ($request->boolean('send_email')) {
-            $recipients = $order->responsiblePersons()->where('receives_notifications', true)->whereNotNull('email')->get();
-            foreach ($recipients as $contact) {
-                Mail::to($contact->email)->send(new OrderStatusUpdateMail($order, $update, $contact));
-            }
-            $order->update(['status_last_sent_at' => now()]);
-        }
-
-        return redirect()->route('ops.orders.company', ['customer' => $customer, 'tab' => 'updates', 'order' => $order->id])->with('status', 'Cargo status updated.');
+        return back()->with('status', 'Customer reactivated.');
     }
 
-    public function updateStatus(Request $request, Customer $customer, Order $order, OrderStatusUpdate $update)
+    public function destroy(Customer $customer)
     {
-        $data = $request->validate([
-            'stage_key' => ['required', 'string'],
-            'custom_label' => ['nullable', 'string', 'max:255'],
-            'stage_date' => ['required', 'date'],
-            'notes' => ['nullable', 'string'],
-        ]);
+        $name = $customer->company_name;
+        $customer->delete();
 
-        $label = $data['stage_key'] === 'custom' ? $data['custom_label'] : OrderStatusStage::from($data['stage_key'])->label();
-
-        $update->update([
-            'stage_key' => $data['stage_key'] === 'custom' ? Str::slug($label, '_') : $data['stage_key'],
-            'stage_label' => $label,
-            'stage_date' => $data['stage_date'],
-            'notes' => $data['notes'] ?? null,
-        ]);
-
-        return redirect()->route('ops.orders.company', ['customer' => $customer, 'tab' => 'updates', 'order' => $order->id])->with('status', 'Status entry updated.');
-    }
-
-    public function resendStatus(Customer $customer, Order $order, OrderStatusUpdate $update)
-    {
-        $recipients = $order->responsiblePersons()->where('receives_notifications', true)->whereNotNull('email')->get();
-        foreach ($recipients as $contact) {
-            Mail::to($contact->email)->send(new OrderStatusUpdateMail($order, $update, $contact));
-        }
-        $order->update(['status_last_sent_at' => now()]);
-
-        return back()->with('status', 'Status update re-sent.');
-    }
-
-    public function deleteStatus(Customer $customer, Order $order, OrderStatusUpdate $update)
-    {
-        $update->delete();
-        return redirect()->route('ops.orders.company', ['customer' => $customer, 'tab' => 'updates', 'order' => $order->id])->with('status', 'Status entry removed.');
+        return redirect()->route('ops.customers.index')->with('status', "Deleted {$name}.");
     }
 }

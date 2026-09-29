@@ -20,7 +20,8 @@ class OrderConfirmedMail extends Mailable
     public function build()
     {
         return $this
-            ->subject("Order {$this->order->order_number} is accepted and registered")
+            ->locale($this->order->customer->preferred_locale)
+            ->subject(__('portal.mail.order_confirmed.subject', ['number' => $this->order->order_number]))
             ->view('emails.order-confirmed');
     }
 }

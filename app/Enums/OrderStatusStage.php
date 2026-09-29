@@ -19,20 +19,7 @@ enum OrderStatusStage: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::LOAD_ACCEPTED      => 'Load accepted',
-            self::LOAD_EXITED_DEPOT  => 'Load exited the depot',
-            self::LOADING_VESSEL     => 'Loading is in process',
-            self::VESSEL_DEPARTED    => 'Vessel left the port',
-            self::VESSEL_IN_TRANSIT  => 'Vessel is on the way to the destination',
-            self::VESSEL_ARRIVED     => 'Vessel arrived at the port',
-            self::OFFLOADING         => 'Offloading is in process',
-            self::OFFLOADED_TO_YARD  => 'Load offloaded to the yard',
-            self::LOADING_VEHICLE    => 'Loading to the vehicle is in process',
-            self::VEHICLE_IN_TRANSIT => 'Vehicle is on the way to the delivery point',
-            self::VEHICLE_ARRIVED    => 'Vehicle arrived at the delivery point',
-            self::DELIVERED          => 'Cargo is delivered successfully',
-        };
+        return __('portal.stages.' . $this->value);
     }
 
     public static function options(): array
