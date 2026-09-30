@@ -35,6 +35,7 @@ class Customer extends Authenticatable
             'registration_sent_at' => 'datetime',
             'blocked_at' => 'datetime',
             'suspended_until' => 'datetime',
+            'preferred_locale' => 'string',
             'last_login_at' => 'datetime',
         ];
     }

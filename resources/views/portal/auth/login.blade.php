@@ -67,16 +67,16 @@
 
     </div>
   </div>
-  <div class="flex-1 bg-gradient-to-br from-[#0B1220] to-[#1B2740] hidden md:flex items-center justify-center p-10 overflow-y-auto">
+  <div class="flex-1 bg-gradient-to-br from-[#0B1220] to-[#1B2740] hidden md:flex flex-col justify-center p-8 overflow-y-auto">
     @php($loginPage = \App\Models\Page::where('slug', 'portal-login')->where('is_published', true)->first())
     @if($loginPage)
-      <div class="text-white w-full max-w-md">
+      <div class="text-white w-full max-w-xl mx-auto space-y-6">
         @foreach($loginPage->blocks ?? [] as $block)
           @include('shared.blocks.render', ['block' => $block])
         @endforeach
       </div>
     @else
-      <div class="border border-dashed border-white/25 rounded-2xl p-10 max-w-sm text-center text-slate-300">
+      <div class="border border-dashed border-white/25 rounded-2xl p-10 max-w-sm mx-auto text-center text-slate-300">
         <p class="inline-block text-[11px] font-bold uppercase tracking-wide text-[#C99A3D] bg-[#C99A3D]/15 px-2.5 py-1 rounded-full mb-3">{{ __('portal.side_panel.tag') }}</p>
         <h3 class="text-white text-lg font-bold mb-2">{{ __('portal.side_panel.title') }}</h3>
         <p class="text-sm">{{ __('portal.side_panel.fallback_body', ['slug' => 'portal-login']) }}</p>
