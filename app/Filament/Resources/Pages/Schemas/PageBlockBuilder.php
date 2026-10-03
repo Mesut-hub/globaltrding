@@ -43,6 +43,8 @@ class PageBlockBuilder
             static::overlayCarouselBlock(),
             static::fullWidthCardsBlock(),
             static::specTableBlock(),
+            static::tabbedSpecsBlock(),
+            static::faqWithSidebarBlock(),
             ...static::homeOnlyBlocks(),
             ...static::industryOnlyBlocks(),
         ];
@@ -1316,6 +1318,418 @@ class PageBlockBuilder
                     ])
                     ->columns(1)
                     ->collapsible(),
+            ]);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // TABBED SPECS — categories with image/video, spec table, tags & CTA  ← NEW
+    // ══════════════════════════════════════════════════════════════════════════
+ 
+    private static function tabbedSpecsBlock(): Block
+    {
+        return Block::make('tabbedSpecs')
+            ->label('Tabbed specs — categories with image, spec table, tags & CTA')
+            ->schema([
+ 
+                // ── Section ───────────────────────────────────────────────────
+                ColorPicker::make('section_bg_color')
+                    ->label('Section background color')
+                    ->default('#ffffff'),
+ 
+                // ── Section header styles ─────────────────────────────────────
+                \Filament\Schemas\Components\Section::make('Section header styles')
+                    ->collapsed()
+                    ->schema([
+                        Toggle::make('show_kicker_line')
+                            ->label('Show accent line before kicker (— INSTRUMENT CATEGORIES style)')
+                            ->default(true),
+ 
+                        \Filament\Schemas\Components\Grid::make(2)->schema([
+                            ColorPicker::make('kicker_color')->label('Kicker color')->default('#0ea5e9'),
+                            Select::make('kicker_size')->label('Kicker font size')
+                                ->options(static::fontSizeOptions())->default('text-sm'),
+                        ]),
+                        \Filament\Schemas\Components\Grid::make(2)->schema([
+                            ColorPicker::make('title_color')->label('Title color')->default('#0f172a'),
+                            Select::make('title_size')->label('Title font size')
+                                ->options(static::fontSizeOptions())->default('text-3xl'),
+                        ]),
+                        \Filament\Schemas\Components\Grid::make(2)->schema([
+                            ColorPicker::make('subtitle_color')->label('Subtitle color')->default('#475569'),
+                            Select::make('subtitle_size')->label('Subtitle font size')
+                                ->options(static::fontSizeOptions())->default('text-xl'),
+                        ]),
+                    ]),
+ 
+                // ── Section header content ────────────────────────────────────
+                static::blockLocaleTabs('ts_header_lang', [
+                    ['name' => 'kicker',   'label' => 'Section kicker',             'type' => 'text'],
+                    ['name' => 'title',    'label' => 'Section title',              'type' => 'text'],
+                    ['name' => 'subtitle', 'label' => 'Section subtitle (optional)','type' => 'textarea', 'rows' => 2],
+                ]),
+ 
+                // ── Tab bar styles ────────────────────────────────────────────
+                \Filament\Schemas\Components\Section::make('Tab bar styles')
+                    ->collapsed()
+                    ->schema([
+                        \Filament\Schemas\Components\Grid::make(2)->schema([
+                            ColorPicker::make('tab_bar_bg')->label('Tab bar background color')->default('#ffffff'),
+                            ColorPicker::make('tab_bar_border_color')->label('Tab bar bottom border color')->default('#e2e8f0'),
+                        ]),
+                        \Filament\Schemas\Components\Grid::make(3)->schema([
+                            ColorPicker::make('tab_text_color')->label('Inactive tab text color')->default('#64748b'),
+                            ColorPicker::make('tab_active_text_color')->label('Active tab text color')->default('#0ea5e9'),
+                            ColorPicker::make('tab_active_border_color')->label('Active tab underline color')->default('#0ea5e9'),
+                        ]),
+                        Select::make('tab_font_size')->label('Tab font size')
+                            ->options(static::fontSizeOptions())->default('text-sm'),
+                    ]),
+ 
+                // ── Tabs repeater ─────────────────────────────────────────────
+                Repeater::make('tabs')
+                    ->label('Tabs')
+                    ->minItems(1)
+                    ->schema([
+ 
+                        // Tab label
+                        static::blockLocaleTabs('ts_tab_label_lang', [
+                            ['name' => 'tab_label', 'label' => 'Tab label', 'type' => 'text'],
+                        ]),
+ 
+                        // ── LEFT COLUMN ──────────────────────────────────────
+                        \Filament\Schemas\Components\Section::make('Left column — media')->schema([
+ 
+                            Select::make('media_type')
+                                ->label('Media type')
+                                ->options(['image' => 'Image', 'video' => 'Video'])
+                                ->default('image')
+                                ->live()
+                                ->helperText('Select type BEFORE uploading.'),
+ 
+                            FileUpload::make('image')
+                                ->label('Image')
+                                ->disk('public')
+                                ->directory('pages/tabbed-specs')
+                                ->image()
+                                ->visible(fn ($get) => $get('media_type') === 'image'),
+ 
+                            FileUpload::make('video')
+                                ->label('Video (mp4 / webm)')
+                                ->disk('public')
+                                ->directory('pages/tabbed-specs')
+                                ->acceptedFileTypes(['video/mp4', 'video/webm'])
+                                ->maxSize((auth()->user()?->maxUploadMb() ?? 150) * 1024)
+                                ->visible(fn ($get) => $get('media_type') === 'video'),
+ 
+                            FileUpload::make('poster')
+                                ->label('Video poster image')
+                                ->disk('public')
+                                ->directory('pages/tabbed-specs')
+                                ->image()
+                                ->visible(fn ($get) => $get('media_type') === 'video'),
+                        ]),
+ 
+                        // ── RIGHT COLUMN ──────────────────────────────────────
+                        \Filament\Schemas\Components\Section::make('Right column — content')->schema([
+ 
+                            // Kicker
+                            \Filament\Schemas\Components\Grid::make(2)->schema([
+                                ColorPicker::make('r_kicker_color')->label('Kicker color')->default('#0ea5e9'),
+                                Select::make('r_kicker_size')->label('Kicker font size')
+                                    ->options(static::fontSizeOptions())->default('text-xs'),
+                            ]),
+                            static::blockLocaleTabs('ts_r_kicker_lang', [
+                                ['name' => 'r_kicker', 'label' => 'Kicker', 'type' => 'text'],
+                            ]),
+ 
+                            // Title
+                            \Filament\Schemas\Components\Grid::make(2)->schema([
+                                ColorPicker::make('r_title_color')->label('Title color')->default('#0f172a'),
+                                Select::make('r_title_size')->label('Title font size')
+                                    ->options(static::fontSizeOptions())->default('text-2xl'),
+                            ]),
+                            static::blockLocaleTabs('ts_r_title_lang', [
+                                ['name' => 'r_title', 'label' => 'Title', 'type' => 'text'],
+                            ]),
+ 
+                            // Subtitle / body text
+                            \Filament\Schemas\Components\Grid::make(2)->schema([
+                                ColorPicker::make('r_subtitle_color')->label('Body text color')->default('#475569'),
+                                Select::make('r_subtitle_size')->label('Body text font size')
+                                    ->options(static::fontSizeOptions())->default('text-sm'),
+                            ]),
+                            static::blockLocaleTabs('ts_r_subtitle_lang', [
+                                ['name' => 'r_subtitle', 'label' => 'Body text', 'type' => 'textarea', 'rows' => 4],
+                            ]),
+ 
+                            // ── Spec table ─────────────────────────────────
+                            \Filament\Schemas\Components\Section::make('Spec table')->schema([
+ 
+                                Toggle::make('show_table_header')
+                                    ->label('Show header row')
+                                    ->default(false),
+ 
+                                \Filament\Schemas\Components\Grid::make(3)->schema([
+                                    ColorPicker::make('table_header_bg')
+                                        ->label('Header row background color')->default('#f1f5f9'),
+                                    ColorPicker::make('table_header_text_color')
+                                        ->label('Header row text color')->default('#64748b'),
+                                    Select::make('table_header_font_size')
+                                        ->label('Header row font size')
+                                        ->options(static::fontSizeOptions())->default('text-xs'),
+                                ]),
+ 
+                                static::blockLocaleTabs('ts_table_header_lang', [
+                                    ['name' => 'col1_header', 'label' => 'Column 1 header text', 'type' => 'text'],
+                                    ['name' => 'col2_header', 'label' => 'Column 2 header text', 'type' => 'text'],
+                                ]),
+ 
+                                Repeater::make('spec_rows')
+                                    ->label('Spec rows')
+                                    ->minItems(0)
+                                    ->schema([
+                                        \Filament\Schemas\Components\Grid::make(2)->schema([
+                                            ColorPicker::make('row_bg')
+                                                ->label('Row background color')->default('#ffffff'),
+                                            Select::make('row_font_size')
+                                                ->label('Row font size')
+                                                ->options(static::fontSizeOptions())->default('text-sm'),
+                                        ]),
+                                        \Filament\Schemas\Components\Grid::make(2)->schema([
+                                            ColorPicker::make('col1_color')
+                                                ->label('Column 1 text color')->default('#374151'),
+                                            ColorPicker::make('col2_color')
+                                                ->label('Column 2 text color')->default('#374151'),
+                                        ]),
+                                        static::blockLocaleTabs('ts_spec_row_lang', [
+                                            ['name' => 'col1', 'label' => 'Column 1 — attribute name', 'type' => 'text'],
+                                            ['name' => 'col2', 'label' => 'Column 2 — value',          'type' => 'textarea', 'rows' => 2],
+                                        ]),
+                                    ])
+                                    ->itemLabel(fn (array $state): ?string =>
+                                        is_array($state['col1'] ?? null)
+                                            ? ($state['col1']['en'] ?? null)
+                                            : ($state['col1'] ?? null)
+                                    )
+                                    ->collapsible()
+                                    ->columns(1),
+                            ]),
+ 
+                            // ── Tags ──────────────────────────────────────
+                            Repeater::make('tags')
+                                ->label('Tags')
+                                ->minItems(0)
+                                ->schema([
+                                    static::blockLocaleTabs('ts_tag_lang', [
+                                        ['name' => 'tag_label', 'label' => 'Tag label', 'type' => 'text'],
+                                    ]),
+                                    \Filament\Schemas\Components\Grid::make(3)->schema([
+                                        ColorPicker::make('tag_bg_color')
+                                            ->label('Tag background color')->default('#e0f2fe'),
+                                        ColorPicker::make('tag_text_color')
+                                            ->label('Tag text & border color')->default('#0369a1'),
+                                        Select::make('tag_font_size')
+                                            ->label('Tag font size')
+                                            ->options(static::fontSizeOptions())->default('text-xs'),
+                                    ]),
+                                ])
+                                ->itemLabel(fn (array $state): ?string =>
+                                    is_array($state['tag_label'] ?? null)
+                                        ? ($state['tag_label']['en'] ?? null)
+                                        : ($state['tag_label'] ?? null)
+                                )
+                                ->collapsible()
+                                ->columns(1),
+ 
+                            // ── CTA button ────────────────────────────────
+                            \Filament\Schemas\Components\Section::make('CTA button')->schema([
+                                static::blockLocaleTabs('ts_cta_lang', [
+                                    ['name' => 'cta_label', 'label' => 'Button label', 'type' => 'text'],
+                                ]),
+                                TextInput::make('cta_url')->label('Button URL'),
+                                \Filament\Schemas\Components\Grid::make(3)->schema([
+                                    ColorPicker::make('cta_bg_color')
+                                        ->label('Button background color')->default('#0f172a'),
+                                    ColorPicker::make('cta_text_color')
+                                        ->label('Button text color')->default('#ffffff'),
+                                    Select::make('cta_font_size')
+                                        ->label('Button font size')
+                                        ->options(static::fontSizeOptions())->default('text-sm'),
+                                ]),
+                            ]),
+ 
+                        ]),
+                    ])
+                    ->itemLabel(fn (array $state): ?string =>
+                        is_array($state['tab_label'] ?? null)
+                            ? ($state['tab_label']['en'] ?? null)
+                            : ($state['tab_label'] ?? null)
+                    )
+                    ->collapsible()
+                    ->columns(1),
+            ]);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // FAQ WITH SIDEBAR — accordion questions + fixed checklist/CTA panel
+    // ══════════════════════════════════════════════════════════════════════════
+
+    private static function faqWithSidebarBlock(): Block
+    {
+        return Block::make('faqWithSidebar')
+            ->label('FAQ with sidebar — accordion questions + fixed info panel')
+            ->schema([
+
+                // ── Section background ────────────────────────────────────────
+                ColorPicker::make('section_bg_color')
+                    ->label('Section background color')
+                    ->default('#f8fafc'),
+
+                // ── Section header styles ─────────────────────────────────────
+                \Filament\Schemas\Components\Section::make('Section header styles')
+                    ->collapsed()
+                    ->schema([
+                        Toggle::make('show_kicker_line')
+                            ->label('Show accent line before kicker')
+                            ->default(true),
+                        \Filament\Schemas\Components\Grid::make(2)->schema([
+                            ColorPicker::make('kicker_color')->label('Kicker color')->default('#0ea5e9'),
+                            Select::make('kicker_size')->label('Kicker font size')
+                                ->options(static::fontSizeOptions())->default('text-sm'),
+                        ]),
+                        \Filament\Schemas\Components\Grid::make(2)->schema([
+                            ColorPicker::make('title_color')->label('Title color')->default('#0f172a'),
+                            Select::make('title_size')->label('Title font size')
+                                ->options(static::fontSizeOptions())->default('text-3xl'),
+                        ]),
+                    ]),
+
+                // ── Section header content ────────────────────────────────────
+                static::blockLocaleTabs('faq_header_lang', [
+                    ['name' => 'kicker', 'label' => 'Section kicker',   'type' => 'text'],
+                    ['name' => 'title',  'label' => 'Section title',    'type' => 'text'],
+                ]),
+
+                // ── FAQ item appearance ───────────────────────────────────────
+                \Filament\Schemas\Components\Section::make('FAQ item styles')
+                    ->collapsed()
+                    ->schema([
+                        \Filament\Schemas\Components\Grid::make(3)->schema([
+                            ColorPicker::make('question_bg_color')
+                                ->label('Question background color')->default('#ffffff'),
+                            ColorPicker::make('answer_bg_color')
+                                ->label('Answer background color')->default('#f8fafc'),
+                            ColorPicker::make('item_border_color')
+                                ->label('Item border color')->default('#e2e8f0'),
+                        ]),
+                        \Filament\Schemas\Components\Grid::make(2)->schema([
+                            ColorPicker::make('question_color')
+                                ->label('Question text color')->default('#1e293b'),
+                            Select::make('question_size')
+                                ->label('Question font size')
+                                ->options(static::fontSizeOptions())->default('text-base'),
+                        ]),
+                        \Filament\Schemas\Components\Grid::make(2)->schema([
+                            ColorPicker::make('answer_color')
+                                ->label('Answer text color')->default('#475569'),
+                            Select::make('answer_size')
+                                ->label('Answer font size')
+                                ->options(static::fontSizeOptions())->default('text-sm'),
+                        ]),
+                        \Filament\Schemas\Components\Grid::make(2)->schema([
+                            ColorPicker::make('icon_color')
+                                ->label('Expand icon color (closed)')->default('#94a3b8'),
+                            ColorPicker::make('icon_active_color')
+                                ->label('Expand icon color (open)')->default('#0ea5e9'),
+                        ]),
+                    ]),
+
+                // ── FAQ items (repeater) ──────────────────────────────────────
+                Repeater::make('faq_items')
+                    ->label('FAQ items')
+                    ->minItems(1)
+                    ->schema([
+                        static::blockLocaleTabs('faq_item_lang', [
+                            ['name' => 'question', 'label' => 'Question', 'type' => 'text'],
+                            ['name' => 'answer',   'label' => 'Answer',   'type' => 'html', 'rows' => 4],
+                        ]),
+                    ])
+                    ->itemLabel(fn (array $state): ?string =>
+                        is_array($state['question'] ?? null)
+                            ? ($state['question']['en'] ?? null)
+                            : ($state['question'] ?? null)
+                    )
+                    ->collapsible()
+                    ->columns(1),
+
+                // ── Right sidebar panel ───────────────────────────────────────
+                \Filament\Schemas\Components\Section::make('Right sidebar panel')->schema([
+
+                    // Panel header
+                    \Filament\Schemas\Components\Grid::make(2)->schema([
+                        ColorPicker::make('sidebar_header_bg')
+                            ->label('Panel header background color')->default('#0f172a'),
+                        ColorPicker::make('sidebar_header_text_color')
+                            ->label('Panel header text color')->default('#ffffff'),
+                    ]),
+                    \Filament\Schemas\Components\Grid::make(2)->schema([
+                        Select::make('sidebar_header_font_size')
+                            ->label('Panel header font size')
+                            ->options(static::fontSizeOptions())->default('text-base'),
+                        ColorPicker::make('sidebar_body_bg')
+                            ->label('Panel body background color')->default('#ffffff'),
+                    ]),
+                    ColorPicker::make('sidebar_border_color')
+                        ->label('Panel border color')->default('#e2e8f0'),
+
+                    static::blockLocaleTabs('faq_sidebar_header_lang', [
+                        ['name' => 'sidebar_heading', 'label' => 'Panel heading', 'type' => 'text'],
+                    ]),
+
+                    // Checklist items
+                    \Filament\Schemas\Components\Grid::make(3)->schema([
+                        ColorPicker::make('check_color')
+                            ->label('Check icon color')->default('#0ea5e9'),
+                        ColorPicker::make('checklist_text_color')
+                            ->label('Checklist text color')->default('#374151'),
+                        Select::make('checklist_font_size')
+                            ->label('Checklist font size')
+                            ->options(static::fontSizeOptions())->default('text-sm'),
+                    ]),
+
+                    Repeater::make('checklist_items')
+                        ->label('Checklist items')
+                        ->minItems(0)
+                        ->schema([
+                            static::blockLocaleTabs('faq_check_lang', [
+                                ['name' => 'text', 'label' => 'Item text', 'type' => 'text'],
+                            ]),
+                        ])
+                        ->itemLabel(fn (array $state): ?string =>
+                            is_array($state['text'] ?? null)
+                                ? ($state['text']['en'] ?? null)
+                                : ($state['text'] ?? null)
+                        )
+                        ->collapsible()
+                        ->columns(1),
+
+                    // CTA button
+                    \Filament\Schemas\Components\Section::make('CTA button')->schema([
+                        static::blockLocaleTabs('faq_cta_lang', [
+                            ['name' => 'cta_label', 'label' => 'Button label', 'type' => 'text'],
+                        ]),
+                        TextInput::make('cta_url')->label('Button URL'),
+                        \Filament\Schemas\Components\Grid::make(3)->schema([
+                            ColorPicker::make('cta_bg_color')
+                                ->label('Button background color')->default('#06b6d4'),
+                            ColorPicker::make('cta_text_color')
+                                ->label('Button text color')->default('#0f172a'),
+                            Select::make('cta_font_size')
+                                ->label('Button font size')
+                                ->options(static::fontSizeOptions())->default('text-sm'),
+                        ]),
+                    ]),
+                ]),
             ]);
     }
 

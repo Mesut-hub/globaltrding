@@ -727,7 +727,7 @@
                         </div>
                         <div class="mt-2 {{ $msLabelSize }} font-medium"
                              style="color:{{ $meLabelCol }};">
-                            {{ $label }}
+                            {!! $label !!}
                         </div>
                     </div>
                 @endforeach
@@ -1627,7 +1627,7 @@
     </section>
     
 {{-- ══════════════════════════════════════════════════════════════════ --}}
-{{-- RICH TEXT 2                                                        --}}
+{{-- RICH TEXT 2                                                          --}}
 {{-- ══════════════════════════════════════════════════════════════════ --}}
 @elseif ($type === 'richText2')
     @php
@@ -2076,7 +2076,8 @@
         </div>
     </section>
 
-{{-- ══════════════════════════════════════════════════════════════════ --}}
+
+    {{-- ══════════════════════════════════════════════════════════════════ --}}
 {{-- PULL QUOTE                                                         --}}
 {{-- ══════════════════════════════════════════════════════════════════ --}}
 @elseif ($type === 'quoteBlock')
@@ -2111,40 +2112,46 @@
         // RTL: Arabic flips the border side
         $qBorderClass = $locale === 'ar' ? 'border-r-2 border-l-0' : 'border-l-2';
     @endphp
+
     <section class="w-full py-16 px-6 {{ $qSectionClass }}"
-        @if ($locale === 'ar') dir="rtl" @endif>
-            <div class="mx-auto max-w-3xl">
-                {{-- Accent top line --}}
-                <div class="w-12 h-0.5 mb-8" style="background:{{ $qAccent }};"></div>
-                {{-- Opening quotation mark --}}
-                <div class="text-7xl font-light leading-none mb-2 select-none"
-                    style="color:{{ $qAccent }}; font-family:Georgia,'Times New Roman',serif; opacity:.35;"
-                    aria-hidden="true">"</div>
-                {{-- Quote text --}}
-                @if ($qQuote)
-                    <blockquote class="text-xl md:text-2xl font-light leading-relaxed {{ $qTextClass }} mb-8"
-                                style="font-family:Georgia,'Times New Roman',serif;">
-                        {{ $qQuote }}
-                    </blockquote>
-                @endif
-                {{-- Attribution --}}
-                @if ($qAuthorName || $qAuthorTitle)
-                    <footer class="pt-6 border-t {{ $qDividerClass }} {{ $qBorderClass }} pl-4"
-                            style="border-color: {{ $qAccent }}20;">
-                        @if ($qAuthorName)
-                            <div class="text-sm font-semibold tracking-wide"
-                                style="color:{{ $qAccent }};">
-                                {{ $qAuthorName }}
-                            </div>
-                        @endif
-                        @if ($qAuthorTitle)
-                            <div class="mt-1 text-sm {{ $qAttrClass }}">
-                                {{ $qAuthorTitle }}
-                            </div>
-                        @endif
-                    </footer>
-                @endif
-            </div>
+             @if ($locale === 'ar') dir="rtl" @endif>
+        <div class="mx-auto max-w-3xl">
+
+            {{-- Accent top line --}}
+            <div class="w-12 h-0.5 mb-8" style="background:{{ $qAccent }};"></div>
+
+            {{-- Opening quotation mark --}}
+            <div class="text-7xl font-light leading-none mb-2 select-none"
+                 style="color:{{ $qAccent }}; font-family:Georgia,'Times New Roman',serif; opacity:.35;"
+                 aria-hidden="true">"</div>
+
+            {{-- Quote text --}}
+            @if ($qQuote)
+                <blockquote class="text-xl md:text-2xl font-light leading-relaxed {{ $qTextClass }} mb-8"
+                            style="font-family:Georgia,'Times New Roman',serif;">
+                    {{ $qQuote }}
+                </blockquote>
+            @endif
+
+            {{-- Attribution --}}
+            @if ($qAuthorName || $qAuthorTitle)
+                <footer class="pt-6 border-t {{ $qDividerClass }} {{ $qBorderClass }} pl-4"
+                        style="border-color: {{ $qAccent }}20;">
+                    @if ($qAuthorName)
+                        <div class="text-sm font-semibold tracking-wide"
+                             style="color:{{ $qAccent }};">
+                            {{ $qAuthorName }}
+                        </div>
+                    @endif
+                    @if ($qAuthorTitle)
+                        <div class="mt-1 text-sm {{ $qAttrClass }}">
+                            {{ $qAuthorTitle }}
+                        </div>
+                    @endif
+                </footer>
+            @endif
+
+        </div>
     </section>
 
 {{-- ══════════════════════════════════════════════════════════════════ --}}
@@ -2725,6 +2732,745 @@
             buildDots();
             goTo(0);
             startTimer();
+        })();
+    </script>
+    
+{{-- ══════════════════════════════════════════════════════════════════ --}}
+{{-- TABBED SPECS                                                        --}}
+{{-- Responsive: mobile-first, horizontal tab scroll, stacked columns   --}}
+{{-- ══════════════════════════════════════════════════════════════════ --}}
+@elseif ($type === 'tabbedSpecs')
+    @php
+        $sectionBg = $data['section_bg_color'] ?? '#ffffff';
+ 
+        // ── Section header styles ─────────────────────────────────────
+        $showKickerLine  = (bool) ($data['show_kicker_line']          ?? true);
+        $shKickerColor   = $data['kicker_color']                      ?? '#0ea5e9';
+        $shKickerSize    = $data['kicker_size']                       ?? 'text-sm';
+        $shTitleColor    = $data['title_color']                       ?? '#0f172a';
+        $shTitleSize     = $data['title_size']                        ?? 'text-3xl';
+        $shSubtitleColor = $data['subtitle_color']                    ?? '#475569';
+        $shSubtitleSize  = $data['subtitle_size']                     ?? 'text-xl';
+ 
+        // ── Section header content ────────────────────────────────────
+        $shKicker   = $t($data['kicker']   ?? '', $locale, $fallback);
+        $shTitle    = $t($data['title']    ?? '', $locale, $fallback);
+        $shSubtitle = $t($data['subtitle'] ?? '', $locale, $fallback);
+ 
+        // ── Tab bar styles ────────────────────────────────────────────
+        $tabBarBg             = $data['tab_bar_bg']              ?? '#ffffff';
+        $tabBarBorderColor    = $data['tab_bar_border_color']    ?? '#e2e8f0';
+        $tabTextColor         = $data['tab_text_color']          ?? '#64748b';
+        $tabActiveTextColor   = $data['tab_active_text_color']   ?? '#0ea5e9';
+        $tabActiveBorderColor = $data['tab_active_border_color'] ?? '#0ea5e9';
+        $tabFontSize          = $data['tab_font_size']           ?? 'text-sm';
+ 
+        $tabs = is_array($data['tabs'] ?? null) ? $data['tabs'] : [];
+ 
+        // Unique ID prevents collisions when the block is used multiple times per page
+        $tsId = 'ts_' . substr(md5(serialize($data)), 0, 8);
+    @endphp
+ 
+    {{-- ── Section wrapper ──────────────────────────────────────────── --}}
+    <section
+        class="w-full py-8 sm:py-12 lg:py-16"
+        style="background-color: {{ $sectionBg }};"
+    >
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+ 
+            {{-- ── Section header ───────────────────────────────────── --}}
+            @if ($shKicker || $shTitle || $shSubtitle)
+                <div class="mb-8 sm:mb-10 lg:mb-12">
+                    @if ($shKicker)
+                        <div class="flex items-center gap-2 mb-3">
+                            @if ($showKickerLine)
+                                <span
+                                    class="block w-6 h-px shrink-0"
+                                    style="background-color: {{ $shKickerColor }};"
+                                ></span>
+                            @endif
+                            <span
+                                class="{{ $shKickerSize }} font-semibold uppercase tracking-widest"
+                                style="color: {{ $shKickerColor }};"
+                            >{{ $shKicker }}</span>
+                        </div>
+                    @endif
+ 
+                    @if ($shTitle)
+                        {{--
+                            The admin picks a Tailwind class (e.g. text-3xl) for the base size.
+                            On mobile we clamp it one step smaller via the inline responsive
+                            wrapper so it never overflows on narrow screens.
+                        --}}
+                        <h2
+                            class="{{ $shTitleSize }} font-light tracking-tight leading-snug max-w-4xl
+                                   [&]:!text-[clamp(1.5rem,5vw,3rem)]"
+                            style="color: {{ $shTitleColor }};"
+                        >{{ $shTitle }}</h2>
+                    @endif
+ 
+                    @if ($shSubtitle)
+                        <p
+                            class="mt-3 {{ $shSubtitleSize }} max-w-3xl leading-relaxed
+                                   [&]:!text-[clamp(1rem,3vw,1.25rem)]"
+                            style="color: {{ $shSubtitleColor }};"
+                        >{{ $shSubtitle }}</p>
+                    @endif
+                </div>
+            @endif
+ 
+            @if (count($tabs))
+ 
+                {{-- ── Tab navigation ────────────────────────────────── --}}
+                {{--
+                    • overflow-x-auto + min-w-max inner div = tabs scroll
+                      horizontally on mobile; no wrapping, no hidden tabs.
+                    • -mb-px + border-b-2 on buttons = underline flush
+                      with the bottom border of the tab bar.
+                    • scrollbar-thin / no-scrollbar via utility where available.
+                --}}
+                <div
+                    class="overflow-x-auto overflow-y-hidden -mx-4 sm:mx-0 px-4 sm:px-0
+                           [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                    style="background-color: {{ $tabBarBg }};"
+                    role="tablist"
+                    aria-label="Category tabs"
+                    id="{{ $tsId }}_tabbar"
+                >
+                    <div class="flex min-w-max border-b"
+                         style="border-color: {{ $tabBarBorderColor }};">
+                        @foreach ($tabs as $ti => $tab)
+                            @php $tabLabel = $t($tab['tab_label'] ?? '', $locale, $fallback); @endphp
+                            <button
+                                type="button"
+                                role="tab"
+                                id="{{ $tsId }}_tab_{{ $ti }}"
+                                aria-controls="{{ $tsId }}_panel_{{ $ti }}"
+                                aria-selected="{{ $ti === 0 ? 'true' : 'false' }}"
+                                class="{{ $tabFontSize }} font-medium px-4 py-3 border-b-2 -mb-px
+                                       transition-colors duration-200 whitespace-nowrap cursor-pointer
+                                       focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1"
+                                style="
+                                    color: {{ $ti === 0 ? $tabActiveTextColor : $tabTextColor }};
+                                    border-bottom-color: {{ $ti === 0 ? $tabActiveBorderColor : 'transparent' }};
+                                    background: transparent;
+                                "
+                                data-ts-block="{{ $tsId }}"
+                                data-ts-tab="{{ $ti }}"
+                                data-active-text="{{ $tabActiveTextColor }}"
+                                data-inactive-text="{{ $tabTextColor }}"
+                                data-active-border="{{ $tabActiveBorderColor }}"
+                            >{{ $tabLabel }}</button>
+                        @endforeach
+                    </div>
+                </div>
+ 
+                {{-- ── Tab panels ─────────────────────────────────────── --}}
+                @foreach ($tabs as $ti => $tab)
+                    @php
+                        // ── Left column ──────────────────────────────────
+                        $mediaType = $tab['media_type'] ?? 'image';
+                        $imgUrl    = !empty($tab['image'])  ? Storage::disk('public')->url($tab['image'])  : null;
+                        $vidUrl    = !empty($tab['video'])  ? Storage::disk('public')->url($tab['video'])  : null;
+                        $posterUrl = !empty($tab['poster']) ? Storage::disk('public')->url($tab['poster']) : null;
+ 
+                        // ── Right column – text ──────────────────────────
+                        $rKicker   = $t($tab['r_kicker']   ?? '', $locale, $fallback);
+                        $rTitle    = $t($tab['r_title']    ?? '', $locale, $fallback);
+                        $rSubtitle = $t($tab['r_subtitle'] ?? '', $locale, $fallback);
+ 
+                        $rKickerColor   = $tab['r_kicker_color']   ?? '#0ea5e9';
+                        $rKickerSize    = $tab['r_kicker_size']    ?? 'text-xs';
+                        $rTitleColor    = $tab['r_title_color']    ?? '#0f172a';
+                        $rTitleSize     = $tab['r_title_size']     ?? 'text-2xl';
+                        $rSubtitleColor = $tab['r_subtitle_color'] ?? '#475569';
+                        $rSubtitleSize  = $tab['r_subtitle_size']  ?? 'text-sm';
+ 
+                        // ── Spec table ────────────────────────────────────
+                        $showHeader      = (bool) ($tab['show_table_header']     ?? false);
+                        $tableHeaderBg   = $tab['table_header_bg']               ?? '#f1f5f9';
+                        $tableHeaderText = $tab['table_header_text_color']       ?? '#64748b';
+                        $tableHeaderSize = $tab['table_header_font_size']        ?? 'text-xs';
+                        $col1Header      = $t($tab['col1_header'] ?? '', $locale, $fallback);
+                        $col2Header      = $t($tab['col2_header'] ?? '', $locale, $fallback);
+                        $specRows        = is_array($tab['spec_rows'] ?? null) ? $tab['spec_rows'] : [];
+ 
+                        // ── Tags ──────────────────────────────────────────
+                        $tags = is_array($tab['tags'] ?? null) ? $tab['tags'] : [];
+ 
+                        // ── CTA ───────────────────────────────────────────
+                        $ctaLabel = $t($tab['cta_label'] ?? '', $locale, $fallback);
+                        $ctaUrl   = $tab['cta_url']        ?? '';
+                        $ctaBg    = $tab['cta_bg_color']   ?? '#0f172a';
+                        $ctaText  = $tab['cta_text_color'] ?? '#ffffff';
+                        $ctaSize  = $tab['cta_font_size']  ?? 'text-sm';
+                    @endphp
+ 
+                    <div
+                        id="{{ $tsId }}_panel_{{ $ti }}"
+                        role="tabpanel"
+                        aria-labelledby="{{ $tsId }}_tab_{{ $ti }}"
+                        data-ts-block="{{ $tsId }}"
+                        data-ts-panel="{{ $ti }}"
+                        class="pt-6 sm:pt-8 pb-2 {{ $ti !== 0 ? 'hidden' : '' }}"
+                    >
+                        {{--
+                            Layout:
+                            • Mobile  (<768px) : single column — media on top, content below
+                            • Tablet+ (≥768px) : two equal columns side by side
+                        --}}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 lg:gap-10 items-start">
+ 
+                            {{-- ── LEFT: media ───────────────────────────── --}}
+                            <div
+                                class="rounded-lg border border-slate-200 bg-slate-50
+                                       overflow-hidden flex items-center justify-center
+                                       w-full
+                                       aspect-[4/3] sm:aspect-[16/10] md:aspect-auto md:min-h-[280px] lg:min-h-[340px]"
+                            >
+                                @if ($mediaType === 'image' && $imgUrl)
+                                    <img
+                                        src="{{ $imgUrl }}"
+                                        alt="{{ strip_tags($rTitle) }}"
+                                        class="w-full h-full object-cover"
+                                        loading="lazy"
+                                    >
+                                @elseif ($mediaType === 'video' && $vidUrl)
+                                    <video
+                                        class="w-full h-full object-cover"
+                                        autoplay muted loop playsinline preload="metadata"
+                                        @if ($posterUrl) poster="{{ $posterUrl }}" @endif
+                                    >
+                                        <source src="{{ $vidUrl }}" type="video/mp4">
+                                    </video>
+                                @else
+                                    {{-- Placeholder shown when no media is uploaded yet --}}
+                                    <div class="flex flex-col items-center justify-center p-8 sm:p-12 text-slate-300 w-full h-full">
+                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                             class="w-12 h-12 sm:w-14 sm:h-14 mb-2"
+                                             fill="none" viewBox="0 0 24 24"
+                                             stroke="currentColor" stroke-width="1"
+                                             aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16
+                                                     m-2-2l1.586-1.586a2 2 0 012.828 0L20 14
+                                                     m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2
+                                                     H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                        </svg>
+                                        <span class="text-xs">No media uploaded</span>
+                                    </div>
+                                @endif
+                            </div>
+ 
+                            {{-- ── RIGHT: content ─────────────────────────── --}}
+                            <div class="flex flex-col gap-4 sm:gap-5">
+ 
+                                {{-- Kicker --}}
+                                @if ($rKicker)
+                                    <p
+                                        class="{{ $rKickerSize }} font-semibold uppercase tracking-wider"
+                                        style="color: {{ $rKickerColor }};"
+                                    >{{ $rKicker }}</p>
+                                @endif
+ 
+                                {{-- Title --}}
+                                @if ($rTitle)
+                                    <h3
+                                        class="{{ $rTitleSize }} font-semibold leading-snug
+                                               [&]:!text-[clamp(1.125rem,4vw,1.75rem)]"
+                                        style="color: {{ $rTitleColor }};"
+                                    >{{ $rTitle }}</h3>
+                                @endif
+ 
+                                {{-- Body text --}}
+                                @if ($rSubtitle)
+                                    <p
+                                        class="{{ $rSubtitleSize }} leading-relaxed"
+                                        style="color: {{ $rSubtitleColor }};"
+                                    >{{ $rSubtitle }}</p>
+                                @endif
+ 
+                                {{-- ── Spec table ─────────────────────────── --}}
+                                @if (count($specRows))
+                                    {{--
+                                        The table needs a horizontal-scroll wrapper on small
+                                        screens so it never breaks the layout.
+                                        min-width forces a reasonable column minimum; the
+                                        two-column layout (38 / 62 split) is maintained.
+                                    --}}
+                                    <div class="overflow-x-auto rounded border border-slate-200
+                                                -mx-0 [scrollbar-width:thin]
+                                                [&::-webkit-scrollbar]:h-1
+                                                [&::-webkit-scrollbar-thumb]:rounded
+                                                [&::-webkit-scrollbar-thumb]:bg-slate-300">
+                                        <table
+                                            class="w-full text-left border-collapse"
+                                            style="min-width: 340px;"
+                                        >
+                                            {{-- Optional header row --}}
+                                            @if ($showHeader && ($col1Header || $col2Header))
+                                                <thead>
+                                                    <tr style="background-color: {{ $tableHeaderBg }};">
+                                                        <th
+                                                            class="{{ $tableHeaderSize }} font-semibold
+                                                                   px-3 py-2.5 w-[38%]
+                                                                   border-b border-slate-200"
+                                                            style="color: {{ $tableHeaderText }};"
+                                                        >{{ $col1Header }}</th>
+                                                        <th
+                                                            class="{{ $tableHeaderSize }} font-semibold
+                                                                   px-3 py-2.5
+                                                                   border-b border-slate-200"
+                                                            style="color: {{ $tableHeaderText }};"
+                                                        >{{ $col2Header }}</th>
+                                                    </tr>
+                                                </thead>
+                                            @endif
+ 
+                                            <tbody>
+                                                @foreach ($specRows as $row)
+                                                    @php
+                                                        $rowBg     = $row['row_bg']       ?? '#ffffff';
+                                                        $rowSize   = $row['row_font_size'] ?? 'text-sm';
+                                                        $col1Color = $row['col1_color']    ?? '#374151';
+                                                        $col2Color = $row['col2_color']    ?? '#374151';
+                                                        $col1Val   = $t($row['col1'] ?? '', $locale, $fallback);
+                                                        $col2Val   = $t($row['col2'] ?? '', $locale, $fallback);
+                                                    @endphp
+                                                    <tr
+                                                        class="border-b border-slate-100 last:border-0"
+                                                        style="background-color: {{ $rowBg }};"
+                                                    >
+                                                        <td
+                                                            class="{{ $rowSize }} font-medium
+                                                                   px-3 py-2.5 w-[38%] align-top"
+                                                            style="color: {{ $col1Color }};"
+                                                        >{{ $col1Val }}</td>
+                                                        <td
+                                                            class="{{ $rowSize }} px-3 py-2.5 align-top"
+                                                            style="color: {{ $col2Color }};"
+                                                        >{{ $col2Val }}</td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                @endif
+ 
+                                {{-- ── Tags ────────────────────────────────── --}}
+                                @if (count($tags))
+                                    {{--
+                                        flex-wrap lets tags reflow naturally on any screen width.
+                                        gap-1.5 on mobile / gap-2 on larger screens.
+                                    --}}
+                                    <div class="flex flex-wrap gap-1.5 sm:gap-2">
+                                        @foreach ($tags as $tag)
+                                            @php
+                                                $tagLabel = $t($tag['tag_label'] ?? '', $locale, $fallback);
+                                                $tagBg    = $tag['tag_bg_color']  ?? '#e0f2fe';
+                                                $tagText  = $tag['tag_text_color']?? '#0369a1';
+                                                $tagSize  = $tag['tag_font_size'] ?? 'text-xs';
+                                            @endphp
+                                            @if ($tagLabel)
+                                                <span
+                                                    class="{{ $tagSize }} font-medium
+                                                           px-2.5 sm:px-3 py-1
+                                                           rounded border whitespace-nowrap"
+                                                    style="background-color: {{ $tagBg }};
+                                                           color: {{ $tagText }};
+                                                           border-color: {{ $tagText }};"
+                                                >{{ $tagLabel }}</span>
+                                            @endif
+                                        @endforeach
+                                    </div>
+                                @endif
+ 
+                                {{-- ── CTA button ──────────────────────────── --}}
+                                @if ($ctaLabel && $ctaUrl)
+                                    {{--
+                                        Full-width on mobile so it's easy to tap;
+                                        auto width on sm+ so it sits beside any future
+                                        sibling element.
+                                    --}}
+                                    <div class="pt-1">
+                                        <a
+                                            href="{{ $ctaUrl }}"
+                                            class="{{ $ctaSize }} font-medium
+                                                   inline-flex items-center justify-center
+                                                   w-full sm:w-auto
+                                                   px-5 py-3 sm:py-2.5
+                                                   rounded transition-opacity duration-200
+                                                   hover:opacity-90 active:opacity-80"
+                                            style="background-color: {{ $ctaBg }};
+                                                   color: {{ $ctaText }};"
+                                        >{{ $ctaLabel }}</a>
+                                    </div>
+                                @endif
+ 
+                            </div>{{-- /right column --}}
+                        </div>{{-- /grid --}}
+                    </div>{{-- /panel --}}
+                @endforeach
+ 
+                {{-- ── Tab switching JavaScript ───────────────────────── --}}
+                {{--
+                    Pure vanilla JS — no dependencies.
+                    The IIFE scope isolates state per block instance.
+                --}}
+                <script>
+                    (function () {
+                        'use strict';
+ 
+                        var id      = '{{ $tsId }}';
+                        var buttons = document.querySelectorAll(
+                            '[data-ts-block="' + id + '"][data-ts-tab]'
+                        );
+                        var panels = document.querySelectorAll(
+                            '[data-ts-block="' + id + '"][data-ts-panel]'
+                        );
+                        var tabbar = document.getElementById(id + '_tabbar');
+ 
+                        if (!buttons.length) return;
+ 
+                        function activate(btn) {
+                            var idx          = btn.getAttribute('data-ts-tab');
+                            var activeText   = btn.getAttribute('data-active-text');
+                            var inactiveText = btn.getAttribute('data-inactive-text');
+                            var activeBorder = btn.getAttribute('data-active-border');
+ 
+                            // ── update buttons ──────────────────────────────
+                            buttons.forEach(function (b) {
+                                b.style.color             = inactiveText;
+                                b.style.borderBottomColor = 'transparent';
+                                b.setAttribute('aria-selected', 'false');
+                                b.setAttribute('tabindex', '-1');
+                            });
+                            btn.style.color             = activeText;
+                            btn.style.borderBottomColor = activeBorder;
+                            btn.setAttribute('aria-selected', 'true');
+                            btn.setAttribute('tabindex', '0');
+ 
+                            // ── scroll active tab into view on mobile ────────
+                            if (tabbar) {
+                                var btnLeft  = btn.offsetLeft;
+                                var btnRight = btnLeft + btn.offsetWidth;
+                                var barLeft  = tabbar.scrollLeft;
+                                var barRight = barLeft + tabbar.offsetWidth;
+                                if (btnLeft < barLeft) {
+                                    tabbar.scrollTo({ left: btnLeft - 16, behavior: 'smooth' });
+                                } else if (btnRight > barRight) {
+                                    tabbar.scrollTo({ left: btnRight - tabbar.offsetWidth + 16, behavior: 'smooth' });
+                                }
+                            }
+ 
+                            // ── update panels ───────────────────────────────
+                            panels.forEach(function (p) { p.classList.add('hidden'); });
+                            var panel = document.getElementById(id + '_panel_' + idx);
+                            if (panel) panel.classList.remove('hidden');
+                        }
+ 
+                        // ── click ──────────────────────────────────────────
+                        buttons.forEach(function (btn) {
+                            btn.addEventListener('click', function () {
+                                activate(this);
+                            });
+                        });
+ 
+                        // ── keyboard navigation (left / right arrow keys) ──
+                        buttons.forEach(function (btn, i) {
+                            btn.addEventListener('keydown', function (e) {
+                                var dir = 0;
+                                if (e.key === 'ArrowRight' || e.key === 'ArrowDown')  dir =  1;
+                                if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')    dir = -1;
+                                if (e.key === 'Home') dir = -i;
+                                if (e.key === 'End')  dir = buttons.length - 1 - i;
+                                if (dir === 0) return;
+                                e.preventDefault();
+                                var next = buttons[(i + dir + buttons.length) % buttons.length];
+                                if (next) { next.focus(); activate(next); }
+                            });
+                        });
+ 
+                    })();
+                </script>
+ 
+            @endif
+        </div>
+    </section>
+
+{{-- ══════════════════════════════════════════════════════════════════ --}}
+{{-- FAQ WITH SIDEBAR                                                    --}}
+{{-- Left: scrollable accordion · Right: sticky info panel + CTA        --}}
+{{-- ══════════════════════════════════════════════════════════════════ --}}
+@elseif ($type === 'faqWithSidebar')
+    @php
+        $sectionBg = $data['section_bg_color'] ?? '#f8fafc';
+
+        // Section header styles
+        $showKickerLine = (bool) ($data['show_kicker_line'] ?? true);
+        $kickerColor    = $data['kicker_color'] ?? '#0ea5e9';
+        $kickerSize     = $data['kicker_size']  ?? 'text-sm';
+        $titleColor     = $data['title_color']  ?? '#0f172a';
+        $titleSize      = $data['title_size']   ?? 'text-3xl';
+
+        // Section header content
+        $kicker = $t($data['kicker'] ?? '', $locale, $fallback);
+        $title  = $t($data['title']  ?? '', $locale, $fallback);
+
+        // FAQ item styles
+        $questionBg    = $data['question_bg_color'] ?? '#ffffff';
+        $answerBg      = $data['answer_bg_color']   ?? '#f8fafc';
+        $itemBorder    = $data['item_border_color'] ?? '#e2e8f0';
+        $questionColor = $data['question_color']    ?? '#1e293b';
+        $questionSize  = $data['question_size']     ?? 'text-base';
+        $answerColor   = $data['answer_color']      ?? '#475569';
+        $answerSize    = $data['answer_size']       ?? 'text-sm';
+        $iconColor     = $data['icon_color']        ?? '#94a3b8';
+        $iconActive    = $data['icon_active_color'] ?? '#0ea5e9';
+
+        $faqItems = is_array($data['faq_items'] ?? null) ? $data['faq_items'] : [];
+
+        // Sidebar styles
+        $sidebarHeaderBg   = $data['sidebar_header_bg']         ?? '#0f172a';
+        $sidebarHeaderText = $data['sidebar_header_text_color'] ?? '#ffffff';
+        $sidebarHeaderSize = $data['sidebar_header_font_size']  ?? 'text-base';
+        $sidebarBodyBg     = $data['sidebar_body_bg']           ?? '#ffffff';
+        $sidebarBorder     = $data['sidebar_border_color']      ?? '#e2e8f0';
+        $sidebarHeading    = $t($data['sidebar_heading'] ?? '', $locale, $fallback);
+
+        // Checklist styles
+        $checkColor       = $data['check_color']         ?? '#0ea5e9';
+        $checklistText    = $data['checklist_text_color']?? '#374151';
+        $checklistSize    = $data['checklist_font_size'] ?? 'text-sm';
+        $checklistItems   = is_array($data['checklist_items'] ?? null) ? $data['checklist_items'] : [];
+
+        // CTA
+        $ctaLabel = $t($data['cta_label'] ?? '', $locale, $fallback);
+        $ctaUrl   = $data['cta_url']       ?? '';
+        $ctaBg    = $data['cta_bg_color']  ?? '#06b6d4';
+        $ctaText  = $data['cta_text_color']?? '#0f172a';
+        $ctaSize  = $data['cta_font_size'] ?? 'text-sm';
+
+        $faqId = 'faq_' . substr(md5(serialize($data)), 0, 8);
+    @endphp
+
+    <section
+        class="w-full py-8 sm:py-12 lg:py-16"
+        style="background-color: {{ $sectionBg }};"
+    >
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+
+            {{-- Section header --}}
+            @if ($kicker || $title)
+                <div class="mb-8 sm:mb-10 lg:mb-12">
+                    @if ($kicker)
+                        <div class="flex items-center gap-2 mb-3">
+                            @if ($showKickerLine)
+                                <span class="block w-6 h-px shrink-0"
+                                      style="background-color: {{ $kickerColor }};"></span>
+                            @endif
+                            <span class="{{ $kickerSize }} font-semibold uppercase tracking-widest"
+                                  style="color: {{ $kickerColor }};">{{ $kicker }}</span>
+                        </div>
+                    @endif
+                    @if ($title)
+                        <h2 class="{{ $titleSize }} font-light tracking-tight leading-snug max-w-4xl
+                                   [&]:!text-[clamp(1.5rem,5vw,3rem)]"
+                            style="color: {{ $titleColor }};">{{ $title }}</h2>
+                    @endif
+                </div>
+            @endif
+
+            {{--
+                Two-column layout:
+                  • Mobile/tablet (<lg): stacked — FAQs then sidebar
+                  • Desktop (≥lg): side-by-side — FAQs left (flex-1),
+                    sidebar right (fixed ~340px, sticky)
+                items-start is critical so sticky works correctly.
+            --}}
+            <div class="flex flex-col lg:flex-row gap-6 lg:gap-10 items-start">
+
+                {{-- ── LEFT: FAQ accordion (scrolls with page) ─────────── --}}
+                <div class="w-full lg:flex-1 min-w-0 flex flex-col gap-2 sm:gap-3">
+                    @foreach ($faqItems as $fi => $item)
+                        @php
+                            $question = $t($item['question'] ?? '', $locale, $fallback);
+                            $answer   = $th($item['answer']  ?? '', $locale, $fallback);
+                            $itemId   = $faqId . '_item_' . $fi;
+                        @endphp
+                        @if ($question)
+                            <div
+                                class="rounded-lg border overflow-hidden"
+                                style="border-color: {{ $itemBorder }};"
+                            >
+                                {{-- Question row / toggle button --}}
+                                <button
+                                    type="button"
+                                    class="w-full flex items-center justify-between
+                                           gap-4 px-4 sm:px-5 py-4 text-left cursor-pointer
+                                           focus:outline-none focus-visible:ring-2
+                                           focus-visible:ring-inset transition-colors duration-150"
+                                    aria-expanded="false"
+                                    aria-controls="{{ $itemId }}_answer"
+                                    id="{{ $itemId }}_btn"
+                                    data-faq-btn="{{ $faqId }}"
+                                    data-icon-closed="{{ $iconColor }}"
+                                    data-icon-open="{{ $iconActive }}"
+                                    style="background-color: {{ $questionBg }};"
+                                >
+                                    <span class="{{ $questionSize }} font-medium leading-snug"
+                                          style="color: {{ $questionColor }};">{{ $question }}</span>
+
+                                    {{-- + / × icon --}}
+                                    <span class="shrink-0 w-6 h-6 flex items-center justify-center
+                                                 rounded-full border transition-transform duration-300"
+                                          style="border-color: {{ $iconColor }}; color: {{ $iconColor }};"
+                                          aria-hidden="true"
+                                          data-faq-icon
+                                    >
+                                        <svg class="w-3.5 h-3.5 transition-transform duration-300"
+                                             viewBox="0 0 14 14" fill="none"
+                                             xmlns="http://www.w3.org/2000/svg"
+                                             data-faq-plus>
+                                            <path d="M7 1v12M1 7h12" stroke="currentColor"
+                                                  stroke-width="1.8" stroke-linecap="round"/>
+                                        </svg>
+                                    </span>
+                                </button>
+
+                                {{-- Answer panel (hidden by default) --}}
+                                <div
+                                    id="{{ $itemId }}_answer"
+                                    role="region"
+                                    aria-labelledby="{{ $itemId }}_btn"
+                                    class="hidden px-4 sm:px-5 pb-4 pt-1"
+                                    data-faq-answer
+                                    style="background-color: {{ $answerBg }};"
+                                >
+                                    <div class="{{ $answerSize }} leading-relaxed prose prose-sm max-w-none"
+                                         style="color: {{ $answerColor }};">
+                                        {!! $answer !!}
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    @endforeach
+                </div>
+
+                {{-- ── RIGHT: sticky sidebar panel ──────────────────────── --}}
+                {{--
+                    lg:sticky lg:top-24 — sidebar stays fixed while FAQs scroll.
+                    w-full on mobile so it spans full width below the FAQs.
+                    lg:w-[340px] xl:w-[380px] — fixed width on desktop.
+                --}}
+                <div class="w-full lg:w-[340px] xl:w-[380px] shrink-0
+                            lg:sticky lg:top-24">
+                    <div class="rounded-lg border overflow-hidden"
+                         style="border-color: {{ $sidebarBorder }};">
+
+                        {{-- Panel header --}}
+                        @if ($sidebarHeading)
+                            <div class="px-5 py-4"
+                                 style="background-color: {{ $sidebarHeaderBg }};">
+                                <p class="{{ $sidebarHeaderSize }} font-semibold leading-snug"
+                                   style="color: {{ $sidebarHeaderText }};">{{ $sidebarHeading }}</p>
+                            </div>
+                        @endif
+
+                        {{-- Checklist --}}
+                        @if (count($checklistItems))
+                            <div class="px-5 py-4 flex flex-col gap-2.5"
+                                 style="background-color: {{ $sidebarBodyBg }};">
+                                @foreach ($checklistItems as $ci)
+                                    @php $ciText = $t($ci['text'] ?? '', $locale, $fallback); @endphp
+                                    @if ($ciText)
+                                        <div class="flex items-start gap-2.5">
+                                            {{-- Check icon --}}
+                                            <span class="shrink-0 mt-0.5"
+                                                  style="color: {{ $checkColor }};"
+                                                  aria-hidden="true">
+                                                <svg class="w-4 h-4" viewBox="0 0 16 16"
+                                                     fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M3 8l3.5 3.5L13 4.5"
+                                                          stroke="currentColor"
+                                                          stroke-width="1.8"
+                                                          stroke-linecap="round"
+                                                          stroke-linejoin="round"/>
+                                                </svg>
+                                            </span>
+                                            <span class="{{ $checklistSize }} leading-snug"
+                                                  style="color: {{ $checklistText }};">{{ $ciText }}</span>
+                                        </div>
+                                    @endif
+                                @endforeach
+                            </div>
+                        @endif
+
+                        {{-- CTA button --}}
+                        @if ($ctaLabel && $ctaUrl)
+                            <div class="px-5 pb-5"
+                                 style="background-color: {{ $sidebarBodyBg }};">
+                                <a href="{{ $ctaUrl }}"
+                                   class="{{ $ctaSize }} font-semibold
+                                          w-full inline-flex items-center justify-center
+                                          px-5 py-3 rounded
+                                          transition-opacity duration-200
+                                          hover:opacity-90 active:opacity-80"
+                                   style="background-color: {{ $ctaBg }};
+                                          color: {{ $ctaText }};">
+                                    {{ $ctaLabel }}
+                                </a>
+                            </div>
+                        @endif
+
+                    </div>
+                </div>
+
+            </div>{{-- /flex row --}}
+        </div>
+    </section>
+
+    {{-- FAQ accordion JS --}}
+    <script>
+        (function () {
+            'use strict';
+            var faqId  = '{{ $faqId }}';
+            var btns   = document.querySelectorAll('[data-faq-btn="' + faqId + '"]');
+
+            btns.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var expanded    = this.getAttribute('aria-expanded') === 'true';
+                    var answerId    = this.getAttribute('aria-controls');
+                    var answer      = document.getElementById(answerId);
+                    var icon        = this.querySelector('[data-faq-icon]');
+                    var plus        = this.querySelector('[data-faq-plus]');
+                    var iconClosed  = this.getAttribute('data-icon-closed');
+                    var iconOpen    = this.getAttribute('data-icon-open');
+
+                    if (!answer) return;
+
+                    if (expanded) {
+                        // Collapse
+                        this.setAttribute('aria-expanded', 'false');
+                        answer.classList.add('hidden');
+                        if (icon) {
+                            icon.style.borderColor = iconClosed;
+                            icon.style.color       = iconClosed;
+                        }
+                        if (plus) plus.style.transform = 'rotate(0deg)';
+                    } else {
+                        // Expand
+                        this.setAttribute('aria-expanded', 'true');
+                        answer.classList.remove('hidden');
+                        if (icon) {
+                            icon.style.borderColor = iconOpen;
+                            icon.style.color       = iconOpen;
+                        }
+                        // Rotate + into ×
+                        if (plus) plus.style.transform = 'rotate(45deg)';
+                    }
+                });
+            });
         })();
     </script>
 @endif
