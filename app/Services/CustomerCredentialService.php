@@ -14,9 +14,19 @@ class CustomerCredentialService
 {
     public function generateCustomerCode(): string
     {
-        $last = Customer::withTrashed()->orderByDesc('id')->value('id') ?? 0;
+        // Excludes 0/O/1/I to avoid visual ambiguity when read aloud or typed.
+        $alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        $year = now()->format('y');
 
-        return 'GT-' . str_pad((string) ($last + 1), 5, '0', STR_PAD_LEFT);
+        do {
+            $suffix = '';
+            for ($i = 0; $i < 5; $i++) {
+                $suffix .= $alphabet[random_int(0, strlen($alphabet) - 1)];
+            }
+            $code = "GT-{$year}-{$suffix}";
+        } while (Customer::withTrashed()->where('customer_code', $code)->exists());
+
+        return $code;
     }
 
     public function generateUsername(string $companyName): string
@@ -91,6 +101,26 @@ class CustomerCredentialService
         }
 
         $this->log($customer, 'registration_sent', ['recipients' => $recipients->pluck('email')->all()], $performedBy);
+    }
+
+    /**
+     * Send an update notification to all contacts that are set to receive notifications.
+     */
+    public function sendUpdateNotification(Customer $customer, ?int $performedBy = null): void
+    {
+        $recipients = $customer->notificationContacts()->get();
+        $failed = [];
+
+        foreach ($recipients as $contact) {
+            try {
+                Mail::to($contact->email)->send(new \App\Mail\CustomerDetailsUpdatedMail($customer, $contact));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Details-updated email failed', ['customer_id' => $customer->id, 'to' => $contact->email, 'error' => $e->getMessage()]);
+                $failed[] = $contact->email;
+            }
+        }
+
+        $this->log($customer, 'details_updated_sent', ['recipients' => $recipients->pluck('email')->all(), 'failed' => $failed], $performedBy);
     }
 
     /**

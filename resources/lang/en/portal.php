@@ -150,6 +150,12 @@ return [
             'login_password' => 'Temporary password',
             'login_note' => "You'll be asked to set your own password the first time you sign in at :url",
         ],
+        'details_updated' => [
+            'subject' => 'Your Global Trading account details were updated',
+            'badge' => 'Account details updated',
+            'heading' => 'Hello, :name',
+            'intro' => 'The details on file for :company have just been updated. Here is what is currently on record.',
+        ],
         'order_confirmed' => [
             'subject' => 'Order :number is accepted and registered',
             'badge' => 'Order is accepted and registered successfully',

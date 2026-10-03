@@ -16,12 +16,13 @@ class CustomerPasswordResetMail extends Mailable
         public Customer $customer,
         public CustomerContact $contact,
         public string $plainPassword,
-    ) {}
+    ) {
+        $this->locale($this->customer->preferred_locale);
+    }
 
     public function build()
     {
         return $this
-            ->locale($this->customer->preferred_locale)
             ->subject(__('portal.mail.password_reset.subject'))
             ->view('emails.customer-password-reset');
     }

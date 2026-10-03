@@ -73,15 +73,22 @@ class OpsCustomerController extends Controller
     {
         $data = $request->validate($this->rules());
 
+        $wasDraft = $customer->isDraft();
+
         $credentials->saveDraft(
             collect($data)->except(['contacts', 'action'])->toArray(),
             $data['contacts'] ?? [],
             $customer
         );
 
-        if (($data['action'] ?? 'save') === 'send' && $customer->isDraft()) {
+        if (($data['action'] ?? 'save') === 'send') {
             abort_unless($this->hasNotifiableContact($customer), 422, 'No notifiable contact with an email on file.');
-            $credentials->sendRegistration($customer, auth()->id());
+
+            if ($wasDraft) {
+                $credentials->sendRegistration($customer, auth()->id());
+            } else {
+                $credentials->sendUpdateNotification($customer, auth()->id());
+            }
         }
 
         return redirect()->route('ops.customers.index')->with('status', "Updated {$customer->company_name}.");

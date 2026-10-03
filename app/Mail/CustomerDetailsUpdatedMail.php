@@ -8,14 +8,13 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class CustomerRegistrationMail extends Mailable
+class CustomerDetailsUpdatedMail extends Mailable
 {
     use Queueable, SerializesModels;
 
     public function __construct(
         public Customer $customer,
         public CustomerContact $contact,
-        public string $plainPassword,
     ) {
         $this->locale($this->customer->preferred_locale);
     }
@@ -23,7 +22,7 @@ class CustomerRegistrationMail extends Mailable
     public function build()
     {
         return $this
-            ->subject(__('portal.mail.registration.subject'))
-            ->view('emails.customer-registration');
+            ->subject(__('portal.mail.details_updated.subject'))
+            ->view('emails.customer-details-updated');
     }
 }

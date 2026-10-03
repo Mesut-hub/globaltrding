@@ -143,9 +143,9 @@ class PageBlockBuilder
                         TextInput::make('cta3_url')->label('CTA3 URL'),
 
                         static::blockLocaleTabs('hero_slide_lang', [
-                            ['name' => 'kicker',    'label' => 'Kicker',    'type' => 'text'],
-                            ['name' => 'title',     'label' => 'Title',     'type' => 'text'],
-                            ['name' => 'lead',      'label' => 'Lead text', 'type' => 'textarea', 'rows' => 2],
+                            ['name' => 'kicker', 'label' => 'Kicker', 'type' => 'html', 'rows' => 2],
+                            ['name' => 'title',  'label' => 'Title',  'type' => 'html', 'rows' => 2],
+                            ['name' => 'lead',   'label' => 'Lead',   'type' => 'html', 'rows' => 3],
                             ['name' => 'cta1_label', 'label' => 'CTA1 label', 'type' => 'text'],
                             ['name' => 'cta2_label', 'label' => 'CTA2 label', 'type' => 'text'],
                             ['name' => 'cta3_label', 'label' => 'CTA3 label', 'type' => 'text'],

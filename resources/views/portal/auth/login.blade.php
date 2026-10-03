@@ -45,6 +45,13 @@
       </div>
 
       <div id="resetForm" style="display:none;">
+        <div class="flex items-center gap-2 mb-6">
+          <img src="{{ asset('images/portal/logo.png') }}" alt="Global Trading" class="h-9 w-9">
+          <div>
+            <div class="font-extrabold text-sm text-slate-900">GLOBAL <span class="text-[#C99A3D]">TRADING</span></div>
+            <div class="text-[10px] text-slate-500">{{ __('portal.slogan') }}</div>
+          </div>
+        </div>
         <p class="text-xs font-bold text-[#7A5A1E] uppercase tracking-wide mb-2">{{ __('portal.reset.kicker') }}</p>
         <h1 class="text-2xl font-bold mb-1">{{ __('portal.reset.title') }}</h1>
         <p class="text-sm text-slate-500 mb-6">{{ __('portal.reset.subtitle') }}</p>
@@ -67,10 +74,10 @@
 
     </div>
   </div>
-  <div class="flex-1 bg-gradient-to-br from-[#0B1220] to-[#1B2740] hidden md:flex flex-col justify-center p-8 overflow-y-auto">
+  <div class="flex-1 bg-gradient-to-br from-[#0B1220] to-[#1B2740] hidden md:flex flex-col justify-center p-8 overflow-y-auto overflow-x-hidden" id="loginHeroPanel">
     @php($loginPage = \App\Models\Page::where('slug', 'portal-login')->where('is_published', true)->first())
     @if($loginPage)
-      <div class="text-white w-full max-w-xl mx-auto space-y-6">
+      <div class="text-white w-full space-y-6" id="loginHeroWrap">
         @foreach($loginPage->blocks ?? [] as $block)
           @include('shared.blocks.render', ['block' => $block])
         @endforeach
@@ -84,6 +91,37 @@
     @endif
   </div>
 </div>
+<style>
+  /* Scoped to this page only. */
+  #loginHeroWrap, #loginHeroWrap * { max-width: 100%; box-sizing: border-box; }
+  #loginHeroWrap h1, #loginHeroWrap h2, #loginHeroWrap h3, #loginHeroWrap p {
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+  #loginHeroWrap .gt-hero--screen,
+  #loginHeroWrap .gt-hero--xl,
+  #loginHeroWrap .gt-hero--lg {
+    height: auto !important;
+    aspect-ratio: 4 / 5 !important;
+    min-height: 360px !important;
+  }
+  #loginHeroWrap .gt-hero__content {
+    position: absolute !important;
+    inset: auto 20px 20px 20px !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    max-width: calc(100% - 40px) !important;
+    width: auto !important;
+  }
+  @media (min-width: 1024px) {
+    #loginHeroWrap .gt-hero--screen,
+    #loginHeroWrap .gt-hero--xl,
+    #loginHeroWrap .gt-hero--lg {
+      aspect-ratio: 16 / 9 !important;
+    }
+  }
+</style>
 @if($recaptchaSiteKey)<script src="https://www.google.com/recaptcha/api.js" async defer></script>@endif
 <script>
   document.getElementById('showResetBtn').addEventListener('click', function () {

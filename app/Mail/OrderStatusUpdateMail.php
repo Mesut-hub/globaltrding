@@ -17,7 +17,9 @@ class OrderStatusUpdateMail extends Mailable
         public Order $order,
         public OrderStatusUpdate $update,
         public CustomerContact $contact,
-    ) {}
+    ) {
+        $this->locale($this->order->customer->preferred_locale);
+    }
 
     public function build()
     {
@@ -26,7 +28,6 @@ class OrderStatusUpdateMail extends Mailable
             : 'portal.mail.status_update.subject';
 
         return $this
-            ->locale($this->order->customer->preferred_locale)
             ->subject(__($key, ['number' => $this->order->order_number]))
             ->view('emails.order-status-update');
     }

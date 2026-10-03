@@ -150,6 +150,12 @@ return [
             'login_password' => 'Geçici şifre',
             'login_note' => ':url adresinden ilk girişinizde kendi şifrenizi belirlemeniz istenecektir.',
         ],
+        'details_updated' => [
+            'subject' => 'Global Trading hesap bilgileriniz güncellendi',
+            'badge' => 'Hesap bilgileri güncellendi',
+            'heading' => 'Merhaba, :name',
+            'intro' => ':company için kayıtlı bilgiler az önce güncellendi. Şu anda kayıtlı olan bilgiler aşağıdadır.',
+        ],
         'order_confirmed' => [
             'subject' => ':number numaralı sipariş kabul edildi ve kaydedildi',
             'badge' => 'Sipariş kabul edildi ve başarıyla kaydedildi',

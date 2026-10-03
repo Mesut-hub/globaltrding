@@ -150,6 +150,12 @@ return [
             'login_password' => 'Mot de passe temporaire',
             'login_note' => 'Il vous sera demandé de définir votre propre mot de passe lors de votre première connexion sur :url',
         ],
+        'details_updated' => [
+            'subject' => 'Les informations de votre compte Global Trading ont été mises à jour',
+            'badge' => 'Informations du compte mises à jour',
+            'heading' => 'Bonjour, :name',
+            'intro' => 'Les informations enregistrées pour :company viennent d\'être mises à jour. Voici ce qui est actuellement enregistré.',
+        ],
         'order_confirmed' => [
             'subject' => 'La commande :number est acceptée et enregistrée',
             'badge' => 'Commande acceptée et enregistrée avec succès',

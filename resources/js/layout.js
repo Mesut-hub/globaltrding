@@ -409,12 +409,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const cta3Url   = (s.cta3_url   || '').trim();
 
       if (kickerEl) {
-          kickerEl.textContent = kicker;
+          kickerEl.innerHTML = kicker;
           kickerEl.classList.toggle('hidden', !kicker);
       }
-      if (titleEl) titleEl.textContent = title || '';
+      if (titleEl) titleEl.innerHTML = title || '';
       if (leadEl) {
-          leadEl.textContent = lead;
+          leadEl.innerHTML = lead;
           leadEl.classList.toggle('hidden', !lead);
       }
       if (ctaWrap) {

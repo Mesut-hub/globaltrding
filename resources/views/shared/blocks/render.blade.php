@@ -173,15 +173,15 @@
                 data-hero-slides='@json($slidesForJs, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_APOS)'>
 
                 @if ($heroKicker)
-                    <div class="gt-hero__kicker" data-hero-kicker>{{ $heroKicker }}</div>
+                    <div class="gt-hero__kicker" data-hero-kicker>{!! $heroKicker !!}</div>
                 @else
                     <div class="gt-hero__kicker hidden" data-hero-kicker></div>
                 @endif
 
-                <h1 class=" {{ $titleClass }}" data-hero-title>{{ $heroTitle }}</h1>
+                <h1 class=" {{ $titleClass }}" data-hero-title>{!! $heroTitle !!}</h1>
 
                 @if ($heroLead)
-                    <p class=" {{ $leadClass }}" data-hero-lead>{{ $heroLead }}</p>
+                    <p class=" {{ $leadClass }}" data-hero-lead>{!! $heroLead !!}</p>
                 @else
                     <p class="gt-hero__lead hidden" data-hero-lead></p>
                 @endif
