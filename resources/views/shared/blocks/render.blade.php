@@ -3473,4 +3473,217 @@
             });
         })();
     </script>
+
+{{-- ══════════════════════════════════════════════════════════════════ --}}
+{{-- NUMBERED STEPS + INFO CARDS                                         --}}
+{{-- Left: scrollable numbered steps · Right: sticky stacked info cards  --}}
+{{-- ══════════════════════════════════════════════════════════════════ --}}
+@elseif ($type === 'numberedStepsCards')
+    @php
+        $sectionBg = $data['section_bg_color'] ?? '#ffffff';
+
+        // Section header styles
+        $showKickerLine = (bool) ($data['show_kicker_line'] ?? true);
+        $kickerColor    = $data['kicker_color'] ?? '#f97316';
+        $kickerSize     = $data['kicker_size']  ?? 'text-sm';
+        $titleColor     = $data['title_color']  ?? '#0f172a';
+        $titleSize      = $data['title_size']   ?? 'text-3xl';
+
+        // Section header content
+        $kicker = $t($data['kicker'] ?? '', $locale, $fallback);
+        $title  = $t($data['title']  ?? '', $locale, $fallback);
+
+        // Steps column styles
+        $stepNumBg          = $data['step_num_bg']           ?? '#0f172a';
+        $stepNumColor       = $data['step_num_color']        ?? '#ffffff';
+        $stepNumSize        = $data['step_num_size']         ?? 'text-lg';
+        $stepAccentColor    = $data['step_accent_color']     ?? '#0f172a';
+        $stepItemBg         = $data['step_item_bg']          ?? '#ffffff';
+        $stepItemBorder     = $data['step_item_border_color']?? '#e2e8f0';
+        $stepShowAccent     = (bool) ($data['step_show_accent'] ?? true);
+        $stepShowBorder     = (bool) ($data['step_show_border'] ?? true);
+        $stepTitleColor     = $data['step_title_color']      ?? '#0ea5e9';
+        $stepTitleSize      = $data['step_title_size']       ?? 'text-base';
+        $stepBodyColor      = $data['step_body_color']       ?? '#64748b';
+        $stepBodySize       = $data['step_body_size']        ?? 'text-sm';
+
+        $steps = is_array($data['steps'] ?? null) ? $data['steps'] : [];
+
+        // Info cards column global styles
+        $cardBgGlobal          = $data['card_bg']           ?? '#ffffff';
+        $cardBorderGlobal      = $data['card_border_color'] ?? '#e2e8f0';
+        $cardShowAccent        = (bool) ($data['card_show_accent'] ?? true);
+        $cardShowBorder        = (bool) ($data['card_show_border'] ?? true);
+        $cardTitleColorGlobal  = $data['card_title_color']  ?? '#0ea5e9';
+        $cardTitleSizeGlobal   = $data['card_title_size']   ?? 'text-base';
+        $cardBodyColorGlobal   = $data['card_body_color']   ?? '#475569';
+        $cardBodySizeGlobal    = $data['card_body_size']    ?? 'text-sm';
+
+        $infoCards = is_array($data['info_cards'] ?? null) ? $data['info_cards'] : [];
+    @endphp
+
+    <section
+        class="w-full py-8 sm:py-12 lg:py-16"
+        style="background-color: {{ $sectionBg }};"
+    >
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+
+            {{-- Section header --}}
+            @if ($kicker || $title)
+                <div class="mb-8 sm:mb-10 lg:mb-12">
+                    @if ($kicker)
+                        <div class="flex items-center gap-2 mb-3">
+                            @if ($showKickerLine)
+                                <span class="block w-6 h-px shrink-0"
+                                      style="background-color: {{ $kickerColor }};"></span>
+                            @endif
+                            <span class="{{ $kickerSize }} font-semibold uppercase tracking-widest"
+                                  style="color: {{ $kickerColor }};">{{ $kicker }}</span>
+                        </div>
+                    @endif
+                    @if ($title)
+                        <h2 class="{{ $titleSize }} font-light tracking-tight leading-snug max-w-4xl
+                                   [&]:!text-[clamp(1.5rem,5vw,3rem)]"
+                            style="color: {{ $titleColor }};">{{ $title }}</h2>
+                    @endif
+                </div>
+            @endif
+
+            {{--
+                Two-column layout:
+                  Mobile/tablet (<lg): stacked — steps then cards
+                  Desktop (≥lg): side-by-side
+                    Left  (7/12): scrollable steps
+                    Right (5/12): sticky info cards
+            --}}
+            <div class="flex flex-col lg:flex-row gap-6 lg:gap-10 items-start">
+
+                {{-- ── LEFT: numbered steps (scrolls with page) ─────────── --}}
+                <div class="w-full lg:w-1/2 min-w-0 flex flex-col gap-1.5">
+                    @foreach ($steps as $si => $step)
+                        @php
+                            $stepTitle = $t($step['step_title'] ?? '', $locale, $fallback);
+                            $stepBody  = $th($step['step_body']  ?? '', $locale, $fallback);
+                            $stepNum   = $si + 1;
+                        @endphp
+                        @if ($stepTitle || $stepBody)
+                            {{--
+                                Step card structure:
+                                  ┌──────────┬────────────────────────────────┐
+                                  │  number  │  title + body                  │
+                                  │  panel   │                                │
+                                  └──────────┴────────────────────────────────┘
+                                Left accent line via border-l-4 on wrapper.
+                            --}}
+                            <div class="flex items-stretch rounded-lg overflow-hidden
+                                        {{ $stepShowBorder ? 'border' : '' }}"
+                                 style="
+                                    {{ $stepShowBorder ? 'border-color:' . $stepItemBorder . ';' : '' }}
+                                    {{ $stepShowAccent ? 'border-left-color:' . $stepAccentColor . '; border-left-width:5px;' : '' }}
+                                 ">
+
+                                {{-- Step number panel --}}
+                                <div class="flex items-center justify-center
+                                            px-4 py-4 sm:py-6 shrink-0 min-w-[52px] sm:min-w-[60px]"
+                                     style="background-color: {{ $stepNumBg }};">
+                                    <span class="{{ $stepNumSize }} font-bold leading-none"
+                                          style="color: {{ $stepNumColor }};">{{ $stepNum }}</span>
+                                </div>
+
+                                {{-- Step content --}}
+                                <div class="flex-1 px-4 sm:px-5 py-4 sm:py-5 min-w-0"
+                                     style="background-color: {{ $stepItemBg }};">
+                                    @if ($stepTitle)
+                                        <h3 class="{{ $stepTitleSize }} font-semibold mb-2 leading-snug"
+                                            style="color: {{ $stepTitleColor }};">{{ $stepTitle }}</h3>
+                                    @endif
+                                    @if ($stepBody)
+                                        <div class="{{ $stepBodySize }} leading-relaxed prose prose-sm max-w-none"
+                                             style="color: {{ $stepBodyColor }};">
+                                            {!! $stepBody !!}
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+                    @endforeach
+                </div>
+
+                {{-- ── RIGHT: sticky info cards ─────────────────────────── --}}
+                {{--
+                    lg:sticky lg:top-24 keeps the cards panel fixed in the
+                    viewport while the steps scroll past on the left.
+                    Width is fixed at lg:w-[360px] xl:w-[400px].
+                --}}
+                    <div class="w-full lg:w-1/2 shrink-0
+                            lg:sticky lg:top-24
+                            flex flex-col gap-4 sm:gap-5">
+                    @foreach ($infoCards as $card)
+                        @php
+                            // Resolve per-card overrides → fall back to column globals
+                            $cardBg         = $card['card_bg_override']          ?: $cardBgGlobal;
+                            $cardBorder     = $card['card_border_override']       ?: $cardBorderGlobal;
+                            $cardTitleColor = $card['card_title_color_override']  ?: $cardTitleColorGlobal;
+                            $cardTitleSize  = $card['card_title_size_override']   ?: $cardTitleSizeGlobal;
+                            $cardBodyColor  = $card['card_body_color_override']   ?: $cardBodyColorGlobal;
+                            $cardBodySize   = $card['card_body_size_override']    ?: $cardBodySizeGlobal;
+
+                            $cardTitle   = $t($card['card_title'] ?? '', $locale, $fallback);
+                            $contentType = $card['content_type'] ?? 'text';
+                            $cardBody    = $th($card['card_body'] ?? '', $locale, $fallback);
+                            $cardImgUrl  = !empty($card['card_image'])
+                                            ? Storage::disk('public')->url($card['card_image']) : null;
+                            $cardVidUrl  = !empty($card['card_video'])
+                                            ? Storage::disk('public')->url($card['card_video']) : null;
+                            $cardPoster  = !empty($card['card_poster'])
+                                            ? Storage::disk('public')->url($card['card_poster']) : null;
+                        @endphp
+                            <div class="rounded-lg overflow-hidden
+                                    {{ $cardShowBorder ? 'border' : '' }}"
+                             style="
+                                background-color: {{ $cardBg }};
+                                {{ $cardShowBorder ? 'border-color:' . $cardBorder . ';' : '' }}
+                                {{ $cardShowAccent ? 'border-left-color:' . $stepAccentColor . '; border-left-width:5px;' : '' }}
+                             ">
+
+                            <div class="px-2 py-2">
+                                {{-- Card title --}}
+                                @if ($cardTitle)
+                                    <h3 class="{{ $cardTitleSize }} font-semibold mb-3 leading-snug"
+                                        style="color: {{ $cardTitleColor }};">{{ $cardTitle }}</h3>
+                                @endif
+
+                                {{-- Card content: text / image / video --}}
+                                @if ($contentType === 'text' && $cardBody)
+                                    <div class="{{ $cardBodySize }} leading-relaxed prose prose-sm max-w-none"
+                                         style="color: {{ $cardBodyColor }};">
+                                        {!! $cardBody !!}
+                                    </div>
+
+                                @elseif ($contentType === 'image' && $cardImgUrl)
+                                    <div class="rounded overflow-hidden">
+                                        <img src="{{ $cardImgUrl }}"
+                                             alt="{{ strip_tags($cardTitle) }}"
+                                             class="w-full h-auto object-cover"
+                                             loading="lazy">
+                                    </div>
+
+                                @elseif ($contentType === 'video' && $cardVidUrl)
+                                    <div class="rounded overflow-hidden">
+                                        <video class="w-full h-auto"
+                                               autoplay muted loop playsinline
+                                               preload="metadata"
+                                               @if ($cardPoster) poster="{{ $cardPoster }}" @endif>
+                                            <source src="{{ $cardVidUrl }}" type="video/mp4">
+                                        </video>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+            </div>{{-- /flex row --}}
+        </div>
+    </section>
 @endif

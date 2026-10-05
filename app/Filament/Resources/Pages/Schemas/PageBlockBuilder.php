@@ -45,6 +45,7 @@ class PageBlockBuilder
             static::specTableBlock(),
             static::tabbedSpecsBlock(),
             static::faqWithSidebarBlock(),
+            static::numberedStepsCardsBlock(),
             ...static::homeOnlyBlocks(),
             ...static::industryOnlyBlocks(),
         ];
@@ -1730,6 +1731,240 @@ class PageBlockBuilder
                         ]),
                     ]),
                 ]),
+            ]);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // NUMBERED STEPS + INFO CARDS — scrollable steps left, sticky cards right
+    // ══════════════════════════════════════════════════════════════════════════
+
+    private static function numberedStepsCardsBlock(): Block
+    {
+        return Block::make('numberedStepsCards')
+            ->label('Numbered steps + info cards (scrollable steps left, sticky cards right)')
+            ->schema([
+
+                // ── Section background ────────────────────────────────────────
+                ColorPicker::make('section_bg_color')
+                    ->label('Section background color')
+                    ->default('#ffffff'),
+
+                // ── Section header styles ─────────────────────────────────────
+                \Filament\Schemas\Components\Section::make('Section header styles')
+                    ->collapsed()
+                    ->schema([
+                        Toggle::make('show_kicker_line')
+                            ->label('Show accent line before kicker')
+                            ->default(true),
+                        \Filament\Schemas\Components\Grid::make(2)->schema([
+                            ColorPicker::make('kicker_color')->label('Kicker color')->default('#f97316'),
+                            Select::make('kicker_size')->label('Kicker font size')
+                                ->options(static::fontSizeOptions())->default('text-sm'),
+                        ]),
+                        \Filament\Schemas\Components\Grid::make(2)->schema([
+                            ColorPicker::make('title_color')->label('Title color')->default('#0f172a'),
+                            Select::make('title_size')->label('Title font size')
+                                ->options(static::fontSizeOptions())->default('text-3xl'),
+                        ]),
+                    ]),
+
+                // ── Section header content ────────────────────────────────────
+                static::blockLocaleTabs('nsc_header_lang', [
+                    ['name' => 'kicker', 'label' => 'Section kicker', 'type' => 'text'],
+                    ['name' => 'title',  'label' => 'Section title',  'type' => 'text'],
+                ]),
+
+                // ── Steps column styles ───────────────────────────────────────
+                \Filament\Schemas\Components\Section::make('Steps column styles')
+                    ->collapsed()
+                    ->schema([
+                        \Filament\Schemas\Components\Grid::make(2)->schema([
+                            Toggle::make('step_show_accent')
+                                ->label('Show left accent line')->default(true),
+                            Toggle::make('step_show_border')
+                                ->label('Show item border')->default(true),
+                        ]),
+                        \Filament\Schemas\Components\Grid::make(2)->schema([
+                            ColorPicker::make('step_num_bg')
+                                ->label('Step number panel background')->default('#0f172a'),
+                            ColorPicker::make('step_num_color')
+                                ->label('Step number text color')->default('#ffffff'),
+                        ]),
+                        \Filament\Schemas\Components\Grid::make(2)->schema([
+                            Select::make('step_num_size')
+                                ->label('Step number font size')
+                                ->options(static::fontSizeOptions())->default('text-lg'),
+                            ColorPicker::make('step_accent_color')
+                                ->label('Step left accent line color')->default('#0f172a'),
+                        ]),
+                        \Filament\Schemas\Components\Grid::make(2)->schema([
+                            ColorPicker::make('step_item_bg')
+                                ->label('Step content background')->default('#ffffff'),
+                            ColorPicker::make('step_item_border_color')
+                                ->label('Step item border color')->default('#e2e8f0'),
+                        ]),
+                        \Filament\Schemas\Components\Grid::make(2)->schema([
+                            ColorPicker::make('step_title_color')
+                                ->label('Step title color')->default('#0ea5e9'),
+                            Select::make('step_title_size')
+                                ->label('Step title font size')
+                                ->options(static::fontSizeOptions())->default('text-base'),
+                        ]),
+                        \Filament\Schemas\Components\Grid::make(2)->schema([
+                            ColorPicker::make('step_body_color')
+                                ->label('Step body text color')->default('#64748b'),
+                            Select::make('step_body_size')
+                                ->label('Step body font size')
+                                ->options(static::fontSizeOptions())->default('text-sm'),
+                        ]),
+                    ]),
+
+                // ── Steps repeater ────────────────────────────────────────────
+                Repeater::make('steps')
+                    ->label('Steps')
+                    ->minItems(1)
+                    ->schema([
+                        static::blockLocaleTabs('nsc_step_lang', [
+                            ['name' => 'step_title', 'label' => 'Step title', 'type' => 'text'],
+                            ['name' => 'step_body',  'label' => 'Step body',  'type' => 'html', 'rows' => 4],
+                        ]),
+                    ])
+                    ->itemLabel(fn (array $state): ?string =>
+                        is_array($state['step_title'] ?? null)
+                            ? ($state['step_title']['en'] ?? null)
+                            : ($state['step_title'] ?? null)
+                    )
+                    ->collapsible()
+                    ->columns(1),
+
+                // ── Info cards column styles ──────────────────────────────────
+                \Filament\Schemas\Components\Section::make('Info cards column styles')
+                    ->collapsed()
+                    ->schema([
+                        \Filament\Schemas\Components\Grid::make(2)->schema([
+                            Toggle::make('card_show_accent')
+                                ->label('Show left accent line')->default(true),
+                            Toggle::make('card_show_border')
+                                ->label('Show item border')->default(true),
+                        ]),
+                        \Filament\Schemas\Components\Grid::make(2)->schema([
+                            ColorPicker::make('card_bg')
+                                ->label('Card background color')->default('#ffffff'),
+                            ColorPicker::make('card_border_color')
+                                ->label('Card border color')->default('#e2e8f0'),
+                        ]),
+                        \Filament\Schemas\Components\Grid::make(2)->schema([
+                            ColorPicker::make('card_title_color')
+                                ->label('Card title color')->default('#0ea5e9'),
+                            Select::make('card_title_size')
+                                ->label('Card title font size')
+                                ->options(static::fontSizeOptions())->default('text-base'),
+                        ]),
+                        \Filament\Schemas\Components\Grid::make(2)->schema([
+                            ColorPicker::make('card_body_color')
+                                ->label('Card body text color')->default('#475569'),
+                            Select::make('card_body_size')
+                                ->label('Card body font size')
+                                ->options(static::fontSizeOptions())->default('text-sm'),
+                        ]),
+                    ]),
+
+                // ── Info cards repeater ───────────────────────────────────────
+                Repeater::make('info_cards')
+                    ->label('Info cards (right column)')
+                    ->minItems(1)
+                    ->schema([
+
+                        // Per-card style overrides
+                        \Filament\Schemas\Components\Section::make('Card style overrides (optional)')
+                            ->collapsed()
+                            ->schema([
+                                \Filament\Schemas\Components\Grid::make(2)->schema([
+                                    ColorPicker::make('card_bg_override')
+                                        ->label('Background color override'),
+                                    ColorPicker::make('card_border_override')
+                                        ->label('Border color override'),
+                                ]),
+                                \Filament\Schemas\Components\Grid::make(2)->schema([
+                                    ColorPicker::make('card_title_color_override')
+                                        ->label('Title color override'),
+                                    Select::make('card_title_size_override')
+                                        ->label('Title size override')
+                                        ->options(static::fontSizeOptions()),
+                                ]),
+                                \Filament\Schemas\Components\Grid::make(2)->schema([
+                                    ColorPicker::make('card_body_color_override')
+                                        ->label('Body text color override'),
+                                    Select::make('card_body_size_override')
+                                        ->label('Body text size override')
+                                        ->options(static::fontSizeOptions()),
+                                ]),
+                            ]),
+
+                        // Card title
+                        static::blockLocaleTabs('nsc_card_title_lang', [
+                            ['name' => 'card_title', 'label' => 'Card title', 'type' => 'text'],
+                        ]),
+
+                        // Content type selector
+                        Select::make('content_type')
+                            ->label('Content type')
+                            ->options([
+                                'text'  => 'Rich text',
+                                'image' => 'Image',
+                                'video' => 'Video',
+                            ])
+                            ->default('text')
+                            ->live()
+                            ->helperText('Select type BEFORE uploading.'),
+
+                        // Text content
+                        \Filament\Schemas\Components\Section::make('Text content')
+                            ->hiddenLabel()
+                            ->schema([
+                                static::blockLocaleTabs('nsc_card_body_lang', [
+                                    ['name' => 'card_body', 'label' => 'Card body (HTML)', 'type' => 'html', 'rows' => 5],
+                                ]),
+                            ])
+                            ->visible(fn ($get) => ($get('content_type') ?? 'text') === 'text'),
+
+                        // Image content
+                        \Filament\Schemas\Components\Section::make('Image')
+                            ->hiddenLabel()
+                            ->schema([
+                                FileUpload::make('card_image')
+                                    ->label('Card image')
+                                    ->disk('public')
+                                    ->directory('pages/steps-cards')
+                                    ->image(),
+                            ])
+                            ->visible(fn ($get) => $get('content_type') === 'image'),
+
+                        // Video content
+                        \Filament\Schemas\Components\Section::make('Video')
+                            ->hiddenLabel()
+                            ->schema([
+                                FileUpload::make('card_video')
+                                    ->label('Video (mp4 / webm)')
+                                    ->disk('public')
+                                    ->directory('pages/steps-cards')
+                                    ->acceptedFileTypes(['video/mp4', 'video/webm'])
+                                    ->maxSize((auth()->user()?->maxUploadMb() ?? 150) * 1024),
+                                FileUpload::make('card_poster')
+                                    ->label('Video poster image')
+                                    ->disk('public')
+                                    ->directory('pages/steps-cards')
+                                    ->image(),
+                            ])
+                            ->visible(fn ($get) => $get('content_type') === 'video'),
+                    ])
+                    ->itemLabel(fn (array $state): ?string =>
+                        is_array($state['card_title'] ?? null)
+                            ? ($state['card_title']['en'] ?? null)
+                            : ($state['card_title'] ?? null)
+                    )
+                    ->collapsible()
+                    ->columns(1),
             ]);
     }
 
