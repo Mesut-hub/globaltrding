@@ -136,7 +136,100 @@ class PageBlockBuilder
                     ->maxSize((auth()->user()?->maxUploadMb() ?? 150) * 1024)
                     ->acceptedFileTypes(['video/mp4', 'video/webm', 'image/jpeg', 'image/png', 'image/webp']),
 
+                // ── Text & CTA styling ──────────────────────────────────
+                \Filament\Schemas\Components\Section::make('Kicker style')->collapsed()->schema([
+                    \Filament\Schemas\Components\Grid::make(4)->schema([
+                        ColorPicker::make('kicker_color')->label('Text color')->default('#C7D2FE'),
+                        ColorPicker::make('kicker_bg_color')->label('Background color')->nullable(),
+                        TextInput::make('kicker_opacity')->label('Background opacity (0–100)')->numeric()->minValue(0)->maxValue(100)->default(100),
+                        Select::make('kicker_font_size')->label('Font size')
+                            ->options(['text-xs'=>'Extra small','text-sm'=>'Small','text-base'=>'Base','text-lg'=>'Large'])
+                            ->default('text-sm')->native(false),
+                    ]),
+                ]),
+
+                \Filament\Schemas\Components\Section::make('Title style')->collapsed()->schema([
+                    \Filament\Schemas\Components\Grid::make(3)->schema([
+                        ColorPicker::make('title_color')->label('Text color')->default('#ffffff'),
+                        ColorPicker::make('title_bg_color')->label('Background color')->nullable(),
+                        TextInput::make('title_opacity')->label('Background opacity (0–100)')->numeric()->minValue(0)->maxValue(100)->default(100),
+                    ]),
+                ]),
+
+                \Filament\Schemas\Components\Section::make('Lead style')->collapsed()->schema([
+                    \Filament\Schemas\Components\Grid::make(4)->schema([
+                        ColorPicker::make('lead_color')->label('Text color')->default('#CBD5E1'),
+                        ColorPicker::make('lead_bg_color')->label('Background color')->nullable(),
+                        TextInput::make('lead_opacity')->label('Background opacity (0–100)')->numeric()->minValue(0)->maxValue(100)->default(100),
+                        Select::make('lead_font_size')->label('Font size')
+                            ->options(['text-sm'=>'Small','text-base'=>'Base','text-lg'=>'Large','text-xl'=>'Extra large'])
+                            ->default('text-lg')->native(false),
+                    ]),
+                ]),
+
+                \Filament\Schemas\Components\Section::make('CTA style')->collapsed()->schema([
+                    \Filament\Schemas\Components\Grid::make(2)->schema([
+                        ColorPicker::make('cta_primary_bg_color')->label('Primary button background')->default('#ffffff'),
+                        ColorPicker::make('cta_primary_text_color')->label('Primary button text')->default('#0f172a'),
+                    ]),
+                    \Filament\Schemas\Components\Grid::make(3)->schema([
+                        ColorPicker::make('cta_secondary_bg_color')->label('Secondary button background')->nullable(),
+                        ColorPicker::make('cta_secondary_text_color')->label('Secondary button text')->default('#ffffff'),
+                        ColorPicker::make('cta_secondary_border_color')->label('Secondary button border')->default('#ffffff'),
+                    ]),
+                    \Filament\Schemas\Components\Grid::make(2)->schema([
+                        ColorPicker::make('cta_primary_hover_bg_color')->label('Primary hover background')->nullable()->helperText('Empty = automatically darker than the normal background'),
+                        ColorPicker::make('cta_primary_hover_text_color')->label('Primary hover text')->nullable(),
+                    ]),
+                    \Filament\Schemas\Components\Grid::make(4)->schema([
+                        ColorPicker::make('cta_secondary_hover_bg_color')->label('Secondary hover background')->nullable()->helperText('Empty = soft white tint'),
+                        TextInput::make('cta_secondary_hover_bg_opacity')->label('Hover bg opacity (0–100)')->numeric()->minValue(0)->maxValue(100)->default(100),
+                        ColorPicker::make('cta_secondary_hover_text_color')->label('Secondary hover text')->nullable(),
+                        ColorPicker::make('cta_secondary_hover_border_color')->label('Secondary hover border')->nullable(),
+                    ]),
+                ]),
+
                 // ── Slides (text per slide, per locale) ───────────────────
+                \Filament\Schemas\Components\Section::make('Tags under buttons')->collapsed()->schema([
+                    Repeater::make('tags')
+                        ->label('Tags')
+                        ->schema([
+                            static::blockLocaleTabs('hero_tag_lang', [
+                                ['name' => 'label', 'label' => 'Tag text', 'type' => 'text'],
+                            ]),
+                            Toggle::make('highlight')->label('Highlight this tag (accent colours)')->default(false),
+                        ])
+                        ->itemLabel(fn (array $state): ?string => is_array($state['label'] ?? null) ? ($state['label']['en'] ?? null) : null)
+                        ->collapsible()
+                        ->addActionLabel('Add tag')
+                        ->columns(1),
+
+                    \Filament\Schemas\Components\Grid::make(4)->schema([
+                        Select::make('tag_font_size')->label('Font size')
+                            ->options(['text-xs'=>'Extra small','text-sm'=>'Small','text-base'=>'Base'])
+                            ->default('text-xs')->native(false),
+                        Toggle::make('tag_monospace')->label('Monospace font')->default(true)->inline(false),
+                        TextInput::make('tag_gap')->label('Gap between tags (px)')->numeric()->default(10),
+                        TextInput::make('tag_margin_top')->label('Space above tags (px)')->numeric()->default(28),
+                    ]),
+                    \Filament\Schemas\Components\Grid::make(4)->schema([
+                        ColorPicker::make('tag_text_color')->label('Tag text color')->default('#94A3B8'),
+                        ColorPicker::make('tag_bg_color')->label('Tag background')->nullable(),
+                        TextInput::make('tag_bg_opacity')->label('Background opacity (0–100)')->numeric()->minValue(0)->maxValue(100)->default(100),
+                        ColorPicker::make('tag_border_color')->label('Tag border')->default('#FFFFFF'),
+                    ]),
+                    \Filament\Schemas\Components\Grid::make(4)->schema([
+                        TextInput::make('tag_border_opacity')->label('Border opacity (0–100)')->numeric()->minValue(0)->maxValue(100)->default(18),
+                        ColorPicker::make('tag_hl_text_color')->label('Highlighted text color')->default('#818CF8'),
+                        ColorPicker::make('tag_hl_bg_color')->label('Highlighted background')->default('#6366F1'),
+                        TextInput::make('tag_hl_bg_opacity')->label('Highlighted bg opacity (0–100)')->numeric()->minValue(0)->maxValue(100)->default(12),
+                    ]),
+                    \Filament\Schemas\Components\Grid::make(2)->schema([
+                        ColorPicker::make('tag_hl_border_color')->label('Highlighted border')->default('#6366F1'),
+                        TextInput::make('tag_hl_border_opacity')->label('Highlighted border opacity (0–100)')->numeric()->minValue(0)->maxValue(100)->default(55),
+                    ]),
+                ]),
+
                 Repeater::make('slides')
                     ->label('Slides (text content)')
                     ->minItems(1)
@@ -154,6 +247,59 @@ class PageBlockBuilder
                             ['name' => 'cta3_label', 'label' => 'CTA3 label', 'type' => 'text'],
                         ]),
                     ]),
+
+                // ── Right-side key metrics panel ─────────────────────────
+                \Filament\Schemas\Components\Section::make('Key metrics panel (right-side card)')->collapsed()->schema([
+                    Toggle::make('metrics_enabled')->label('Show metrics panel')->default(false),
+
+                    static::blockLocaleTabs('hero_metrics_header_lang', [
+                        ['name' => 'metrics_title', 'label' => 'Panel title (e.g. KEY METRICS)', 'type' => 'text'],
+                    ]),
+
+                    \Filament\Schemas\Components\Grid::make(4)->schema([
+                        ColorPicker::make('metrics_bg_color')->label('Panel background')->default('#0F1A3D'),
+                        TextInput::make('metrics_bg_opacity')->label('Panel bg opacity (0–100)')->numeric()->minValue(0)->maxValue(100)->default(85),
+                        ColorPicker::make('metrics_border_color')->label('Panel border')->default('#6366F1'),
+                        TextInput::make('metrics_width')->label('Panel width (px)')->numeric()->default(380),
+                    ]),
+                    \Filament\Schemas\Components\Grid::make(4)->schema([
+                        ColorPicker::make('metrics_title_color')->label('Panel title color')->default('#A5B4FC'),
+                        ColorPicker::make('metrics_value_color')->label('Value number color')->default('#A5B4FC'),
+                        ColorPicker::make('metrics_label_color')->label('Item label color')->default('#ffffff'),
+                        ColorPicker::make('metrics_desc_color')->label('Item description color')->default('#94A3B8'),
+                    ]),
+                                        \Filament\Schemas\Components\Grid::make(2)->schema([
+                        TextInput::make('metrics_offset_x')->label('Offset from right edge (px)')->numeric()->default(0),
+                        TextInput::make('metrics_offset_y')->label('Vertical offset (px, + down / − up)')->numeric()->default(0),
+                    ]),
+                    \Filament\Schemas\Components\Grid::make(4)->schema([
+                        ColorPicker::make('metrics_item_bg_color')->label('Item row background')->default('#FFFFFF'),
+                        TextInput::make('metrics_item_bg_opacity')->label('Item row bg opacity (0–100)')->numeric()->minValue(0)->maxValue(100)->default(5),
+                        ColorPicker::make('metrics_item_border_color')->label('Item row border')->nullable(),
+                        TextInput::make('metrics_item_border_opacity')->label('Item row border opacity (0–100)')->numeric()->minValue(0)->maxValue(100)->default(30),
+                    ]),
+                    \Filament\Schemas\Components\Grid::make(3)->schema([
+                        Toggle::make('metrics_title_border_enabled')->label('Show line under panel title')->default(true),
+                        ColorPicker::make('metrics_title_border_color')->label('Title line color')->default('#6366F1'),
+                        TextInput::make('metrics_title_border_opacity')->label('Title line opacity (0–100)')->numeric()->minValue(0)->maxValue(100)->default(30),
+                    ]),
+
+                    Repeater::make('metrics_items')
+                        ->label('Metric items')
+                        ->schema([
+                            \Filament\Schemas\Components\Grid::make(2)->schema([
+                                TextInput::make('value')->label('Value (e.g. 4, 0.6, 682, 24)')->required(),
+                                TextInput::make('value_suffix')->label('Value suffix (e.g. m, hr — optional)'),
+                            ]),
+                            static::blockLocaleTabs('hero_metric_item_lang', [
+                                ['name' => 'label', 'label' => 'Label', 'type' => 'text'],
+                                ['name' => 'description', 'label' => 'Description', 'type' => 'text'],
+                            ]),
+                        ])
+                        ->itemLabel(fn (array $state): ?string => is_array($state['label'] ?? null) ? ($state['label']['en'] ?? null) : null)
+                        ->collapsible()
+                        ->columns(1),
+                ]),
             ]);
     }
 

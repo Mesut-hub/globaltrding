@@ -92,6 +92,87 @@
             'cta3_label' => $t($s['cta3_label'] ?? '', $locale, $fallback),
             'cta3_url'   => $s['cta3_url'] ?? null,
         ])->all();
+        $heroHexToRgba = function (?string $hex, $opacityPct = 100) {
+            if (! $hex) return 'transparent';
+            $hex = ltrim($hex, '#');
+            if (strlen($hex) === 3) $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
+            if (strlen($hex) < 6) return $hex ? "#{$hex}" : 'transparent';
+            [$r, $g, $b] = [hexdec(substr($hex,0,2)), hexdec(substr($hex,2,2)), hexdec(substr($hex,4,2))];
+            return "rgba({$r},{$g},{$b}," . round(max(0, min(100, (float) $opacityPct)) / 100, 2) . ")";
+        };
+
+        $kickerColor   = $data['kicker_color']   ?? '#C7D2FE';
+        $kickerBg      = $heroHexToRgba($data['kicker_bg_color'] ?? null, $data['kicker_opacity'] ?? 100);
+        $kickerSize    = $data['kicker_font_size'] ?? 'text-sm';
+
+        $titleColor    = $data['title_color']    ?? '#ffffff';
+        $titleBg       = $heroHexToRgba($data['title_bg_color'] ?? null, $data['title_opacity'] ?? 100);
+
+        $leadColor     = $data['lead_color']     ?? '#CBD5E1';
+        $leadBg        = $heroHexToRgba($data['lead_bg_color'] ?? null, $data['lead_opacity'] ?? 100);
+        $leadSizeOverride = $data['lead_font_size'] ?? null;
+
+        $ctaPrimaryBg   = $data['cta_primary_bg_color']   ?? '#ffffff';
+        $ctaPrimaryText = $data['cta_primary_text_color'] ?? '#0f172a';
+        $ctaSecBg       = $heroHexToRgba($data['cta_secondary_bg_color'] ?? null, 100);
+        $ctaSecText     = $data['cta_secondary_text_color']   ?? '#ffffff';
+        $ctaSecBorder   = $data['cta_secondary_border_color'] ?? '#ffffff';
+
+        $heroShade = function (?string $hex, int $pct) {
+            if (! $hex) return null;
+            $hex = ltrim($hex, '#');
+            if (strlen($hex) === 3) $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
+            if (strlen($hex) < 6) return '#' . $hex;
+            $out = '#';
+            foreach ([0, 2, 4] as $o) {
+                $c = hexdec(substr($hex, $o, 2));
+                $c = $pct < 0 ? (int) round($c * (100 + $pct) / 100) : (int) round($c + (255 - $c) * $pct / 100);
+                $out .= str_pad(dechex(max(0, min(255, $c))), 2, '0', STR_PAD_LEFT);
+            }
+            return $out;
+        };
+
+        $ctaPrimaryHoverBg   = ($data['cta_primary_hover_bg_color'] ?? null) ?: $heroShade($ctaPrimaryBg, -12);
+        $ctaPrimaryHoverText = ($data['cta_primary_hover_text_color'] ?? null) ?: $ctaPrimaryText;
+        $ctaSecHoverBg       = ($data['cta_secondary_hover_bg_color'] ?? null)
+                                ? $heroHexToRgba($data['cta_secondary_hover_bg_color'], $data['cta_secondary_hover_bg_opacity'] ?? 100)
+                                : 'rgba(255,255,255,0.10)';
+        $ctaSecHoverText     = ($data['cta_secondary_hover_text_color'] ?? null) ?: $ctaSecText;
+        $ctaSecHoverBorder   = ($data['cta_secondary_hover_border_color'] ?? null) ?: $ctaSecBorder;
+        $heroUid             = 'hero_' . substr(md5(uniqid('', true)), 0, 8);
+
+        // Tags under the buttons
+        $tagItems     = is_array($data['tags'] ?? null) ? $data['tags'] : [];
+        $tagMono      = (bool) ($data['tag_monospace'] ?? true);
+        $tagSize      = $data['tag_font_size'] ?? 'text-xs';
+        $tagText      = $data['tag_text_color'] ?? '#94A3B8';
+        $tagBg        = $heroHexToRgba($data['tag_bg_color'] ?? null, $data['tag_bg_opacity'] ?? 100);
+        $tagBorder    = $heroHexToRgba($data['tag_border_color'] ?? '#FFFFFF', $data['tag_border_opacity'] ?? 18);
+        $tagHlText    = $data['tag_hl_text_color'] ?? '#818CF8';
+        $tagHlBg      = $heroHexToRgba($data['tag_hl_bg_color'] ?? '#6366F1', $data['tag_hl_bg_opacity'] ?? 12);
+        $tagHlBorder  = $heroHexToRgba($data['tag_hl_border_color'] ?? '#6366F1', $data['tag_hl_border_opacity'] ?? 55);
+        $tagGap       = is_numeric($data['tag_gap'] ?? null) ? (int) $data['tag_gap'] : 10;
+        $tagMarginTop = is_numeric($data['tag_margin_top'] ?? null) ? (int) $data['tag_margin_top'] : 28;
+        $tagJustify   = match($align) { 'center' => 'center', 'right' => 'flex-end', default => 'flex-start' };
+
+        $metricsEnabled = (bool) ($data['metrics_enabled'] ?? false);
+        $metricsTitle   = $t($data['metrics_title'] ?? '', $locale, $fallback);
+        $metricsBg      = $heroHexToRgba($data['metrics_bg_color'] ?? '#0F1A3D', $data['metrics_bg_opacity'] ?? 85);
+        $metricsBorder  = $data['metrics_border_color'] ?? '#6366F1';
+        $metricsWidth   = $data['metrics_width'] ?? 380;
+        $metricsTitleColor = $data['metrics_title_color'] ?? '#A5B4FC';
+        $metricsValueColor = $data['metrics_value_color'] ?? '#A5B4FC';
+        $metricsLabelColor = $data['metrics_label_color'] ?? '#ffffff';
+        $metricsDescColor  = $data['metrics_desc_color']  ?? '#94A3B8';
+        $metricsItemBg     = $heroHexToRgba($data['metrics_item_bg_color'] ?? '#FFFFFF', $data['metrics_item_bg_opacity'] ?? 5);
+        $metricsItemBorder = ($data['metrics_item_border_color'] ?? null)
+                                ? $heroHexToRgba($data['metrics_item_border_color'], $data['metrics_item_border_opacity'] ?? 30)
+                                : 'transparent';
+        $metricsTitleLineOn = (bool) ($data['metrics_title_border_enabled'] ?? true);
+        $metricsTitleLine   = $heroHexToRgba($data['metrics_title_border_color'] ?? '#6366F1', $data['metrics_title_border_opacity'] ?? 30);
+        $metricsOffsetX    = $data['metrics_offset_x'] ?? 0;
+        $metricsOffsetY    = $data['metrics_offset_y'] ?? 0;
+        $metricsItems      = is_array($data['metrics_items'] ?? null) ? $data['metrics_items'] : [];
         if ($mediaType === 'image' && count($imageUrls) > 1) {
             $slidesForJs = [];
 
@@ -114,7 +195,7 @@
             }
         }
     @endphp
-    <section class="relative text-white hero-shell {{ $heightClass }}" 
+    <section id="{{ $heroUid }}" class="relative text-white hero-shell {{ $heightClass }}" 
             data-hero
             data-hero-autoplay="{{ $autoplay ? '1' : '0' }}"
             data-hero-interval="{{ $interval }}"
@@ -173,35 +254,144 @@
                 data-hero-slides='@json($slidesForJs, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_APOS)'>
 
                 @if ($heroKicker)
-                    <div class="gt-hero__kicker" data-hero-kicker>{!! $heroKicker !!}</div>
+                    <div class="gt-hero__kicker {{ $kickerSize }} {{ $heroKicker ? '' : 'hidden' }}" data-hero-kicker
+                        style="color: {{ $kickerColor }}; background-color: {{ $kickerBg }}; padding: {{ $kickerBg === 'transparent' ? '0' : '4px 10px' }}; border-radius: 6px; display: {{ $heroKicker ? 'inline-block' : 'none' }};">{!! $heroKicker !!}</div>
                 @else
                     <div class="gt-hero__kicker hidden" data-hero-kicker></div>
                 @endif
 
-                <h1 class=" {{ $titleClass }}" data-hero-title>{!! $heroTitle !!}</h1>
+                <h1 class=" {{ $titleClass }}" data-hero-title
+                    style="color: {{ $titleColor }}; background-color: {{ $titleBg }}; padding: {{ $titleBg === 'transparent' ? '0' : '6px 12px' }}; border-radius: 6px; display: inline-block;">{!! $heroTitle !!}</h1>
 
                 @if ($heroLead)
-                    <p class=" {{ $leadClass }}" data-hero-lead>{!! $heroLead !!}</p>
+                    <p class="{{ $leadClass }} {{ $leadSizeOverride }} {{ $heroLead ? '' : 'hidden' }}" data-hero-lead
+                        style="color: {{ $leadColor }}; background-color: {{ $leadBg }}; padding: {{ $leadBg === 'transparent' ? '0' : '6px 12px' }}; border-radius: 6px; display: {{ $heroLead ? 'inline-block' : 'none' }};">{!! $heroLead !!}</p>
                 @else
                     <p class="gt-hero__lead hidden" data-hero-lead></p>
                 @endif
 
-                <div class="mt-8 flex flex-wrap gap-3" data-hero-cta-wrap>
+                <div class="mt-8 flex flex-wrap gap-3" data-hero-cta-wrap
+                     data-cta-primary-style="background-color: {{ $ctaPrimaryBg }}; color: {{ $ctaPrimaryText }};"
+                     data-cta-secondary-style="background-color: {{ $ctaSecBg }}; color: {{ $ctaSecText }}; border-color: {{ $ctaSecBorder }};">
+                     <style>
+                        #{{ $heroUid }} .gt-hero__cta {
+                            transition:
+                                background-color .2s ease,
+                                color .2s ease,
+                                border-color .2s ease,
+                                transform .2s ease,
+                                box-shadow .2s ease;
+                        }
+
+                        #{{ $heroUid }} .gt-hero__cta:hover {
+                            transform: translateY(-1px);
+                            box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
+                        }
+
+                        #{{ $heroUid }} .gt-hero__cta--primary:hover {
+                            background-color: {{ $ctaPrimaryHoverBg }} !important;
+                            color: {{ $ctaPrimaryHoverText }} !important;
+                        }
+
+                        #{{ $heroUid }} .gt-hero__cta--secondary:hover {
+                            background-color: {{ $ctaSecHoverBg }} !important;
+                            color: {{ $ctaSecHoverText }} !important;
+                            border-color: {{ $ctaSecHoverBorder }} !important;
+                        }
+
+                        #{{ $heroUid }} .gt-hero__cta:focus-visible {
+                            outline: 2px solid currentColor;
+                            outline-offset: 4px;
+                        }
+
+                        @media (prefers-reduced-motion: reduce) {
+                            #{{ $heroUid }} .gt-hero__cta {
+                                transition: none;
+                            }
+
+                            #{{ $heroUid }} .gt-hero__cta:hover {
+                                transform: none;
+                                box-shadow: none;
+                            }
+                        }
+                    </style>
                     @if ($heroCta1 && $heroCta1Url && $heroCta2 && $heroCta2Url && $heroCta3 && $heroCta3Url)
-                        <a href="{{ $heroCta1Url }}" class="rounded-md bg-white px-5 py-2.5 text-slate-900 font-medium hover:bg-slate-100">{{ $heroCta1 }}</a>
-                        <a href="{{ $heroCta2Url }}" class="rounded-md border border-white/30 px-5 py-2.5 text-white font-medium hover:bg-white/10">{{ $heroCta2 }}</a>
-                        <a href="{{ $heroCta3Url }}" class="rounded-md border border-white/30 px-5 py-2.5 text-white font-medium hover:bg-white/10">{{ $heroCta3 }}</a>
+                        <a href="{{ $heroCta1Url }}" class="gt-hero__cta gt-hero__cta--primary rounded-md px-5 py-2.5 font-medium" style="background-color: {{ $ctaPrimaryBg }}; color: {{ $ctaPrimaryText }};">{{ $heroCta1 }}</a>
+                        <a href="{{ $heroCta2Url }}" class="gt-hero__cta gt-hero__cta--secondary rounded-md border px-5 py-2.5 font-medium" style="background-color: {{ $ctaSecBg }}; color: {{ $ctaSecText }}; border-color: {{ $ctaSecBorder }};">{{ $heroCta2 }}</a>
+                        <a href="{{ $heroCta3Url }}" class="gt-hero__cta gt-hero__cta--secondary rounded-md border px-5 py-2.5 font-medium" style="background-color: {{ $ctaSecBg }}; color: {{ $ctaSecText }}; border-color: {{ $ctaSecBorder }};">{{ $heroCta3 }}</a>
                     @elseif ($heroCta1 && $heroCta1Url && $heroCta2 && $heroCta2Url)
-                        <a href="{{ $heroCta1Url }}" class="rounded-md bg-white px-5 py-2.5 text-slate-900 font-medium hover:bg-slate-100">{{ $heroCta1 }}</a>
-                        <a href="{{ $heroCta2Url }}" class="rounded-md border border-white/30 px-5 py-2.5 text-white font-medium hover:bg-white/10">{{ $heroCta2 }}</a>
+                        <a href="{{ $heroCta1Url }}" class="gt-hero__cta gt-hero__cta--primary rounded-md px-5 py-2.5 font-medium" style="background-color: {{ $ctaPrimaryBg }}; color: {{ $ctaPrimaryText }};">{{ $heroCta1 }}</a>
+                        <a href="{{ $heroCta2Url }}" class="gt-hero__cta gt-hero__cta--secondary rounded-md border px-5 py-2.5 font-medium" style="background-color: {{ $ctaSecBg }}; color: {{ $ctaSecText }}; border-color: {{ $ctaSecBorder }};">{{ $heroCta2 }}</a>
                     @elseif ($heroCta1 && $heroCta1Url)
-                        <a href="{{ $heroCta1Url }}" class="rounded-md bg-white px-5 py-2.5 text-slate-900 font-medium hover:bg-slate-100">{{ $heroCta1 }}</a>
+                        <a href="{{ $heroCta1Url }}" class="gt-hero__cta gt-hero__cta--primary rounded-md px-5 py-2.5 font-medium" style="background-color: {{ $ctaPrimaryBg }}; color: {{ $ctaPrimaryText }};">{{ $heroCta1 }}</a>
                     @else
                         <a href="#" class="gt-btn gt-btn--primary hidden" data-hero-cta></a>
                     @endif
                 </div>
+
+                @if (count($tagItems))
+                    <div class="gt-hero__tags" style="display:flex; flex-wrap:wrap; gap: {{ $tagGap }}px; margin-top: {{ $tagMarginTop }}px; justify-content: {{ $tagJustify }};">
+                        @foreach ($tagItems as $tg)
+                            @php
+                                $tgLabel = $t($tg['label'] ?? '', $locale, $fallback);
+                                $tgHl    = (bool) ($tg['highlight'] ?? false);
+                            @endphp
+                            @if ($tgLabel)
+                                <span class="{{ $tagSize }}" style="
+                                    display: inline-block;
+                                    padding: 5px 12px;
+                                    border-radius: 999px;
+                                    letter-spacing: .02em;
+                                    max-width: 100%;
+                                    {{ $tagMono ? "font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;" : '' }}
+                                    color: {{ $tgHl ? $tagHlText : $tagText }};
+                                    background-color: {{ $tgHl ? $tagHlBg : $tagBg }};
+                                    border: 1px solid {{ $tgHl ? $tagHlBorder : $tagBorder }};
+                                ">{{ $tgLabel }}</span>
+                            @endif
+                        @endforeach
+                    </div>
+                @endif
             </div>
         </div>
+                @if ($metricsEnabled && count($metricsItems))
+            <div class="gt-hero__metrics" style="
+                position: absolute;
+                top: 50%;
+                right: {{ 24 + (float) $metricsOffsetX }}px;
+                transform: translateY(calc(-50% + {{ (float) $metricsOffsetY }}px));
+                width: {{ $metricsWidth }}px;
+                max-width: calc(100% - 32px);
+                background-color: {{ $metricsBg }};
+                border: 1px solid {{ $metricsBorder }};
+                border-radius: 14px;
+                padding: 20px;
+                z-index: 3;
+            ">
+                @if ($metricsTitle)
+                    <div style="color: {{ $metricsTitleColor }}; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 14px; @if($metricsTitleLineOn) padding-bottom: 12px; border-bottom: 1px solid {{ $metricsTitleLine }}; @endif">
+                        {{ $metricsTitle }}
+                    </div>
+                @endif
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    @foreach ($metricsItems as $mi)
+                        @php
+                            $miLabel = $t($mi['label'] ?? '', $locale, $fallback);
+                            $miDesc  = $t($mi['description'] ?? '', $locale, $fallback);
+                        @endphp
+                        <div style="display: flex; align-items: center; gap: 16px; background-color: {{ $metricsItemBg }}; border: 1px solid {{ $metricsItemBorder }}; border-radius: 8px; padding: 10px 12px;">
+                            <div style="font-size: 22px; font-weight: 800; color: {{ $metricsValueColor }}; min-width: 44px;">
+                                {{ $mi['value'] ?? '' }}@if(!empty($mi['value_suffix']))<span style="font-size: 12px; font-weight: 600;">{{ $mi['value_suffix'] }}</span>@endif
+                            </div>
+                            <div>
+                                @if($miLabel)<div style="color: {{ $metricsLabelColor }}; font-size: 13px; font-weight: 600;">{{ $miLabel }}</div>@endif
+                                @if($miDesc)<div style="color: {{ $metricsDescColor }}; font-size: 11.5px; margin-top: 1px;">{{ $miDesc }}</div>@endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
     </section>
 
 {{-- ══════════════════════════════════════════════════════════════════ --}}
@@ -3212,6 +3402,22 @@
         $kickerSize     = $data['kicker_size']  ?? 'text-sm';
         $titleColor     = $data['title_color']  ?? '#0f172a';
         $titleSize      = $data['title_size']   ?? 'text-3xl';
+        $titleResponsiveSize = match ($titleSize) {
+            'text-xs'   => 'clamp(0.70rem, 1.00vw, 0.75rem)',   // 12px
+            'text-sm'   => 'clamp(0.80rem, 1.15vw, 0.875rem)',  // 14px
+            'text-base' => 'clamp(0.90rem, 1.30vw, 1rem)',      // 16px
+            'text-lg'   => 'clamp(1.00rem, 1.50vw, 1.125rem)',  // 18px
+            'text-xl'   => 'clamp(1.05rem, 1.75vw, 1.25rem)',   // 20px
+            'text-2xl'  => 'clamp(1.20rem, 2.10vw, 1.50rem)',   // 24px
+            'text-3xl'  => 'clamp(1.35rem, 2.60vw, 1.875rem)',  // 30px
+            'text-4xl'  => 'clamp(1.55rem, 3.10vw, 2.25rem)',   // 36px
+            'text-5xl'  => 'clamp(1.75rem, 3.60vw, 3rem)',      // 48px
+            'text-6xl'  => 'clamp(2.00rem, 4.10vw, 3.75rem)',   // 60px
+            'text-7xl'  => 'clamp(2.25rem, 4.60vw, 4.5rem)',    // 72px
+            'text-8xl'  => 'clamp(2.50rem, 5.10vw, 6rem)',      // 96px
+            'text-9xl'  => 'clamp(2.75rem, 5.60vw, 8rem)',      // 128px
+            default     => 'clamp(1.35rem, 2.60vw, 1.875rem)',
+        };
 
         // Section header content
         $kicker = $t($data['kicker'] ?? '', $locale, $fallback);
@@ -3274,9 +3480,12 @@
                         </div>
                     @endif
                     @if ($title)
-                        <h2 class="{{ $titleSize }} font-light tracking-tight leading-snug max-w-4xl
-                                   [&]:!text-[clamp(1.5rem,5vw,3rem)]"
-                            style="color: {{ $titleColor }};">{{ $title }}</h2>
+                        <h2
+                            class="font-light tracking-tight leading-snug max-w-4xl"
+                            style="color: {{ $titleColor }}; font-size: {{ $titleResponsiveSize }};"
+                        >
+                            {{ $title }}
+                        </h2>
                     @endif
                 </div>
             @endif
@@ -3488,6 +3697,22 @@
         $kickerSize     = $data['kicker_size']  ?? 'text-sm';
         $titleColor     = $data['title_color']  ?? '#0f172a';
         $titleSize      = $data['title_size']   ?? 'text-3xl';
+        $titleResponsiveSize = match ($titleSize) {
+            'text-xs'   => 'clamp(0.70rem, 1.00vw, 0.75rem)',   // 12px
+            'text-sm'   => 'clamp(0.80rem, 1.15vw, 0.875rem)',  // 14px
+            'text-base' => 'clamp(0.90rem, 1.30vw, 1rem)',      // 16px
+            'text-lg'   => 'clamp(1.00rem, 1.50vw, 1.125rem)',  // 18px
+            'text-xl'   => 'clamp(1.05rem, 1.75vw, 1.25rem)',   // 20px
+            'text-2xl'  => 'clamp(1.20rem, 2.10vw, 1.50rem)',   // 24px
+            'text-3xl'  => 'clamp(1.35rem, 2.60vw, 1.875rem)',  // 30px
+            'text-4xl'  => 'clamp(1.55rem, 3.10vw, 2.25rem)',   // 36px
+            'text-5xl'  => 'clamp(1.75rem, 3.60vw, 3rem)',      // 48px
+            'text-6xl'  => 'clamp(2.00rem, 4.10vw, 3.75rem)',   // 60px
+            'text-7xl'  => 'clamp(2.25rem, 4.60vw, 4.5rem)',    // 72px
+            'text-8xl'  => 'clamp(2.50rem, 5.10vw, 6rem)',      // 96px
+            'text-9xl'  => 'clamp(2.75rem, 5.60vw, 8rem)',      // 128px
+            default     => 'clamp(1.35rem, 2.60vw, 1.875rem)',
+        };
 
         // Section header content
         $kicker = $t($data['kicker'] ?? '', $locale, $fallback);
@@ -3542,9 +3767,12 @@
                         </div>
                     @endif
                     @if ($title)
-                        <h2 class="{{ $titleSize }} font-light tracking-tight leading-snug max-w-4xl
-                                   [&]:!text-[clamp(1.5rem,5vw,3rem)]"
-                            style="color: {{ $titleColor }};">{{ $title }}</h2>
+                        <h2
+                            class="font-light tracking-tight leading-snug max-w-4xl"
+                            style="color: {{ $titleColor }}; font-size: {{ $titleResponsiveSize }};"
+                        >
+                            {{ $title }}
+                        </h2>
                     @endif
                 </div>
             @endif

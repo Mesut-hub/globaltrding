@@ -411,34 +411,39 @@ document.addEventListener('DOMContentLoaded', () => {
       if (kickerEl) {
           kickerEl.innerHTML = kicker;
           kickerEl.classList.toggle('hidden', !kicker);
+          kickerEl.style.display = kicker ? 'inline-block' : 'none';
       }
       if (titleEl) titleEl.innerHTML = title || '';
       if (leadEl) {
           leadEl.innerHTML = lead;
           leadEl.classList.toggle('hidden', !lead);
+          leadEl.style.display = lead ? 'inline-block' : 'none';
       }
       if (ctaWrap) {
           ctaWrap.innerHTML = '';
 
-          const makeBtn = (label, url, className) => {
+          const makeBtn = (label, url, className, style) => {
               const a = document.createElement('a');
               a.href = url;
               a.textContent = label;
               a.className = className;
+              if (style) a.setAttribute('style', style);
               return a;
           };
 
-          const primaryClass   = 'rounded-md bg-white px-5 py-2.5 text-slate-900 font-medium hover:bg-slate-100';
-          const secondaryClass = 'rounded-md border border-white/30 px-5 py-2.5 text-white font-medium hover:bg-white/10';
+          const primaryStyle   = ctaWrap.getAttribute('data-cta-primary-style')   || 'background-color:#ffffff;color:#0f172a;';
+          const secondaryStyle = ctaWrap.getAttribute('data-cta-secondary-style') || 'border-color:rgba(255,255,255,.3);color:#ffffff;';
+          const primaryClass   = 'gt-hero__cta gt-hero__cta--primary rounded-md px-5 py-2.5 font-medium';
+          const secondaryClass = 'gt-hero__cta gt-hero__cta--secondary rounded-md border px-5 py-2.5 font-medium';
 
           if (cta1Label && cta1Url) {
-              ctaWrap.appendChild(makeBtn(cta1Label, cta1Url, primaryClass));
+              ctaWrap.appendChild(makeBtn(cta1Label, cta1Url, primaryClass, primaryStyle));
           }
           if (cta2Label && cta2Url) {
-              ctaWrap.appendChild(makeBtn(cta2Label, cta2Url, secondaryClass));
+              ctaWrap.appendChild(makeBtn(cta2Label, cta2Url, secondaryClass, secondaryStyle));
           }
           if (cta3Label && cta3Url) {
-              ctaWrap.appendChild(makeBtn(cta3Label, cta3Url, secondaryClass));
+              ctaWrap.appendChild(makeBtn(cta3Label, cta3Url, secondaryClass, secondaryStyle));
           }
 
           ctaWrap.classList.toggle('hidden', !cta1Label && !cta2Label && !cta3Label);
