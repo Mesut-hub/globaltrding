@@ -90,6 +90,11 @@ class PageBlockBuilder
                     ->options(['screen' => 'Full screen', 'xl' => 'XL', 'lg' => 'LG'])
                     ->default('screen'),
 
+                Toggle::make('mobile_stack')
+                    ->label('Mobile: let the hero grow and stack content, metrics and tags')
+                    ->helperText('Turn on for heroes with long text or a metrics panel. Applies on screens up to 900px wide.')
+                    ->default(true),
+
                 Select::make('content_position')
                     ->label('Content position')
                     ->options(['left' => 'Left', 'center' => 'Center', 'right' => 'Right'])
@@ -268,7 +273,7 @@ class PageBlockBuilder
                         ColorPicker::make('metrics_label_color')->label('Item label color')->default('#ffffff'),
                         ColorPicker::make('metrics_desc_color')->label('Item description color')->default('#94A3B8'),
                     ]),
-                                        \Filament\Schemas\Components\Grid::make(2)->schema([
+                    \Filament\Schemas\Components\Grid::make(2)->schema([
                         TextInput::make('metrics_offset_x')->label('Offset from right edge (px)')->numeric()->default(0),
                         TextInput::make('metrics_offset_y')->label('Vertical offset (px, + down / − up)')->numeric()->default(0),
                     ]),

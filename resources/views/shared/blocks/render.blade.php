@@ -141,6 +141,8 @@
         $ctaSecHoverBorder   = ($data['cta_secondary_hover_border_color'] ?? null) ?: $ctaSecBorder;
         $heroUid             = 'hero_' . substr(md5(uniqid('', true)), 0, 8);
 
+        $heroStack = (bool) ($data['mobile_stack'] ?? false);
+
         // Tags under the buttons
         $tagItems     = is_array($data['tags'] ?? null) ? $data['tags'] : [];
         $tagMono      = (bool) ($data['tag_monospace'] ?? true);
@@ -195,6 +197,47 @@
             }
         }
     @endphp
+    @if ($heroStack)
+    <style>
+        @media (max-width: 900px) {
+            #{{ $heroUid }}.hero-shell {
+                height: auto !important;
+                min-height: 100svh;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-end;
+                gap: 24px;
+                padding: 96px 20px 32px;
+            }
+            #{{ $heroUid }} .gt-hero__media { display: contents; }
+            #{{ $heroUid }} .gt-hero__slider,
+            #{{ $heroUid }} .gt-hero__video,
+            #{{ $heroUid }} .gt-hero__placeholder,
+            #{{ $heroUid }} .gt-hero__media > .gt-hero__img {
+                position: absolute; inset: 0; width: 100%; height: 100%;
+            }
+            #{{ $heroUid }} .gt-hero__overlay { position: absolute; inset: 0; }
+            #{{ $heroUid }} .gt-hero__content {
+                position: relative !important;
+                inset: auto !important;
+                transform: none !important;
+                max-width: 100% !important;
+                width: 100%;
+                margin: 0 !important;
+                padding: 0 !important;
+                z-index: 2;
+            }
+            #{{ $heroUid }} .gt-hero__metrics {
+                position: relative !important;
+                inset: auto !important;
+                transform: none !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                z-index: 2;
+            }
+        }
+    </style>
+    @endif
     <section id="{{ $heroUid }}" class="relative text-white hero-shell {{ $heightClass }}" 
             data-hero
             data-hero-autoplay="{{ $autoplay ? '1' : '0' }}"
@@ -354,7 +397,7 @@
                 @endif
             </div>
         </div>
-                @if ($metricsEnabled && count($metricsItems))
+        @if ($metricsEnabled && count($metricsItems))
             <div class="gt-hero__metrics" style="
                 position: absolute;
                 top: 50%;
@@ -379,7 +422,7 @@
                             $miLabel = $t($mi['label'] ?? '', $locale, $fallback);
                             $miDesc  = $t($mi['description'] ?? '', $locale, $fallback);
                         @endphp
-                        <div style="display: flex; align-items: center; gap: 16px; background-color: {{ $metricsItemBg }}; border: 1px solid {{ $metricsItemBorder }}; border-radius: 8px; padding: 10px 12px;">
+                        <div style="display: flex; align-items: center; gap: 12px; background-color: {{ $metricsItemBg }}; border: 1px solid {{ $metricsItemBorder }}; border-radius: 8px; padding: 10px 12px;">
                             <div style="font-size: 22px; font-weight: 800; color: {{ $metricsValueColor }}; min-width: 44px;">
                                 {{ $mi['value'] ?? '' }}@if(!empty($mi['value_suffix']))<span style="font-size: 12px; font-weight: 600;">{{ $mi['value_suffix'] }}</span>@endif
                             </div>
@@ -871,8 +914,7 @@
             ? 'gt-m__val--xl'
             : ($meN === 4 ? 'gt-m__val--lg' : 'gt-m__val--md');
 
-        // Grid: inline style avoids responsive.css override
-        $meGridStyle = "grid-template-columns: repeat(" . min($meN, 4) . ", minmax(0, 1fr)); gap: 1rem;";
+        $meId = 'metrics_' . substr(md5(uniqid('', true)), 0, 8);
 
         // Inner content width: full_width = no cap, contained = max-w-7xl
         $meInnerClass = $meLayout === 'full_width'
@@ -883,7 +925,14 @@
         $msLabelSize    = $data['label_size']       ?? 'text-sm';
     @endphp
 
+    <style>
+        #{{ $meId }} .gt-m__grid { display: grid; gap: 1rem; grid-template-columns: minmax(0, 1fr); }
+        @media (min-width: 480px) { #{{ $meId }} .gt-m__grid { grid-template-columns: repeat({{ min($meN, 2) }}, minmax(0, 1fr)); } }
+        @media (min-width: 900px) { #{{ $meId }} .gt-m__grid { grid-template-columns: repeat({{ min($meN, 4) }}, minmax(0, 1fr)); } }
+        #{{ $meId }} .gt-m__card { min-width: 0; overflow-wrap: anywhere; }
+    </style>
     <section
+        id="{{ $meId }}"
         class="w-full py-12"
         style="background-color:{{ $meSectionBg }};"
     >
@@ -896,7 +945,7 @@
                 </h2>
             @endif
 
-            <div class="mx-auto max-w-7xl px-4 grid" style="{{ $meGridStyle }}">
+            <div class="mx-auto max-w-7xl px-4 gt-m__grid">
                 @foreach ($meItems as $it)
                     @php
                         $raw    = (string) ($it['value'] ?? '');
@@ -905,7 +954,7 @@
                         $suffix = trim(str_replace($num, '', $raw));
                         $numVal = is_numeric($num) ? (float) $num : null;
                     @endphp
-                    <div class="rounded-xl border border-slate-200 p-6"
+                    <div class="gt-m__card rounded-xl border border-slate-200 p-6"
                          style="background-color:{{ $meItemBg }};">
                         <div class="gt-m__value {{ $msValueSize }}"
                              style="color:{{ $meValueCol }};"
