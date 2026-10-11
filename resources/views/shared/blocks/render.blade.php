@@ -2945,7 +2945,39 @@
         // ── Section header content ────────────────────────────────────
         $shKicker   = $t($data['kicker']   ?? '', $locale, $fallback);
         $shTitle    = $t($data['title']    ?? '', $locale, $fallback);
+        $titleResponsiveSize = match ($shTitle) {
+            'text-xs'   => 'clamp(0.70rem, 1.00vw, 0.75rem)',   // 12px
+            'text-sm'   => 'clamp(0.80rem, 1.15vw, 0.875rem)',  // 14px
+            'text-base' => 'clamp(0.90rem, 1.30vw, 1rem)',      // 16px
+            'text-lg'   => 'clamp(1.00rem, 1.50vw, 1.125rem)',  // 18px
+            'text-xl'   => 'clamp(1.05rem, 1.75vw, 1.25rem)',   // 20px
+            'text-2xl'  => 'clamp(1.20rem, 2.10vw, 1.50rem)',   // 24px
+            'text-3xl'  => 'clamp(1.35rem, 2.60vw, 1.875rem)',  // 30px
+            'text-4xl'  => 'clamp(1.55rem, 3.10vw, 2.25rem)',   // 36px
+            'text-5xl'  => 'clamp(1.75rem, 3.60vw, 3rem)',      // 48px
+            'text-6xl'  => 'clamp(2.00rem, 4.10vw, 3.75rem)',   // 60px
+            'text-7xl'  => 'clamp(2.25rem, 4.60vw, 4.5rem)',    // 72px
+            'text-8xl'  => 'clamp(2.50rem, 5.10vw, 6rem)',      // 96px
+            'text-9xl'  => 'clamp(2.75rem, 5.60vw, 8rem)',      // 128px
+            default     => 'clamp(1.35rem, 2.60vw, 1.875rem)',
+        };
         $shSubtitle = $t($data['subtitle'] ?? '', $locale, $fallback);
+        $subtitleResponsiveSize = match ($shSubtitle) {
+            'text-xs'   => 'clamp(0.70rem, 1.00vw, 0.75rem)',   // 12px
+            'text-sm'   => 'clamp(0.80rem, 1.15vw, 0.875rem)',  // 14px
+            'text-base' => 'clamp(0.90rem, 1.30vw, 1rem)',      // 16px
+            'text-lg'   => 'clamp(1.00rem, 1.50vw, 1.125rem)',  // 18px
+            'text-xl'   => 'clamp(1.05rem, 1.75vw, 1.25rem)',   // 20px
+            'text-2xl'  => 'clamp(1.20rem, 2.10vw, 1.50rem)',   // 24px
+            'text-3xl'  => 'clamp(1.35rem, 2.60vw, 1.875rem)',  // 30px
+            'text-4xl'  => 'clamp(1.55rem, 3.10vw, 2.25rem)',   // 36px
+            'text-5xl'  => 'clamp(1.75rem, 3.60vw, 3rem)',      // 48px
+            'text-6xl'  => 'clamp(2.00rem, 4.10vw, 3.75rem)',   // 60px
+            'text-7xl'  => 'clamp(2.25rem, 4.60vw, 4.5rem)',    // 72px
+            'text-8xl'  => 'clamp(2.50rem, 5.10vw, 6rem)',      // 96px
+            'text-9xl'  => 'clamp(2.75rem, 5.60vw, 8rem)',      // 128px
+            default     => 'clamp(1.35rem, 2.60vw, 1.875rem)',
+        };
  
         // ── Tab bar styles ────────────────────────────────────────────
         $tabBarBg             = $data['tab_bar_bg']              ?? '#ffffff';
@@ -2993,18 +3025,20 @@
                             wrapper so it never overflows on narrow screens.
                         --}}
                         <h2
-                            class="{{ $shTitleSize }} font-light tracking-tight leading-snug max-w-4xl
-                                   [&]:!text-[clamp(1.5rem,5vw,3rem)]"
-                            style="color: {{ $shTitleColor }};"
-                        >{{ $shTitle }}</h2>
+                            class="font-light tracking-tight leading-snug max-w-4xl"
+                            style="color: {{ $shTitleColor }}; font-size: {{ $titleResponsiveSize }};"
+                        >
+                            {{ $shTitle }}
+                        </h2>
                     @endif
  
                     @if ($shSubtitle)
                         <p
-                            class="mt-3 {{ $shSubtitleSize }} max-w-3xl leading-relaxed
-                                   [&]:!text-[clamp(1rem,3vw,1.25rem)]"
-                            style="color: {{ $shSubtitleColor }};"
-                        >{{ $shSubtitle }}</p>
+                            class="font-light tracking-tight leading-snug max-w-4xl"
+                            style="color: {{ $shSubtitleColor }}; font-size: {{ $subtitleResponsiveSize }};"
+                        >
+                            {{ $shSubtitle }}
+                        </p>
                     @endif
                 </div>
             @endif
