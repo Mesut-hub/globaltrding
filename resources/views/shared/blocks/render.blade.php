@@ -175,6 +175,9 @@
         $metricsOffsetX    = $data['metrics_offset_x'] ?? 0;
         $metricsOffsetY    = $data['metrics_offset_y'] ?? 0;
         $metricsItems      = is_array($data['metrics_items'] ?? null) ? $data['metrics_items'] : [];
+        $metricsStyle       = (string)($data['metrics_style'] ?? 'list');
+        $metricsCols        = (int)($data['metrics_columns'] ?? 2) === 1 ? 1 : 2;
+        $metricsCardHeading = $data['metrics_card_heading_color'] ?? '#f59e0b';
         if ($mediaType === 'image' && count($imageUrls) > 1) {
             $slidesForJs = [];
 
@@ -197,47 +200,6 @@
             }
         }
     @endphp
-    @if ($heroStack)
-    <style>
-        @media (max-width: 900px) {
-            #{{ $heroUid }}.hero-shell {
-                height: auto !important;
-                min-height: 100svh;
-                display: flex;
-                flex-direction: column;
-                justify-content: flex-end;
-                gap: 24px;
-                padding: 96px 20px 32px;
-            }
-            #{{ $heroUid }} .gt-hero__media { display: contents; }
-            #{{ $heroUid }} .gt-hero__slider,
-            #{{ $heroUid }} .gt-hero__video,
-            #{{ $heroUid }} .gt-hero__placeholder,
-            #{{ $heroUid }} .gt-hero__media > .gt-hero__img {
-                position: absolute; inset: 0; width: 100%; height: 100%;
-            }
-            #{{ $heroUid }} .gt-hero__overlay { position: absolute; inset: 0; }
-            #{{ $heroUid }} .gt-hero__content {
-                position: relative !important;
-                inset: auto !important;
-                transform: none !important;
-                max-width: 100% !important;
-                width: 100%;
-                margin: 0 !important;
-                padding: 0 !important;
-                z-index: 2;
-            }
-            #{{ $heroUid }} .gt-hero__metrics {
-                position: relative !important;
-                inset: auto !important;
-                transform: none !important;
-                width: 100% !important;
-                max-width: 100% !important;
-                z-index: 2;
-            }
-        }
-    </style>
-    @endif
     <section id="{{ $heroUid }}" class="relative text-white hero-shell {{ $heightClass }}" 
             data-hero
             data-hero-autoplay="{{ $autoplay ? '1' : '0' }}"
@@ -416,24 +378,112 @@
                         {{ $metricsTitle }}
                     </div>
                 @endif
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    @foreach ($metricsItems as $mi)
-                        @php
-                            $miLabel = $t($mi['label'] ?? '', $locale, $fallback);
-                            $miDesc  = $t($mi['description'] ?? '', $locale, $fallback);
-                        @endphp
-                        <div style="display: flex; align-items: center; gap: 12px; background-color: {{ $metricsItemBg }}; border: 1px solid {{ $metricsItemBorder }}; border-radius: 8px; padding: 10px 12px;">
-                            <div style="font-size: 22px; font-weight: 800; color: {{ $metricsValueColor }}; min-width: 44px;">
-                                {{ $mi['value'] ?? '' }}@if(!empty($mi['value_suffix']))<span style="font-size: 12px; font-weight: 600;">{{ $mi['value_suffix'] }}</span>@endif
+
+                @if ($metricsStyle === 'grid_cards')
+                    <div class="gt-hero__mgrid" style="display: grid; grid-template-columns: repeat({{ $metricsCols }}, minmax(0, 1fr)); gap: 10px;">
+                        @foreach ($metricsItems as $mi)
+                            @php
+                                $miLabel = $t($mi['label'] ?? '', $locale, $fallback);
+                                $miDesc  = $t($mi['description'] ?? '', $locale, $fallback);
+                            @endphp
+                            <div style="min-width: 0; background-color: {{ $metricsItemBg }}; border: 1px solid {{ $metricsItemBorder }}; border-radius: 8px; padding: 12px 14px;">
+                                @if($miLabel)
+                                    <div style="font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: {{ $metricsCardHeading }}; overflow-wrap: anywhere;">{{ $miLabel }}</div>
+                                @endif
+                                @if($miDesc)
+                                    <div style="margin-top: 6px; font-size: 12px; line-height: 1.4; color: {{ $metricsDescColor }}; overflow-wrap: anywhere;">{{ $miDesc }}</div>
+                                @endif
                             </div>
-                            <div>
-                                @if($miLabel)<div style="color: {{ $metricsLabelColor }}; font-size: 13px; font-weight: 600;">{{ $miLabel }}</div>@endif
-                                @if($miDesc)<div style="color: {{ $metricsDescColor }}; font-size: 11.5px; margin-top: 1px;">{{ $miDesc }}</div>@endif
+                        @endforeach
+                    </div>
+                @else
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        @foreach ($metricsItems as $mi)
+                            @php
+                                $miLabel = $t($mi['label'] ?? '', $locale, $fallback);
+                                $miDesc  = $t($mi['description'] ?? '', $locale, $fallback);
+                            @endphp
+                            <div style="display: flex; align-items: center; gap: 12px; background-color: {{ $metricsItemBg }}; border: 1px solid {{ $metricsItemBorder }}; border-radius: 8px; padding: 10px 12px;">
+                                <div style="font-size: 22px; font-weight: 800; color: {{ $metricsValueColor }}; min-width: 44px;">
+                                    {{ $mi['value'] ?? '' }}@if(!empty($mi['value_suffix']))<span style="font-size: 12px; font-weight: 600;">{{ $mi['value_suffix'] }}</span>@endif
+                                </div>
+                                <div>
+                                    @if($miLabel)<div style="color: {{ $metricsLabelColor }}; font-size: 13px; font-weight: 600;">{{ $miLabel }}</div>@endif
+                                    @if($miDesc)<div style="color: {{ $metricsDescColor }}; font-size: 11.5px; margin-top: 1px;">{{ $miDesc }}</div>@endif
+                                </div>
                             </div>
-                        </div>
-                    @endforeach
-                </div>
+                        @endforeach
+                    </div>
+                @endif
             </div>
+        @endif
+        @if ($heroStack)
+            <style>
+            /* shared: media layers always fill the section */
+            @media (max-width: 1700px) {
+                #{{ $heroUid }} .gt-hero__media { display: contents; }
+                #{{ $heroUid }} .gt-hero__slider,
+                #{{ $heroUid }} .gt-hero__video,
+                #{{ $heroUid }} .gt-hero__placeholder,
+                #{{ $heroUid }} .gt-hero__media > .gt-hero__img { position:absolute; inset:0; width:100%; height:100%; }
+                #{{ $heroUid }} .gt-hero__overlay { position:absolute; inset:0; }
+                #{{ $heroUid }} .gt-hero__content > * { max-width:100%; overflow-wrap:anywhere; white-space:normal; }
+                #{{ $heroUid }} .gt-hero__tags { flex-wrap:wrap; }
+            }
+
+            /* ≤900px: column */
+            @media (max-width: 900px) {
+                #{{ $heroUid }}.hero-shell {
+                height:auto !important; max-height:none !important; min-height:100svh;
+                display:flex !important; flex-direction:column; justify-content:flex-start; gap:24px;
+                padding:104px 20px 32px;
+                }
+                #{{ $heroUid }} .gt-hero__content {
+                position:relative !important; inset:auto !important; transform:none !important;
+                max-width:100% !important; width:100%; margin:auto 0 0 0 !important; padding:0 !important; z-index:2;
+                }
+                #{{ $heroUid }} .gt-hero__content { top:{{ (float) $offY }}px !important; }
+                #{{ $heroUid }} [data-hero-kicker] { font-size:11px !important; letter-spacing:.12em; line-height:1.4; }
+                #{{ $heroUid }} [data-hero-title]  { font-size:clamp(24px, 7vw, 40px) !important; line-height:1.12 !important; }
+                #{{ $heroUid }} [data-hero-lead]   { font-size:clamp(14px, 3.8vw, 17px) !important; line-height:1.5 !important; }
+                #{{ $heroUid }} .gt-hero__cta { flex:1 1 100%; text-align:center; font-size:14px; }
+                #{{ $heroUid }} .gt-hero__metrics {
+                position:relative !important; inset:auto !important; transform:none !important;
+                width:100% !important; max-width:100% !important; z-index:2;
+                }
+            }
+            @media (max-width: 380px) {
+                #{{ $heroUid }} .gt-hero__mgrid { grid-template-columns: 1fr !important; }
+            }
+
+            @if ($metricsEnabled)
+            /* 901–1700px: row, text left + panel right, no overlap */
+            @media (min-width: 901px) and (max-width: 1700px) {
+                #{{ $heroUid }}.hero-shell {
+                height:auto !important; max-height:none !important; min-height:100svh;
+                display:flex !important; flex-direction:row; align-items:center; justify-content:space-between; gap:40px;
+                padding:120px 40px 48px;
+                }
+                #{{ $heroUid }} .gt-hero__content {
+                position:relative !important; inset:auto !important; transform:none !important;
+                top:{{ (float) $offY }}px !important;
+                flex:1 1 0; min-width:0; width:auto; max-width:{{ $maxW }}px !important;
+                margin:0 0 0 {{ (float) $offX }}px !important; padding:0 !important; z-index:2;
+                }
+                #{{ $heroUid }} .gt-hero__metrics {
+                position:relative !important; inset:auto !important; transform:none !important;
+                top:{{ (float) $metricsOffsetY }}px !important;
+                margin:0 {{ (float) $metricsOffsetX }}px 0 0 !important;
+                flex:0 0 min({{ $metricsWidth }}px, 38%); width:min({{ $metricsWidth }}px, 38%) !important;
+                max-width:none !important; z-index:3;
+                }
+                #{{ $heroUid }} [data-hero-kicker] { font-size:12px !important; }
+                #{{ $heroUid }} [data-hero-title]  { font-size:clamp(30px, 3.6vw, 52px) !important; line-height:1.1 !important; }
+                #{{ $heroUid }} [data-hero-lead]   { font-size:clamp(15px, 1.4vw, 18px) !important; line-height:1.5 !important; }
+                #{{ $heroUid }} .gt-hero__mgrid    { gap:8px !important; }
+            }
+            @endif
+            </style>
         @endif
     </section>
 

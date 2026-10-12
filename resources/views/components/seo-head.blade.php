@@ -10,7 +10,8 @@ if ($appUrl === '' || str_contains($appUrl, '127.0.0.1') || str_contains($appUrl
     $appUrl = rtrim(request()->getSchemeAndHttpHost(), '/');
 }
 
-$currentUrl  = $appUrl . request()->getRequestUri();
+$pageNo      = (int) request()->query('page', 1);
+$currentUrl  = $appUrl . request()->getPathInfo() . ($pageNo > 1 ? '?page=' . $pageNo : '');
 $isProd      = app()->environment('production');
 $supported   = config('locales.supported', ['en']);
 $defaultLocale = config('locales.default', 'en');

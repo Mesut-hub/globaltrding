@@ -256,6 +256,22 @@ class PageBlockBuilder
                 // ── Right-side key metrics panel ─────────────────────────
                 \Filament\Schemas\Components\Section::make('Key metrics panel (right-side card)')->collapsed()->schema([
                     Toggle::make('metrics_enabled')->label('Show metrics panel')->default(false),
+                    Select::make('metrics_style')
+                        ->label('Panel style')
+                        ->options([
+                            'list'       => 'Vertical list (value + label + description)',
+                            'grid_cards' => 'Grid cards (heading + description)',
+                        ])
+                        ->default('list')
+                        ->native(false),
+                    Select::make('metrics_columns')
+                        ->label('Grid columns (grid cards only)')
+                        ->options(['2' => '2 columns', '1' => '1 column'])
+                        ->default('2')
+                        ->native(false),
+                    ColorPicker::make('metrics_card_heading_color')
+                        ->label('Card heading color (grid cards only)')
+                        ->default('#f59e0b'),
 
                     static::blockLocaleTabs('hero_metrics_header_lang', [
                         ['name' => 'metrics_title', 'label' => 'Panel title (e.g. KEY METRICS)', 'type' => 'text'],
