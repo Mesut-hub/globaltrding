@@ -43,12 +43,170 @@ class PageBlockBuilder
             static::overlayCarouselBlock(),
             static::fullWidthCardsBlock(),
             static::specTableBlock(),
+            static::legalContentsBlock(),
             static::tabbedSpecsBlock(),
             static::faqWithSidebarBlock(),
             static::numberedStepsCardsBlock(),
             ...static::homeOnlyBlocks(),
             ...static::industryOnlyBlocks(),
         ];
+    }
+
+    // ── Legal contents (sidebar TOC + policy sections) ───────────────────────
+
+    private static function legalContentsBlock(): Block
+    {
+        return Block::make('legalContents')
+            ->label('Legal contents — sidebar contents + policy sections')
+            ->schema([
+                // ── Sidebar ──
+                static::blockLocaleTabs('lc_side_lang', [
+                    ['name' => 'toc_title',     'label' => 'Sidebar title (e.g. Contents)',          'type' => 'text'],
+                    ['name' => 'cta_label',     'label' => 'Sidebar button label',                   'type' => 'text'],
+                    ['name' => 'summary_title', 'label' => 'Quick-summary card title',               'type' => 'text'],
+                ]),
+                \Filament\Schemas\Components\Grid::make(2)->schema([
+                    TextInput::make('cta_url')->label('Sidebar button link (e.g. #contact-dpo or /{locale}/contact)')->default('#contact-dpo'),
+                    TextInput::make('sticky_top')->label('Sidebar sticky offset (px, = your nav height + gap)')->numeric()->default(100),
+                ]),
+                Repeater::make('summary_items')
+                    ->label('Quick-summary items')
+                    ->collapsible()
+                    ->schema([
+                        static::blockLocaleTabs('lc_sum_lang', [
+                            ['name' => 'lead', 'label' => 'Bold lead (e.g. We do not sell)', 'type' => 'text'],
+                            ['name' => 'text', 'label' => 'Rest of the sentence',           'type' => 'text'],
+                        ]),
+                    ])
+                    ->itemLabel(fn (array $state): ?string => is_array($state['lead'] ?? null) ? ($state['lead']['en'] ?? null) : ($state['lead'] ?? null)),
+
+                // ── Sections ──
+                Repeater::make('sections')
+                    ->label('Sections (A, B, C …)  — a section with no key/heading renders as a plain intro')
+                    ->collapsible()
+                    ->collapsed()
+                    ->cloneable()
+                    ->schema([
+                        TextInput::make('key')->label('Key letter / number (A, B, 1 …)')->maxLength(3),
+                        static::blockLocaleTabs('lc_sec_lang', [
+                            ['name' => 'toc_label', 'label' => 'Sidebar label (short)',          'type' => 'text'],
+                            ['name' => 'kicker',    'label' => 'Kicker (small caps next to key)', 'type' => 'html'],
+                            ['name' => 'heading',   'label' => 'Section heading (H2)',           'type' => 'html'],
+                        ]),
+                        \Filament\Forms\Components\Builder::make('content')
+                            ->label('Section content (add elements in order)')
+                            ->collapsible()
+                            ->collapsed()
+                            ->blocks([
+                                Block::make('paragraph')->label('Paragraph')->schema([
+                                    static::blockLocaleTabs('lc_p_lang', [
+                                        ['name' => 'text', 'label' => 'Paragraph', 'type' => 'textarea', 'rows' => 4],
+                                    ]),
+                                ]),
+                                Block::make('subheading')->label('Sub-heading')->schema([
+                                    Select::make('level')->label('Style')->options(['h3' => 'H3 (serif, large)', 'h4' => 'H4 (small caps, mono)'])->default('h4'),
+                                    static::blockLocaleTabs('lc_h_lang', [
+                                        ['name' => 'text', 'label' => 'Text', 'type' => 'text'],
+                                    ]),
+                                ]),
+                                Block::make('bullets')->label('Bullet list')->schema([
+                                    static::blockLocaleTabs('lc_b_lang', [
+                                        ['name' => 'items', 'label' => 'Bullets — one per line', 'type' => 'textarea', 'rows' => 6],
+                                    ]),
+                                ]),
+                                Block::make('table')->label('Table')->schema([
+                                    Select::make('variant')->label('Table style')->options([
+                                        'data'   => 'Data table (navy header)',
+                                        'cookie' => 'Cookie table (light header)',
+                                    ])->default('data'),
+                                    static::blockLocaleTabs('lc_t_lang', [
+                                        ['name' => 'data', 'label' => 'Rows — first line = header; one row per line; cells separated by |', 'type' => 'textarea', 'rows' => 10],
+                                    ]),
+                                ]),
+                                Block::make('infobox')->label('Info box')->schema([
+                                    Select::make('tone')->label('Color')->options([
+                                        'gold' => 'Gold', 'navy' => 'Navy', 'green' => 'Green', 'red' => 'Red',
+                                    ])->default('gold'),
+                                    TextInput::make('icon')->label('Icon (emoji)')->default('ℹ️'),
+                                    static::blockLocaleTabs('lc_ib_lang', [
+                                        ['name' => 'title', 'label' => 'Title', 'type' => 'text'],
+                                        ['name' => 'text',  'label' => 'Text',  'type' => 'textarea', 'rows' => 4],
+                                    ]),
+                                ]),
+                                Block::make('rights_grid')->label('Cards grid (2 columns, e.g. rights)')->schema([
+                                    Repeater::make('cards')->label('Cards')->collapsible()->schema([
+                                        TextInput::make('icon')->label('Icon (emoji)'),
+                                        TextInput::make('law')->label('Legal reference line (e.g. GDPR Art. 15 · KVKK Art. 11(1)(b))'),
+                                        static::blockLocaleTabs('lc_card_lang', [
+                                            ['name' => 'title', 'label' => 'Title',       'type' => 'text'],
+                                            ['name' => 'desc',  'label' => 'Description', 'type' => 'textarea', 'rows' => 4],
+                                        ]),
+                                    ])->itemLabel(fn (array $state): ?string => is_array($state['title'] ?? null) ? ($state['title']['en'] ?? null) : ($state['title'] ?? null)),
+                                ]),
+                                Block::make('contact_block')->label('Contact block (2 columns)')->schema([
+                                    TextInput::make('anchor_id')->label('Anchor id (e.g. contact-dpo) — sidebar button can link to #this')->default(''),
+                                    static::blockLocaleTabs('lc_cb_lang', [
+                                        ['name' => 'col1_title', 'label' => 'Column 1 title', 'type' => 'html'],
+                                        ['name' => 'col1_body',  'label' => 'Column 1 body',  'type' => 'html', 'rows' => 6],
+                                        ['name' => 'col2_title', 'label' => 'Column 2 title', 'type' => 'html'],
+                                        ['name' => 'col2_body',  'label' => 'Column 2 body',  'type' => 'html', 'rows' => 6],
+                                    ]),
+                                ]),
+                                Block::make('update_box')->label('Update box (navy, with date)')->schema([
+                                    static::blockLocaleTabs('lc_ub_lang', [
+                                        ['name' => 'text',       'label' => 'Text',                     'type' => 'textarea', 'rows' => 3],
+                                        ['name' => 'date_value', 'label' => 'Big date (e.g. Oct 2026)', 'type' => 'text'],
+                                        ['name' => 'date_label', 'label' => 'Date caption (e.g. Last reviewed)', 'type' => 'text'],
+                                    ]),
+                                ]),
+                            ]),
+                    ])
+                    ->itemLabel(fn (array $state): ?string => trim(($state['key'] ?? '') . ' — ' . (is_array($state['toc_label'] ?? null) ? ($state['toc_label']['en'] ?? '') : ($state['toc_label'] ?? '')), ' —')),
+
+                // ── Style ──
+                \Filament\Schemas\Components\Section::make('Colors & typography')
+                    ->collapsed()
+                    ->schema([
+                        \Filament\Schemas\Components\Grid::make(3)->schema([
+                            ColorPicker::make('c_bg')->label('Page background')->default('#FFFFFF'),
+                            ColorPicker::make('c_bg_alt')->label('Soft background (cards, hovers)')->default('#F2F0EB'),
+                            ColorPicker::make('c_bg_alt2')->label('Row hover background')->default('#F8F7F4'),
+                            ColorPicker::make('c_navy')->label('Dark panels (table header, key, buttons, update box)')->default('#0A0E1A'),
+                            ColorPicker::make('c_gold')->label('Accent (gold)')->default('#C8A96E'),
+                            ColorPicker::make('c_border')->label('Borders / lines')->default('#E2DDD8'),
+                            ColorPicker::make('c_text')->label('Headings / strong text')->default('#0F1729'),
+                            ColorPicker::make('c_text2')->label('Body text')->default('#475569'),
+                            ColorPicker::make('c_text3')->label('Muted text (kickers, captions)')->default('#94A3B8'),
+                            ColorPicker::make('c_link')->label('Link color')->default('#2563EB'),
+                            ColorPicker::make('c_green')->label('Green (info box, "yes")')->default('#059669'),
+                            ColorPicker::make('c_red')->label('Red (info box)')->default('#DC2626'),
+                        ]),
+                        \Filament\Schemas\Components\Grid::make(2)->schema([
+                            TextInput::make('body_size')->label('Body text size (px)')->numeric()->default(14.5),
+                            Select::make('heading_font')->label('Heading font')->options(['serif' => 'Serif (Georgia)', 'sans' => 'Sans (site font)'])->default('serif'),
+                        ]),
+                        \Filament\Schemas\Components\Section::make('Font sizes (px, desktop)')
+                            ->description('Mobile (≤640px) sizes are these × the scale below.')
+                            ->collapsed()
+                            ->schema([
+                                TextInput::make('fs_mobile_scale')->label('Mobile scale (%)')->numeric()->default(90),
+                                \Filament\Schemas\Components\Grid::make(4)->schema(
+                                    collect([
+                                        ['toc_title', 'Sidebar title', 10.5], ['toc_label', 'Sidebar item label', 12.5],
+                                        ['toc_key', 'Sidebar key letter', 10.5], ['cta', 'Sidebar button', 12.5],
+                                        ['sum_title', 'Summary card title', 11.5], ['sum_text', 'Summary card text', 12],
+                                        ['sec_key', 'Section key box', 15], ['kicker', 'Section kicker', 10.5],
+                                        ['h2', 'Section heading (H2)', 28], ['h3', 'Sub-heading H3', 19], ['h4', 'Sub-heading H4', 13],
+                                        ['list', 'Bullet list', 14], ['th', 'Table header', 11], ['td', 'Table cell', 12.5],
+                                        ['ib_title', 'Info box title', 12.5], ['ib_text', 'Info box text', 13.5],
+                                        ['card_title', 'Card title', 14], ['card_desc', 'Card description', 12.5], ['card_law', 'Card law line', 10.5],
+                                        ['cb_title', 'Contact block title', 10.5], ['cb_body', 'Contact block body', 13.5],
+                                        ['ub_text', 'Update box text', 13.5], ['ub_date', 'Update box date', 28], ['ub_cap', 'Update box caption', 10],
+                                    ])->map(fn ($r) => TextInput::make('fs_' . $r[0])->label($r[1])->numeric()->default($r[2]))->all()
+                                ),
+                            ]),
+                    ]),
+            ]);
     }
 
     protected static function fontSizeOptions(): array

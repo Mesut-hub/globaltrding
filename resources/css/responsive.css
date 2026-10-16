@@ -1660,7 +1660,7 @@ img, video, canvas, svg {
   .site-header.scrolled .lang-menu-vertical a {flex: 1; min-width: 60px; text-align: center; min-height: var(--touch-target);}
   .gt-hero__cta {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 12px;
     font-size: 10px;
   }

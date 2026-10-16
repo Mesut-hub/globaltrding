@@ -135,7 +135,29 @@ Route::get('/sitemap.xml', function () {
     ]);
 });
 
-Route::redirect('/', '/en', 301);
+Route::get('/', function () {
+    return response(
+        '<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Global Trading Ltd. Co. | Industrial Equipment &amp; Raw Materials — Istanbul</title>
+    <meta name="description" content="Global Trading Ltd. Co. — specialist industrial equipment and raw materials supplier from Istanbul. Valves, instrumentation, boron products, chemicals and more. 40+ countries.">
+    <link rel="canonical" href="https://globaltrding.com/en">
+</head>
+<body>
+    <h1>Global Trading Ltd. Co.</h1>
+    <p>Specialist industrial equipment and raw materials supplier from Istanbul, Turkey.
+    Visit our <a href="/en">main website</a>.</p>
+    <script>window.location.replace("/en");</script>
+</body>
+</html>',
+        200,
+        ['Content-Type' => 'text/html']
+    );
+});
 
 Route::get('/robots.txt', function () {
     $appUrl  = rtrim(config('app.url'), '/');

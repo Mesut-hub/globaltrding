@@ -790,7 +790,7 @@
 
         {{-- Background --}}
         <div class="tt-stage__bg">
-            @if ($bgUrl)<img src="{{ $bgUrl }}" alt="" class="tt-stage__bgImg">
+            @if ($bgUrl)<img src="{{ $bgUrl }}" alt="" role="presentation" class="tt-stage__bgImg">
             @else<div class="tt-stage__bgFallback"></div>@endif
             <div class="tt-stage__bgOverlay"></div>
         </div>
@@ -829,12 +829,12 @@
                             <div class="tt-card__badge {{ $s0==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s0==='instagram' ? 'IG' : 'in' }}</div>
                             @if($s0 === 'instagram')
                                 <div class="tt-card__media">
-                                    @if($i0)<img src="{{ $i0 }}" alt="" class="tt-card__img">@endif
+                                    @if($i0)<img src="{{ $i0 }}" alt="{{ $pf0 }} {{ $s0 === 'instagram' ? 'Instagram' : 'LinkedIn' }} post" class="tt-card__img">@endif
                                 </div>
                             @else
                                 <div class="tt-card__content">
                                     <div class="tt-card__media">
-                                        @if($i0)<img src="{{ $i0 }}" alt="" class="tt-card__img">@endif
+                                        @if($i0)<img src="{{ $i0 }}" alt="{{ $pf0 }} {{ $s0 === 'instagram' ? 'Instagram' : 'LinkedIn' }} post" class="tt-card__img">@endif
                                     </div>
                                 </div>
                             @endif
@@ -873,12 +873,12 @@
                             <div class="tt-card__badge {{ $s1==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s1==='instagram' ? 'IG' : 'in' }}</div>
                             @if($s1 === 'instagram')
                                 <div class="tt-card__media">
-                                    @if($i1)<img src="{{ $i1 }}" alt="" class="tt-card__img">@endif
+                                    @if($i1)<img src="{{ $i1 }}" alt="{{ $pf1 }} {{ $s1 === 'instagram' ? 'Instagram' : 'LinkedIn' }} post" class="tt-card__img">@endif
                                 </div>
                             @else
                                 <div class="tt-card__content">
                                     <div class="tt-card__media">
-                                        @if($i1)<img src="{{ $i1 }}" alt="" class="tt-card__img">@endif
+                                        @if($i1)<img src="{{ $i1 }}" alt="{{ $pf1 }} {{ $s1 === 'instagram' ? 'Instagram' : 'LinkedIn' }} post" class="tt-card__img">@endif
                                     </div>
                                 </div>
                             @endif
@@ -919,12 +919,12 @@
                             <div class="tt-card__badge {{ $s2==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s2==='instagram' ? 'IG' : 'in' }}</div>
                             @if($s2 === 'instagram')
                                 <div class="tt-card__media">
-                                    <img src="{{ $i2 }}" alt="" class="tt-card__img">
+                                    <img src="{{ $i2 }}" alt="{{ $tt2 ?: $pf2 . ' ' . ($s2 === 'instagram' ? 'Instagram' : 'LinkedIn') . ' post' }}" class="tt-card__img">
                                 </div>
                             @else
                                 <div class="tt-card__content">
                                     <div class="tt-card__media">
-                                        <img src="{{ $i2 }}" alt="" class="tt-card__img">
+                                        <img src="{{ $i2 }}" alt="{{ $tt2 ?: $pf2 . ' ' . ($s2 === 'instagram' ? 'Instagram' : 'LinkedIn') . ' post' }}" class="tt-card__img">
                                     </div>
                                 </div>
                             @endif
@@ -965,12 +965,12 @@
                             <div class="tt-card__badge {{ $s3==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s3==='instagram' ? 'IG' : 'in' }}</div>
                             @if($s3 ==='instagram')
                                 <div class="tt-card__media">
-                                    @if($i3)<img src="{{ $i3 }}" alt="" class="tt-card__img">@endif
+                                    @if($i3)<img src="{{ $i3 }}" alt="{{ $pf3 }} {{ $s3 === 'instagram' ? 'Instagram' : 'LinkedIn' }} post" class="tt-card__img">@endif
                                 </div>
                             @else
                                 <div class="tt-card__content">
                                     <div class="tt-card__media">
-                                        @if($i3)<img src="{{ $i3 }}" alt="" class="tt-card__img">@endif
+                                        @if($i3)<img src="{{ $i3 }}" alt="{{ $pf3 }} {{ $s3 === 'instagram' ? 'Instagram' : 'LinkedIn' }} post" class="tt-card__img">@endif
                                     </div>
                                 </div>
                             @endif
@@ -1011,13 +1011,13 @@
                             <div class="tt-card__badge {{ $s4==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s4==='instagram' ? 'IG' : 'in' }}</div>
                             @if($s4 === 'instagram')
                                 <div class="tt-card__media">
-                                    @if($i4)<img src="{{ $i4 }}" alt="" class="tt-card__img">@endif
+                                    @if($i4)<img src="{{ $i4 }}" alt="{{ $pf4 }} {{ $s4 === 'instagram' ? 'Instagram' : 'LinkedIn' }} post" class="tt-card__img">@endif
                                     <div class="tt-card__badge {{ $s4==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s4==='instagram' ? 'IG' : 'in' }}</div>
                                 </div>
                             @else
                                 <div class="tt-card__content">
                                     <div class="tt-card__media">
-                                        @if($i4)<img src="{{ $i4 }}" alt="" class="tt-card__img">@endif
+                                        @if($i4)<img src="{{ $i4 }}" alt="{{ $pf4 }} {{ $s4 === 'instagram' ? 'Instagram' : 'LinkedIn' }} post" class="tt-card__img">@endif
                                         <div class="tt-card__badge {{ $s4==='instagram' ? 'tt-card__badge--ig' : 'tt-card__badge--li' }}">{{ $s4==='instagram' ? 'IG' : 'in' }}</div>
                                     </div>
                                 </div>

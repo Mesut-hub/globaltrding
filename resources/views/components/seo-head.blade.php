@@ -27,12 +27,12 @@ $metaTitle       = $title       ?? config('app.name');
 $metaDescription = $description ?? '';
 $ogImage         = $ogImage     ?? ($appUrl . '/images/og-default.png');
 $ogType          = $ogType      ?? 'website';
-$canonical       = $canonical   ?? $currentUrl;
+$canonical       = $canonical   ?: $currentUrl;
 $robots          = $robots      ?? ($isProd ? 'index,follow' : 'noindex,nofollow');
 
 // Trim to safe lengths
-$metaTitle       = mb_substr(trim($metaTitle), 0, 70);
-$metaDescription = mb_substr(trim($metaDescription), 0, 160);
+$metaTitle       = mb_substr(html_entity_decode(trim($metaTitle ?? ''),       ENT_QUOTES, 'UTF-8'), 0, 70);
+$metaDescription = mb_substr(html_entity_decode(trim($metaDescription ?? ''), ENT_QUOTES, 'UTF-8'), 0, 160);
 
 // OG locale map
 $ogLocaleMap = ['en' => 'en_US', 'tr' => 'tr_TR', 'ar' => 'ar_SR', 'fr' => 'fr_FR'];

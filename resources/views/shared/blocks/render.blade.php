@@ -1985,6 +1985,372 @@
     @endif
 
 {{-- ══════════════════════════════════════════════════════════════════ --}}
+{{-- VIDEO                                                              --}}
+{{-- ══════════════════════════════════════════════════════════════════ --}}
+@elseif ($type === 'legalContents')
+    @php
+        $uid      = 'lc_' . substr(md5(serialize($data)), 0, 8);
+        $isRtl    = $locale === 'ar';
+        $L        = fn ($v) => $t($v ?? [], $locale, $fallback);
+        $cv       = fn ($k, $d) => (is_string($data[$k] ?? null) && trim($data[$k]) !== '') ? $data[$k] : $d;
+
+        $sections   = is_array($data['sections'] ?? null) ? $data['sections'] : [];
+        $sumItems   = is_array($data['summary_items'] ?? null) ? $data['summary_items'] : [];
+        $tocTitle   = $L($data['toc_title'] ?? []);
+        $ctaLabel   = $L($data['cta_label'] ?? []);
+        $sumTitle   = $L($data['summary_title'] ?? []);
+        $ctaUrl     = str_replace('{locale}', $locale, (string) ($data['cta_url'] ?? '#contact-dpo'));
+        $stickyTop  = is_numeric($data['sticky_top'] ?? null) ? (int) $data['sticky_top'] : 100;
+        $bodySize   = is_numeric($data['body_size'] ?? null) ? (float) $data['body_size'] : 14.5;
+        $hFont      = ($data['heading_font'] ?? 'serif') === 'sans' ? 'inherit' : "Georgia,'Times New Roman',serif";
+
+        // HTML from the editor: allow safe tags only, strip event handlers / javascript: links
+        $hasTags   = fn ($s) => (bool) preg_match('/<\/?[a-z][^>]*>/i', (string) $s);
+        $htmlClean = function ($s, bool $inline = false) use ($locale) {
+            $s = (string) $s;
+            if ($inline) {
+                $s = preg_replace('#</p>\s*<p[^>]*>#i', '<br>', $s);
+                $s = preg_replace('#</?p[^>]*>#i', '', $s);
+            }
+            $allowed = $inline
+                ? '<strong><b><em><i><u><a><span><sup><sub><br><mark>'
+                : '<p><br><strong><b><em><i><u><a><ul><ol><li><span><sup><sub><mark><h3><h4>';
+            $s = strip_tags($s, $allowed);
+            $s = preg_replace('/\son[a-z]+\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/i', '', $s);
+            $s = preg_replace('/(href)\s*=\s*(["\'])\s*javascript:[^"\']*\2/i', '$1=$2#$2', $s);
+            return str_replace('{locale}', $locale, $s);
+        };
+
+        // safe inline formatter: **bold**, [[pill]], ++yes++, ~~no~~, [text](url), line breaks
+        $fmt = function ($s) use ($locale, $hasTags, $htmlClean) {
+            if ($hasTags($s)) { return $htmlClean($s); }
+            $s = e((string) $s);
+            $s = preg_replace('/\*\*(.+?)\*\*/s', '<strong>$1</strong>', $s);
+            $s = preg_replace('/\[\[(.+?)\]\]/s', '<span class="lc-basis">$1</span>', $s);
+            $s = preg_replace('/\+\+(.+?)\+\+/s', '<span class="lc-yes">$1</span>', $s);
+            $s = preg_replace('/~~(.+?)~~/s', '<span class="lc-no">$1</span>', $s);
+            $s = preg_replace_callback('/\[([^\]]+)\]\(([^)\s]+)\)/', function ($m) use ($locale) {
+                $u = str_replace('{locale}', $locale, html_entity_decode($m[2], ENT_QUOTES));
+                if (!preg_match('~^(https?://|mailto:|/|#)~i', $u)) return $m[0];
+                $ext = preg_match('~^https?://~i', $u) ? ' target="_blank" rel="noopener noreferrer"' : '';
+                return '<a href="' . e($u) . '" class="lc-a"' . $ext . '>' . $m[1] . '</a>';
+            }, $s);
+            return nl2br($s, false);
+        };
+        $lines = fn ($raw) => array_values(array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', (string) $raw)), fn ($x) => $x !== ''));
+
+        
+        // single-line fields (kicker, heading, sidebar label, titles): HTML or plain text
+        $Hi = function ($v) use ($L, $hasTags, $htmlClean) {
+            $s = $L($v);
+            return $hasTags($s) ? $htmlClean($s, true) : e($s);
+        };
+        $fsz = fn ($k, $d) => is_numeric($data['fs_' . $k] ?? null) ? (float) $data['fs_' . $k] : $d;
+        $mobileScale = is_numeric($data['fs_mobile_scale'] ?? null) ? max(40, min(120, (float) $data['fs_mobile_scale'])) / 100 : 0.9;
+    @endphp
+
+    <style>
+        #{{ $uid }}{
+            --lc-bg:{{ $cv('c_bg','#FFFFFF') }}; --lc-alt:{{ $cv('c_bg_alt','#F2F0EB') }}; --lc-alt2:{{ $cv('c_bg_alt2','#F8F7F4') }};
+            --lc-navy:{{ $cv('c_navy','#0A0E1A') }}; --lc-gold:{{ $cv('c_gold','#C8A96E') }}; --lc-border:{{ $cv('c_border','#E2DDD8') }};
+            --lc-text:{{ $cv('c_text','#0F1729') }}; --lc-text2:{{ $cv('c_text2','#475569') }}; --lc-text3:{{ $cv('c_text3','#94A3B8') }};
+            --lc-link:{{ $cv('c_link','#2563EB') }}; --lc-green:{{ $cv('c_green','#059669') }}; --lc-red:{{ $cv('c_red','#DC2626') }};
+            --lc-fs:{{ $bodySize }}px; --lc-hf:{!! $hFont !!}; --lc-top:{{ $stickyTop }}px; --lc-mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+            background:var(--lc-bg); color:var(--lc-text); line-height:1.7; -webkit-font-smoothing:antialiased;
+        }
+        #{{ $uid }} *{box-sizing:border-box}
+        #{{ $uid }} .lc-layout{max-width:1280px;margin:0 auto;padding:60px 40px 80px;display:grid;grid-template-columns:260px minmax(0,1fr);gap:3.5rem;align-items:start}
+        /* sidebar */
+        #{{ $uid }} .lc-toc{position:sticky;top:var(--lc-top);max-height:calc(100vh - var(--lc-top) - 24px);overflow:auto}
+        #{{ $uid }} .lc-tocttl{font:700 10.5px/1.2 var(--lc-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--lc-text3);padding-bottom:.75rem;border-bottom:1px solid var(--lc-border);margin-bottom:1rem}
+        #{{ $uid }} .lc-tocls{display:flex;flex-direction:column;gap:.1rem}
+        #{{ $uid }} .lc-tocitem{display:flex;align-items:flex-start;gap:.6rem;padding:.45rem .65rem;border-radius:4px;font-size:12.5px;line-height:1.4;color:var(--lc-text2);text-decoration:none;transition:all .15s}
+        #{{ $uid }} .lc-tocitem:hover,#{{ $uid }} .lc-tocitem.active{background:var(--lc-alt);color:var(--lc-navy);text-decoration:none}
+        #{{ $uid }} .lc-tocitem.active{font-weight:600}
+        #{{ $uid }} .lc-tockey{font:700 10.5px/1.4 var(--lc-mono);color:var(--lc-gold);flex-shrink:0;margin-top:.1rem}
+        #{{ $uid }} .lc-tocdiv{height:1px;background:var(--lc-border);margin:.5rem 0}
+        #{{ $uid }} .lc-toccta{display:block;margin-top:1.25rem;padding:.7rem 1rem;background:var(--lc-navy);color:#fff;font-size:12.5px;font-weight:600;border-radius:4px;text-align:center;text-decoration:none}
+        #{{ $uid }} .lc-toccta:hover{background:var(--lc-gold);color:var(--lc-navy);text-decoration:none}
+        #{{ $uid }} .lc-card{margin-top:1.25rem;border:1px solid var(--lc-border);border-radius:6px;overflow:hidden}
+        #{{ $uid }} .lc-cardh{padding:.75rem 1rem;background:var(--lc-alt);border-bottom:1px solid var(--lc-border);font:700 11.5px/1.2 var(--lc-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--lc-text)}
+        #{{ $uid }} .lc-cardb{padding:1rem}
+        #{{ $uid }} .lc-cardrow{font-size:12px;line-height:1.5;color:var(--lc-text2);margin-bottom:.4rem}
+        #{{ $uid }} .lc-cardrow strong{color:var(--lc-text);font-weight:600}
+        /* sections */
+        #{{ $uid }} .lc-sec{margin-bottom:3.5rem;padding-bottom:3.5rem;border-bottom:1px solid var(--lc-border);scroll-margin-top:calc(var(--lc-top) + 8px)}
+        #{{ $uid }} .lc-sec:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+        #{{ $uid }} .lc-seclabel{display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem}
+        #{{ $uid }} .lc-seckey{width:36px;height:36px;border-radius:6px;background:var(--lc-navy);display:flex;align-items:center;justify-content:center;font:400 15px/1 var(--lc-hf);color:var(--lc-gold);flex-shrink:0}
+        #{{ $uid }} .lc-seckicker{font:600 10.5px/1.3 var(--lc-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--lc-text3)}
+        #{{ $uid }} .lc-h2{font-family:var(--lc-hf);font-size:clamp(20px,2.5vw,28px);font-weight:400;line-height:1.2;color:var(--lc-text);margin:0 0 1.25rem}
+        #{{ $uid }} .lc-h3{font-family:var(--lc-hf);font-size:19px;font-weight:400;line-height:1.25;color:var(--lc-text);margin:1.75rem 0 .75rem}
+        #{{ $uid }} .lc-h4{font:700 13px/1.4 var(--lc-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--lc-text);margin:.9rem 0 .45rem}
+        #{{ $uid }} .lc-p{font-size:var(--lc-fs);line-height:1.85;color:var(--lc-text2);margin:0 0 1rem}
+        #{{ $uid }} .lc-p:last-child{margin-bottom:0}
+        #{{ $uid }} .lc-a{color:var(--lc-link);text-decoration:none}
+        #{{ $uid }} .lc-a:hover{color:var(--lc-navy);text-decoration:underline}
+        #{{ $uid }} strong{color:var(--lc-text);font-weight:600}
+        #{{ $uid }} .lc-blist{list-style:disc;margin:.75rem 0 .75rem 0;padding-inline-start:1.25rem;display:flex;flex-direction:column;gap:.35rem}
+        #{{ $uid }} .lc-blist li{font-size:calc(var(--lc-fs) - .5px);line-height:1.75;color:var(--lc-text2)}
+        #{{ $uid }} .lc-blist li::marker{color:var(--lc-gold)}
+        /* tables */
+        #{{ $uid }} .lc-tblwrap{margin:1.25rem 0;overflow-x:auto;border:1px solid var(--lc-border);border-radius:6px}
+        #{{ $uid }} table.lc-tbl{width:100%;min-width:560px;border-collapse:separate;border-spacing:0;margin:0}
+        #{{ $uid }} .lc-tbl th{text-align:start;font:700 11px/1.4 var(--lc-mono);letter-spacing:.07em;text-transform:uppercase;padding:.65rem 1rem;border-inline-end:1px solid rgba(255,255,255,.08);background:var(--lc-navy);color:rgba(255,255,255,.75)}
+        #{{ $uid }} .lc-tbl td{font-size:12.5px;line-height:1.65;color:var(--lc-text2);padding:.7rem 1rem;border-bottom:1px solid var(--lc-border);border-inline-end:1px solid var(--lc-border);vertical-align:top}
+        #{{ $uid }} .lc-tbl th:last-child,#{{ $uid }} .lc-tbl td:last-child{border-inline-end:none}
+        #{{ $uid }} .lc-tbl tr:last-child td{border-bottom:none}
+        #{{ $uid }} .lc-tbl tbody tr:hover td{background:var(--lc-alt2)}
+        #{{ $uid }} .lc-tbl td:first-child{font-weight:600;color:var(--lc-text)}
+        #{{ $uid }} .lc-tbl--cookie th{background:var(--lc-alt);color:var(--lc-text2);font-size:10.5px;padding:.6rem 1rem;border-bottom:1px solid var(--lc-border);border-inline-end:1px solid var(--lc-border)}
+        #{{ $uid }} .lc-tbl--cookie td:first-child{white-space:nowrap}
+        #{{ $uid }} .lc-basis{display:inline-block;font:700 10px/1.5 var(--lc-mono);letter-spacing:.05em;padding:.15rem .5rem;border-radius:3px;vertical-align:middle;background:color-mix(in srgb,var(--lc-gold) 12%,transparent);border:1px solid color-mix(in srgb,var(--lc-gold) 30%,transparent);color:color-mix(in srgb,var(--lc-gold) 45%,#000)}
+        #{{ $uid }} .lc-yes{color:var(--lc-green);font:700 11px/1.4 var(--lc-mono)}
+        #{{ $uid }} .lc-no{color:var(--lc-text3);font:400 11px/1.4 var(--lc-mono)}
+        /* info boxes */
+        #{{ $uid }} .lc-ib{display:flex;gap:1rem;align-items:flex-start;padding:1.25rem 1.5rem;border-radius:6px;margin:1.25rem 0}
+        #{{ $uid }} .lc-ib--navy{background:color-mix(in srgb,var(--lc-navy) 4%,transparent);border:1px solid color-mix(in srgb,var(--lc-navy) 12%,transparent)}
+        #{{ $uid }} .lc-ib--gold{background:color-mix(in srgb,var(--lc-gold) 6%,transparent);border:1px solid color-mix(in srgb,var(--lc-gold) 22%,transparent)}
+        #{{ $uid }} .lc-ib--green{background:color-mix(in srgb,var(--lc-green) 5%,transparent);border:1px solid color-mix(in srgb,var(--lc-green) 16%,transparent)}
+        #{{ $uid }} .lc-ib--red{background:color-mix(in srgb,var(--lc-red) 4%,transparent);border:1px solid color-mix(in srgb,var(--lc-red) 14%,transparent)}
+        #{{ $uid }} .lc-ibicon{font-size:18px;flex-shrink:0;margin-top:.1rem}
+        #{{ $uid }} .lc-ibttl{font:700 12.5px/1.4 var(--lc-mono);letter-spacing:.04em;text-transform:uppercase;color:var(--lc-text);margin-bottom:.35rem}
+        #{{ $uid }} .lc-ibtxt{font-size:13.5px;line-height:1.75;color:var(--lc-text2)}
+        /* cards grid */
+        #{{ $uid }} .lc-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--lc-border);border:1px solid var(--lc-border);border-radius:6px;overflow:hidden;margin:1.5rem 0}
+        #{{ $uid }} .lc-gcard{background:var(--lc-bg);padding:1.5rem;display:flex;flex-direction:column;gap:.6rem;transition:background .15s}
+        #{{ $uid }} .lc-gcard:hover{background:var(--lc-alt2)}
+        #{{ $uid }} .lc-gicon{font-size:22px;line-height:1}
+        #{{ $uid }} .lc-gttl{font-size:14px;font-weight:700;color:var(--lc-text)}
+        #{{ $uid }} .lc-gdesc{font-size:12.5px;line-height:1.7;color:var(--lc-text2)}
+        #{{ $uid }} .lc-glaw{font:600 10.5px/1.4 var(--lc-mono);color:var(--lc-text3)}
+        /* contact block */
+        #{{ $uid }} .lc-cb{display:grid;grid-template-columns:1fr 1fr;gap:2rem;background:var(--lc-alt);border:1px solid var(--lc-border);border-radius:6px;padding:1.5rem 2rem;margin:1.25rem 0;scroll-margin-top:calc(var(--lc-top) + 8px)}
+        #{{ $uid }} .lc-cbttl{font:700 10.5px/1.3 var(--lc-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--lc-text3);margin-bottom:.75rem}
+        #{{ $uid }} .lc-cbrow{font-size:13.5px;line-height:1.9;color:var(--lc-text2);overflow-wrap:anywhere}
+        /* update box */
+        #{{ $uid }} .lc-ub{display:grid;grid-template-columns:1fr auto;gap:2rem;align-items:center;background:var(--lc-navy);padding:2rem;border-radius:6px;margin-top:2.5rem}
+        #{{ $uid }} .lc-ubtxt{font-size:13.5px;line-height:1.8;color:rgba(255,255,255,.55)}
+        #{{ $uid }} .lc-ubtxt strong{color:color-mix(in srgb,var(--lc-gold) 85%,transparent)}
+        #{{ $uid }} .lc-ubtxt .lc-a{color:color-mix(in srgb,var(--lc-gold) 75%,transparent)}
+        #{{ $uid }} .lc-ubdate{font:400 28px/1.2 var(--lc-hf);color:var(--lc-gold);white-space:nowrap;text-align:end}
+        #{{ $uid }} .lc-ubcap{font:400 10px/1.4 var(--lc-mono);letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.3);text-align:end}
+
+        @media (max-width:1023px){
+            #{{ $uid }} .lc-layout{grid-template-columns:minmax(0,1fr);gap:2rem;padding:36px 20px 60px}
+            #{{ $uid }} .lc-toc{position:static;max-height:none;overflow:visible;border:1px solid var(--lc-border);border-radius:8px;padding:1rem}
+            #{{ $uid }} .lc-tocls{display:grid;grid-template-columns:1fr 1fr;gap:.1rem .75rem}
+        }
+        @media (max-width:640px){
+            #{{ $uid }} .lc-layout{padding:24px 16px 48px}
+            #{{ $uid }} .lc-tocls{grid-template-columns:1fr}
+            #{{ $uid }} .lc-sec{margin-bottom:2.25rem;padding-bottom:2.25rem}
+            #{{ $uid }} .lc-grid{grid-template-columns:1fr}
+            #{{ $uid }} .lc-cb{grid-template-columns:1fr;gap:1.25rem;padding:1.25rem}
+            #{{ $uid }} .lc-ub{grid-template-columns:1fr;gap:1rem;padding:1.5rem}
+            #{{ $uid }} .lc-ubdate,#{{ $uid }} .lc-ubcap{text-align:start}
+            #{{ $uid }} .lc-ib{padding:1rem}
+        }
+    </style>
+
+        <style>
+        #{{ $uid }}{--lc-ms:1}
+        #{{ $uid }} .lc-rich p{margin:0 0 .75em}
+        #{{ $uid }} .lc-rich p:last-child{margin-bottom:0}
+        #{{ $uid }} .lc-rich ul{list-style:disc;padding-inline-start:1.25rem;margin:.5em 0}
+        #{{ $uid }} .lc-rich ol{list-style:decimal;padding-inline-start:1.25rem;margin:.5em 0}
+        #{{ $uid }} .lc-rich a,#{{ $uid }} .lc-cbrow a,#{{ $uid }} .lc-toclbl a{color:var(--lc-link)}
+        #{{ $uid }} .lc-cbrow p{margin:0 0 .6em}
+        #{{ $uid }} .lc-cbrow p:last-child{margin-bottom:0}
+        #{{ $uid }} .lc-tocttl{font-size:calc({{ $fsz('toc_title',10.5) }}px * var(--lc-ms))}
+        #{{ $uid }} .lc-tocitem{font-size:calc({{ $fsz('toc_label',12.5) }}px * var(--lc-ms))}
+        #{{ $uid }} .lc-tockey{font-size:calc({{ $fsz('toc_key',10.5) }}px * var(--lc-ms))}
+        #{{ $uid }} .lc-toccta{font-size:calc({{ $fsz('cta',12.5) }}px * var(--lc-ms))}
+        #{{ $uid }} .lc-cardh{font-size:calc({{ $fsz('sum_title',11.5) }}px * var(--lc-ms))}
+        #{{ $uid }} .lc-cardrow{font-size:calc({{ $fsz('sum_text',12) }}px * var(--lc-ms))}
+        #{{ $uid }} .lc-seckey{font-size:calc({{ $fsz('sec_key',15) }}px * var(--lc-ms))}
+        #{{ $uid }} .lc-seckicker{font-size:calc({{ $fsz('kicker',10.5) }}px * var(--lc-ms))}
+        #{{ $uid }} .lc-h2{font-size:calc({{ $fsz('h2',28) }}px * var(--lc-ms))}
+        #{{ $uid }} .lc-h3{font-size:calc({{ $fsz('h3',19) }}px * var(--lc-ms))}
+        #{{ $uid }} .lc-h4{font-size:calc({{ $fsz('h4',13) }}px * var(--lc-ms))}
+        #{{ $uid }} .lc-p{font-size:calc(var(--lc-fs) * var(--lc-ms))}
+        #{{ $uid }} .lc-blist li{font-size:calc({{ $fsz('list',14) }}px * var(--lc-ms))}
+        #{{ $uid }} .lc-tbl th{font-size:calc({{ $fsz('th',11) }}px * var(--lc-ms))}
+        #{{ $uid }} .lc-tbl td{font-size:calc({{ $fsz('td',12.5) }}px * var(--lc-ms))}
+        #{{ $uid }} .lc-ibttl{font-size:calc({{ $fsz('ib_title',12.5) }}px * var(--lc-ms))}
+        #{{ $uid }} .lc-ibtxt{font-size:calc({{ $fsz('ib_text',13.5) }}px * var(--lc-ms))}
+        #{{ $uid }} .lc-gttl{font-size:calc({{ $fsz('card_title',14) }}px * var(--lc-ms))}
+        #{{ $uid }} .lc-gdesc{font-size:calc({{ $fsz('card_desc',12.5) }}px * var(--lc-ms))}
+        #{{ $uid }} .lc-glaw{font-size:calc({{ $fsz('card_law',10.5) }}px * var(--lc-ms))}
+        #{{ $uid }} .lc-cbttl{font-size:calc({{ $fsz('cb_title',10.5) }}px * var(--lc-ms))}
+        #{{ $uid }} .lc-cbrow{font-size:calc({{ $fsz('cb_body',13.5) }}px * var(--lc-ms))}
+        #{{ $uid }} .lc-ubtxt{font-size:calc({{ $fsz('ub_text',13.5) }}px * var(--lc-ms))}
+        #{{ $uid }} .lc-ubdate{font-size:calc({{ $fsz('ub_date',28) }}px * var(--lc-ms))}
+        #{{ $uid }} .lc-ubcap{font-size:calc({{ $fsz('ub_cap',10) }}px * var(--lc-ms))}
+        @media (max-width:640px){ #{{ $uid }}{--lc-ms:{{ $mobileScale }}} }
+    </style>
+
+    <div id="{{ $uid }}" @if ($isRtl) dir="rtl" @endif>
+        <div class="lc-layout">
+
+            {{-- SIDEBAR --}}
+            <aside class="lc-toc" aria-label="{{ $tocTitle ?: 'Contents' }}">
+                @if ($tocTitle)<div class="lc-tocttl">{{ $tocTitle }}</div>@endif
+                <nav class="lc-tocls">
+                    @foreach ($sections as $i => $sec)
+                        @php
+                            $sKey   = trim((string) ($sec['key'] ?? ''));
+                            $sLabel = $Hi($sec['toc_label'] ?? []);
+                            if (trim(strip_tags($sLabel)) === '') $sLabel = $Hi($sec['kicker'] ?? []);
+                            if (trim(strip_tags($sLabel)) === '') $sLabel = $Hi($sec['heading'] ?? []);
+                            $sLabelOk = trim(strip_tags($sLabel)) !== '';
+                        @endphp
+                        @if ($sLabelOk || $sKey !== '')
+                            <a href="#{{ $uid }}_s{{ $i }}" class="lc-tocitem">
+                                @if ($sKey !== '')<span class="lc-tockey">{{ $sKey }}</span>@endif
+                                <span>{!! $sLabel !!}</span>
+                            </a>
+                        @endif
+                    @endforeach
+                </nav>
+                @if ($ctaLabel)
+                    <div class="lc-tocdiv"></div>
+                    <a href="{{ $ctaUrl }}" class="lc-toccta">{{ $ctaLabel }}</a>
+                @endif
+                @if (count($sumItems))
+                    <div class="lc-card">
+                        @if ($sumTitle)<div class="lc-cardh">{{ $sumTitle }}</div>@endif
+                        <div class="lc-cardb">
+                            @foreach ($sumItems as $si)
+                                <div class="lc-cardrow"><strong>{{ $L($si['lead'] ?? []) }}</strong> {{ $L($si['text'] ?? []) }}</div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+            </aside>
+
+            {{-- CONTENT --}}
+            <main style="min-width:0">
+                @foreach ($sections as $i => $sec)
+                    @php
+                        $sKey     = trim((string) ($sec['key'] ?? ''));
+                        $sKicker  = $Hi($sec['kicker'] ?? []);
+                        $sHeading = $Hi($sec['heading'] ?? []);
+                        $els      = is_array($sec['content'] ?? null) ? $sec['content'] : [];
+                    @endphp
+                    <section id="{{ $uid }}_s{{ $i }}" class="lc-sec">
+                        @if ($sKey !== '' || $sKicker !== '')
+                            <div class="lc-seclabel">
+                                @if ($sKey !== '')<div class="lc-seckey">{{ $sKey }}</div>@endif
+                                @if (trim(strip_tags($sKicker)) !== '')<div class="lc-seckicker">{!! $sKicker !!}</div>@endif
+                            </div>
+                        @endif
+                        @if (trim(strip_tags($sHeading)) !== '')<h2 class="lc-h2">{!! $sHeading !!}</h2>@endif
+
+                        @foreach ($els as $el)
+                            @php $ed = $el['data'] ?? []; $et = $el['type'] ?? ''; @endphp
+
+                            @if ($et === 'paragraph')
+                                <div class="lc-p lc-rich">{!! $fmt($L($ed['text'] ?? [])) !!}</div>
+
+                            @elseif ($et === 'subheading')
+                                @if (($ed['level'] ?? 'h4') === 'h3')
+                                    <h3 class="lc-h3">{!! $Hi($ed['text'] ?? []) !!}</h3>
+                                @else
+                                    <h4 class="lc-h4">{!! $Hi($ed['text'] ?? []) !!}</h4>
+                                @endif
+
+                            @elseif ($et === 'bullets')
+                                <ul class="lc-blist">
+                                    @foreach ($lines($L($ed['items'] ?? [])) as $li)
+                                        <li>{!! $fmt($li) !!}</li>
+                                    @endforeach
+                                </ul>
+
+                            @elseif ($et === 'table')
+                                @php
+                                    $rows = array_map(fn ($l) => array_map('trim', explode('|', $l)), $lines($L($ed['data'] ?? [])));
+                                    $head = array_shift($rows) ?: [];
+                                    $variant = ($ed['variant'] ?? 'data') === 'cookie' ? 'lc-tbl--cookie' : '';
+                                @endphp
+                                @if (count($head))
+                                    <div class="lc-tblwrap">
+                                        <table class="lc-tbl {{ $variant }}">
+                                            <thead><tr>@foreach ($head as $h)<th>{{ $h }}</th>@endforeach</tr></thead>
+                                            <tbody>
+                                                @foreach ($rows as $r)
+                                                    <tr>@foreach ($r as $cell)<td>{!! $fmt($cell) !!}</td>@endforeach</tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                @endif
+
+                            @elseif ($et === 'infobox')
+                                @php $tone = in_array($ed['tone'] ?? 'gold', ['gold','navy','green','red'], true) ? $ed['tone'] : 'gold'; @endphp
+                                <div class="lc-ib lc-ib--{{ $tone }}">
+                                    @if (!empty($ed['icon']))<div class="lc-ibicon">{{ $ed['icon'] }}</div>@endif
+                                    <div>
+                                        @if ($L($ed['title'] ?? []))<div class="lc-ibttl">{{ $L($ed['title'] ?? []) }}</div>@endif
+                                        <div class="lc-ibtxt">{!! $fmt($L($ed['text'] ?? [])) !!}</div>
+                                    </div>
+                                </div>
+
+                            @elseif ($et === 'rights_grid')
+                                <div class="lc-grid" role="list">
+                                    @foreach (($ed['cards'] ?? []) as $cd)
+                                        <div class="lc-gcard" role="listitem">
+                                            @if (!empty($cd['icon']))<div class="lc-gicon">{{ $cd['icon'] }}</div>@endif
+                                            <div class="lc-gttl">{{ $L($cd['title'] ?? []) }}</div>
+                                            <div class="lc-gdesc">{!! $fmt($L($cd['desc'] ?? [])) !!}</div>
+                                            @if (!empty($cd['law']))<div class="lc-glaw">{{ $cd['law'] }}</div>@endif
+                                        </div>
+                                    @endforeach
+                                </div>
+
+                            @elseif ($et === 'contact_block')
+                                <div class="lc-cb" @if (!empty($ed['anchor_id'])) id="{{ preg_replace('/[^A-Za-z0-9_-]/', '', $ed['anchor_id']) }}" @endif>
+                                    <div>
+                                        <div class="lc-cbttl">{!! $Hi($ed['col1_title'] ?? []) !!}</div>
+                                        <div class="lc-cbrow">{!! $fmt($L($ed['col1_body'] ?? [])) !!}</div>
+                                    </div>
+                                    <div>
+                                        <div class="lc-cbttl">{!! $Hi($ed['col2_title'] ?? []) !!}</div>
+                                        <div class="lc-cbrow">{!! $fmt($L($ed['col2_body'] ?? [])) !!}</div>
+                                    </div>
+                                </div>
+
+                            @elseif ($et === 'update_box')
+                                <div class="lc-ub">
+                                    <div class="lc-ubtxt">{!! $fmt($L($ed['text'] ?? [])) !!}</div>
+                                    <div>
+                                        <div class="lc-ubdate">{{ $L($ed['date_value'] ?? []) }}</div>
+                                        <div class="lc-ubcap">{{ $L($ed['date_label'] ?? []) }}</div>
+                                    </div>
+                                </div>
+                            @endif
+                        @endforeach
+                    </section>
+                @endforeach
+            </main>
+        </div>
+    </div>
+
+    <script>
+    (function () {
+        var root = document.getElementById('{{ $uid }}'); if (!root) return;
+        var items = root.querySelectorAll('.lc-tocitem'), secs = root.querySelectorAll('.lc-sec[id]');
+        var off = {{ $stickyTop }} + 24;
+        function on() {
+            var cur = '';
+            secs.forEach(function (s) { if (s.getBoundingClientRect().top <= off) cur = s.id; });
+            items.forEach(function (i) { i.classList.toggle('active', i.getAttribute('href') === '#' + cur); });
+        }
+        window.addEventListener('scroll', on, { passive: true }); on();
+    })();
+    </script>
+
+{{-- ══════════════════════════════════════════════════════════════════ --}}
 {{-- TIMELINE                                                           --}}
 {{-- ══════════════════════════════════════════════════════════════════ --}}
 @elseif ($type === 'timeline')
