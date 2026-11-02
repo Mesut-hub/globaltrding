@@ -64,8 +64,26 @@
         $offX = is_numeric($data['content_offset_x'] ?? null) ? (int) $data['content_offset_x'] : 0;
         $offY = is_numeric($data['content_offset_y'] ?? null) ? (int) $data['content_offset_y'] : 0;
 
-        $titleClass = match($titleSize) { 'md' => 'gt-hero__title--md', 'lg' => 'gt-hero__title--lg', default => 'gt-hero__title--xl' };
-        $leadClass  = match($leadSize)  { 'sm' => 'gt-hero__lead--sm',  'lg' => 'gt-hero__lead--lg',  default => 'gt-hero__lead--md' };
+        // Desktop font-sizes driven by CMS title_size field.
+        // Class-based approach abandoned — BEM modifier classes are built
+        // dynamically and never reach the Tailwind JIT compiler, so they
+        // are never included in the compiled CSS and have no effect.
+        $titleFontSize = match($titleSize) {
+            'md'    => 'clamp(1.5rem, 2.5vw, 2.25rem)',
+            'lg'    => 'clamp(1.875rem, 3.5vw, 3.25rem)',
+            default => 'clamp(2.25rem, 4.5vw, 4.25rem)',  // xl
+        };
+
+        // Mobile font-sizes — same CMS field, proportionally smaller.
+        $titleFontSizeMobile = match($titleSize) {
+            'md'    => 'clamp(20px, 5.5vw, 30px)',
+            'lg'    => 'clamp(22px, 6.5vw, 36px)',
+            default => 'clamp(24px, 7vw, 40px)',           // xl
+        };
+
+        // Base class kept for CSS hooks (margin, display, etc.) only.
+        $titleClass = 'gt-hero__title';
+        $leadClass  = 'gt-hero__lead';
 
         // Resolve the first slide for initial SSR render
         $s0         = $slides[0] ?? [];
@@ -110,7 +128,37 @@
 
         $leadColor     = $data['lead_color']     ?? '#CBD5E1';
         $leadBg        = $heroHexToRgba($data['lead_bg_color'] ?? null, $data['lead_opacity'] ?? 100);
-        $leadSizeOverride = $data['lead_font_size'] ?? null;
+        // Two separate CMS fields previously both controlled lead font-size:
+        //   $data['lead_size']      → enum (sm/md/lg)  → BEM class (never compiled)
+        //   $data['lead_font_size'] → Tailwind class   → applied as extra class
+        // Both are now resolved into a single inline font-size value.
+        // Explicit lead_font_size wins; falls back to lead_size enum.
+        $leadFontSizeRaw = $data['lead_font_size'] ?? null;
+
+        // lead_size (sm/md/lg) is the PRIMARY control — it always wins.
+        // lead_font_size from the "Lead Style" section is a fine-grained
+        // override that only applies when lead_size is the default 'md'.
+        $leadFontSize = match(true) {
+            $leadSize === 'sm'               => '0.9rem',
+            $leadSize === 'lg'               => '1.35rem',
+            $leadFontSizeRaw === 'text-sm'   => '0.875rem',
+            $leadFontSizeRaw === 'text-base' => '1rem',
+            $leadFontSizeRaw === 'text-lg'   => '1.2rem',
+            $leadFontSizeRaw === 'text-xl'   => '1.375rem',
+            default                          => '1.15rem',  // md, no lead_font_size set
+        };
+
+        // Mobile — same priority: lead_size first, lead_font_size fallback.
+        $leadFontSizeMobile = match(true) {
+            $leadSize === 'sm'               => 'clamp(13px, 3.5vw, 15px)',
+            $leadSize === 'lg'               => 'clamp(15px, 4vw, 19px)',
+            $leadFontSizeRaw === 'text-sm'   => 'clamp(13px, 3.5vw, 15px)',
+            $leadFontSizeRaw === 'text-base' => 'clamp(14px, 3.8vw, 16px)',
+            $leadFontSizeRaw === 'text-xl'   => 'clamp(15px, 4.2vw, 19px)',
+            default                          => 'clamp(14px, 3.8vw, 17px)',  // md
+        };
+
+        $leadSizeOverride = null; // retired — size now handled via $leadFontSize
 
         $ctaPrimaryBg   = $data['cta_primary_bg_color']   ?? '#ffffff';
         $ctaPrimaryText = $data['cta_primary_text_color'] ?? '#0f172a';
@@ -265,12 +313,12 @@
                     <div class="gt-hero__kicker hidden" data-hero-kicker></div>
                 @endif
 
-                <h1 class=" {{ $titleClass }}" data-hero-title
-                    style="color: {{ $titleColor }}; background-color: {{ $titleBg }}; padding: {{ $titleBg === 'transparent' ? '0' : '6px 12px' }}; border-radius: 6px; display: inline-block;">{!! $heroTitle !!}</h1>
+                    <h1 class="{{ $titleClass }}" data-hero-title
+                        style="font-size: {{ $titleFontSize }}; font-weight: {{ $data['title_font_weight'] ?? '400' }}; line-height: 1.1; color: {{ $titleColor }}; background-color: {{ $titleBg }}; padding: {{ $titleBg === 'transparent' ? '0' : '6px 12px' }}; border-radius: 6px; display: block;">{!! $heroTitle !!}</h1>
 
                 @if ($heroLead)
-                    <p class="{{ $leadClass }} {{ $leadSizeOverride }} {{ $heroLead ? '' : 'hidden' }}" data-hero-lead
-                        style="color: {{ $leadColor }}; background-color: {{ $leadBg }}; padding: {{ $leadBg === 'transparent' ? '0' : '6px 12px' }}; border-radius: 6px; display: {{ $heroLead ? 'inline-block' : 'none' }};">{!! $heroLead !!}</p>
+                    <p class="{{ $leadClass }}" data-hero-lead
+                        style="font-size: {{ $leadFontSize }}; line-height: 1.75; color: {{ $leadColor }}; background-color: {{ $leadBg }}; padding: {{ $leadBg === 'transparent' ? '0' : '6px 12px' }}; border-radius: 6px; display: {{ $heroLead ? 'block' : 'none' }};">{!! $heroLead !!}</p>
                 @else
                     <p class="gt-hero__lead hidden" data-hero-lead></p>
                 @endif
@@ -374,7 +422,7 @@
                 z-index: 3;
             ">
                 @if ($metricsTitle)
-                    <div style="color: {{ $metricsTitleColor }}; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 14px; @if($metricsTitleLineOn) padding-bottom: 12px; border-bottom: 1px solid {{ $metricsTitleLine }}; @endif">
+                    <div class="gt-ar-center" style="color: {{ $metricsTitleColor }}; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 14px; @if($metricsTitleLineOn) padding-bottom: 12px; border-bottom: 1px solid {{ $metricsTitleLine }}; @endif">
                         {{ $metricsTitle }}
                     </div>
                 @endif
@@ -444,8 +492,8 @@
                 }
                 #{{ $heroUid }} .gt-hero__content { top:{{ (float) $offY }}px !important; }
                 #{{ $heroUid }} [data-hero-kicker] { font-size:11px !important; letter-spacing:.12em; line-height:1.4; }
-                #{{ $heroUid }} [data-hero-title]  { font-size:clamp(24px, 7vw, 40px) !important; line-height:1.12 !important; }
-                #{{ $heroUid }} [data-hero-lead]   { font-size:clamp(14px, 3.8vw, 17px) !important; line-height:1.5 !important; }
+                #{{ $heroUid }} [data-hero-title]  { font-size:{{ $titleFontSizeMobile }} !important; line-height:1.1 !important; }
+                #{{ $heroUid }} [data-hero-lead]   { font-size:{{ $leadFontSizeMobile }} !important; line-height:1.65 !important; }
                 #{{ $heroUid }} .gt-hero__cta { flex:1 1 100%; text-align:center; font-size:14px; }
                 #{{ $heroUid }} .gt-hero__metrics {
                 position:relative !important; inset:auto !important; transform:none !important;
@@ -478,8 +526,8 @@
                 max-width:none !important; z-index:3;
                 }
                 #{{ $heroUid }} [data-hero-kicker] { font-size:12px !important; }
-                #{{ $heroUid }} [data-hero-title]  { font-size:clamp(30px, 3.6vw, 52px) !important; line-height:1.1 !important; }
-                #{{ $heroUid }} [data-hero-lead]   { font-size:clamp(15px, 1.4vw, 18px) !important; line-height:1.5 !important; }
+                #{{ $heroUid }} [data-hero-title]  { font-size:{{ $titleFontSize }} !important; line-height:1.1 !important; }
+                #{{ $heroUid }} [data-hero-lead]   { font-size:{{ $leadFontSize }} !important; line-height:1.65 !important; }
                 #{{ $heroUid }} .gt-hero__mgrid    { gap:8px !important; }
             }
             @endif
@@ -989,7 +1037,7 @@
         <div class="{{ $meInnerClass }}">
 
             @if ($meTitle)
-                <h2 class="mx-auto max-w-7xl px-4 {{ $msHeadingSize }} font-semibold tracking-tight mb-8"
+                <h2 class="gt-ar-center mx-auto max-w-7xl px-4 {{ $msHeadingSize }} font-semibold tracking-tight mb-8"
                     style="color:{{ $meHeadingCol }};">
                     {{ $meTitle }}
                 </h2>
@@ -998,17 +1046,21 @@
             <div class="mx-auto max-w-7xl px-4 gt-m__grid">
                 @foreach ($meItems as $it)
                     @php
-                        $raw    = (string) ($it['value'] ?? '');
+                        $raw    = trim($t($it['value'] ?? '', $locale, $fallback));
                         $label  = $t($it['label'] ?? '', $locale, $fallback);
                         $num    = preg_replace('/[^0-9.]/', '', $raw);
                         $suffix = trim(str_replace($num, '', $raw));
                         $numVal = is_numeric($num) ? (float) $num : null;
+                        // The count-up script only appends a suffix, so animate only values
+                        // that start with a digit (e.g. "250+"). Anything else shows as typed.
+                        $animateThis = $numVal !== null && preg_match('/^[0-9]/', $raw);
                     @endphp
+                    @continue($raw === '' && trim(strip_tags($label)) === '')
                     <div class="gt-m__card rounded-xl border border-slate-200 p-6"
                          style="background-color:{{ $meItemBg }};">
                         <div class="gt-m__value {{ $msValueSize }}"
                              style="color:{{ $meValueCol }};"
-                             @if ($meAnimate && $numVal !== null)
+                             @if ($meAnimate && $animateThis)
                                  data-countup="{{ $numVal }}"
                                  data-countup-suffix="{{ e($suffix) }}"
                              @endif>
@@ -1875,10 +1927,10 @@
         $rtCtas = is_array($data['ctas'] ?? null) ? $data['ctas'] : [];
     @endphp
         @if ($sectionType === 'full')
-        <section class="w-full py-10 gt-rich-text" style="background-color: {{ $sectionBgColor }};">
+        <section class="w-full py-10 gt-rich-text" style="background: {{ $sectionBgColor }};">
             <div class="mx-auto max-w-7xl px-4">
     @else
-        <section class="mx-auto max-w-7xl px-4 mt-4 mb-4 py-10 gt-rich-text" style="background-color: {{ $sectionBgColor }};">
+        <section class="mx-auto max-w-7xl px-4 mt-4 mb-4 py-10 gt-rich-text" style="background: {{ $sectionBgColor }};">
             <div>
     @endif
             @if ($rtKicker)
@@ -2767,7 +2819,6 @@
         // RTL: Arabic flips the border side
         $qBorderClass = $locale === 'ar' ? 'border-r-2 border-l-0' : 'border-l-2';
     @endphp
-
     <section class="w-full py-16 px-6 {{ $qSectionClass }}"
              @if ($locale === 'ar') dir="rtl" @endif>
         <div class="mx-auto max-w-3xl">
@@ -3692,8 +3743,13 @@
                                                 [&::-webkit-scrollbar]:h-1
                                                 [&::-webkit-scrollbar-thumb]:rounded
                                                 [&::-webkit-scrollbar-thumb]:bg-slate-300">
+                                        <style>
+                                            [data-ts-block="{{ $tsId }}"] table,
+                                            [data-ts-block="{{ $tsId }}"] th,
+                                            [data-ts-block="{{ $tsId }}"] td { text-align: start; }
+                                        </style>
                                         <table
-                                            class="w-full text-left border-collapse"
+                                            class="w-full border-collapse"
                                             style="min-width: 340px;"
                                         >
                                             {{-- Optional header row --}}

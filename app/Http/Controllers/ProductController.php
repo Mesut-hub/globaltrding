@@ -218,12 +218,88 @@ class ProductController extends Controller
     public function show(Request $request, string $locale, string $slug)
     {
         $product = Product::query()
-            ->with('brand')
+            ->with('brand')           // ← kept exactly as before
             ->where('slug', $slug)
             ->where('is_published', true)
             ->firstOrFail();
 
-        return view('products.show', compact('product'));
+        $appUrl = rtrim((string) config('app.url'), '/');
+
+        // Resolve display name for current locale
+        $name = '';
+        if (is_array($product->display_name)) {
+            $name = $product->display_name[$locale]
+                ?? $product->display_name['en']
+                ?? $slug;
+        } else {
+            $name = (string) ($product->display_name ?? $slug);
+        }
+
+        // Resolve SEO fields from product's seo JSON column
+        $seoCol   = is_array($product->seo) ? $product->seo : [];
+        $seoTitle = $seoCol['title'][$locale]
+            ?? $seoCol['title']['en']
+            ?? $name . ' | Global Trading Ltd. Co.';
+        $seoDesc  = $seoCol['description'][$locale]
+            ?? $seoCol['description']['en']
+            ?? '';
+
+        // OG image
+        $ogImage = !empty($product->cover_image_path)
+            ? \Illuminate\Support\Facades\Storage::disk('public')->url($product->cover_image_path)
+            : $appUrl . '/images/og-default.png';
+
+        $canonicalUrl = "{$appUrl}/{$locale}/products/{$slug}";
+
+        // Schema
+        $schema = [
+            '@context' => 'https://schema.org',
+            '@graph'   => [
+                [
+                    '@type'        => 'Product',
+                    '@id'          => $canonicalUrl . '#product',
+                    'name'         => $name,
+                    'description'  => $seoDesc ?: $name,
+                    'url'          => $canonicalUrl,
+                    'image'        => $ogImage,
+                    'brand'        => [
+                        '@type' => 'Brand',
+                        'name'  => $product->brand?->name ?? 'Global Trading Ltd. Co.',
+                    ],
+                    'offers'       => [
+                        '@type'         => 'Offer',
+                        'priceCurrency' => 'USD',
+                        'availability'  => 'https://schema.org/InStock',
+                        'url'           => $canonicalUrl,
+                        'seller'        => [
+                            '@type' => 'Organization',
+                            'name'  => 'Global Trading Ltd. Co.',
+                        ],
+                    ],
+                ],
+                [
+                    '@type'           => 'BreadcrumbList',
+                    'itemListElement' => [
+                        ['@type'=>'ListItem','position'=>1,'name'=>'Home',    'item'=>"{$appUrl}/{$locale}"],
+                        ['@type'=>'ListItem','position'=>2,'name'=>'Products','item'=>"{$appUrl}/{$locale}/products"],
+                        ['@type'=>'ListItem','position'=>3,'name'=>$name,     'item'=>$canonicalUrl],
+                    ],
+                ],
+            ],
+        ];
+
+        $seoMeta = [
+            'title'       => mb_substr(html_entity_decode($seoTitle, ENT_QUOTES, 'UTF-8'), 0, 70),
+            'description' => mb_substr(html_entity_decode($seoDesc,  ENT_QUOTES, 'UTF-8'), 0, 160),
+            'canonical'   => $canonicalUrl,
+            'ogImage'     => $ogImage,
+            'ogType'      => 'product',
+            'robots'      => 'index,follow',
+            'schema'      => $schema,
+        ];
+
+        // $product is still passed — view continues working unchanged
+        return view('products.show', compact('product', 'seoMeta'));
     }
 
     public function suggest(Request $request, string $locale): \Illuminate\Http\JsonResponse

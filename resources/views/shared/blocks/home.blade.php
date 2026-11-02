@@ -790,7 +790,7 @@
 
         {{-- Background --}}
         <div class="tt-stage__bg">
-            @if ($bgUrl)<img src="{{ $bgUrl }}" alt="" role="presentation" class="tt-stage__bgImg">
+            @if ($bgUrl)<img src="{{ $bgUrl }}" alt="{{ $sectionTitle }}" role="presentation" class="tt-stage__bgImg">
             @else<div class="tt-stage__bgFallback"></div>@endif
             <div class="tt-stage__bgOverlay"></div>
         </div>

@@ -191,6 +191,13 @@ Route::prefix('{locale}')
             return redirect("/{$locale}", 301);
         })->where('page', '.*');
 
+        // Contact page — dedicated view, before generic {slug} catch-all
+        Route::get('/pages/contact', [App\Http\Controllers\ContactController::class, 'showPage'])
+            ->name('contact.page');
+
+        Route::post('/pages/contact', [App\Http\Controllers\ContactController::class, 'submit'])
+            ->name('contact.submit');
+
         Route::get('/pages/{slug}', [PageController::class, 'show'])->name('pages.show');
         Route::get('/news', [NewsController::class, 'index'])->name('news.index');
         Route::get('/news/{slug}', [NewsController::class, 'show'])->name('news.show');

@@ -95,3 +95,14 @@ $modifiedTime  = $modifiedTime  ?? null;
 {{-- Favicons --}}
 <link rel="icon" href="{{ $appUrl }}/images/favicon.ico">
 <link rel="apple-touch-icon" href="{{ $appUrl }}/images/logo.png">
+
+{{-- Per-page schema (Product / Industry / Article / etc.) --}}
+{{-- Injected by individual controllers via $seoMeta['schema'] --}}
+@if (!empty($seoMeta['schema'] ?? null))
+<script type="application/ld+json">
+{!! json_encode(
+    $seoMeta['schema'],
+    JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
+) !!}
+</script>
+@endif

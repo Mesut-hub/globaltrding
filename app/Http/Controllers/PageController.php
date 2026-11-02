@@ -18,16 +18,61 @@ class PageController extends Controller
 
         $fallback = config('locales.default', 'en');
 
-        // Resolve full SEO metadata including OG image from the page's seo JSON
         $seoMeta = app(SeoService::class)->resolve($page, $locale, $fallback);
 
-        // Convert storage-relative OG image path to a full public URL if needed
         if (
             ! empty($seoMeta['ogImage'])
             && ! str_starts_with($seoMeta['ogImage'], 'http')
         ) {
             $seoMeta['ogImage'] = Storage::disk('public')->url($seoMeta['ogImage']);
         }
+
+        // ── ADD ONLY THIS BLOCK ──────────────────────────────────────
+        $appUrl       = rtrim((string) config('app.url'), '/');
+        $canonicalUrl = $seoMeta['canonical']
+            ?? "{$appUrl}/{$locale}/pages/{$slug}";
+
+        $titleArr = $page->title;
+        $pageTitle = is_array($titleArr)
+            ? ($titleArr[$locale] ?? $titleArr[$fallback] ?? $slug)
+            : (string) ($titleArr ?? $slug);
+
+        $seoMeta['schema'] = [
+            '@context' => 'https://schema.org',
+            '@graph'   => [
+                [
+                    '@type'       => 'WebPage',
+                    '@id'         => $canonicalUrl,
+                    'name'        => $seoMeta['title'] ?? $pageTitle,
+                    'description' => $seoMeta['description'] ?? '',
+                    'url'         => $canonicalUrl,
+                    'inLanguage'  => $locale,
+                    'image'       => $seoMeta['ogImage'] ?? '',
+                    'publisher'   => [
+                        '@type' => 'Organization',
+                        '@id'   => $appUrl . '/#organization',
+                    ],
+                ],
+                [
+                    '@type'           => 'BreadcrumbList',
+                    'itemListElement' => [
+                        [
+                            '@type'    => 'ListItem',
+                            'position' => 1,
+                            'name'     => 'Home',
+                            'item'     => "{$appUrl}/{$locale}",
+                        ],
+                        [
+                            '@type'    => 'ListItem',
+                            'position' => 2,
+                            'name'     => $pageTitle,
+                            'item'     => $canonicalUrl,
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        // ── END OF ADDED BLOCK ───────────────────────────────────────
 
         return view('pages.show', [
             'page'    => $page,

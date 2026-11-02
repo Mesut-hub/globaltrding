@@ -39,22 +39,27 @@
 }
 
 /* Arabic typography */
-:lang(ar) {
+html:lang(ar) {
     font-family: 'Cairo', 'Tajawal', 'Noto Sans Arabic', ui-sans-serif, system-ui, sans-serif;
     line-height: 1.8;
     letter-spacing: 0;
     direction: rtl;
-    text-align: right;
 }
 
-:lang(ar) .gt-hero__title,
-:lang(ar) .gt-pdp__h1,
-:lang(ar) .gt-pf__title {
+html:lang(ar) .gt-hero__title,
+html:lang(ar) .gt-pdp__h1,
+html:lang(ar) .gt-pf__title,
+html:lang(ar) .gt-hero__lead {
     font-family: 'Cairo', 'Tajawal', sans-serif;
     font-weight: 700;
+    text-align: start;
 }
 
-:lang(ar) .tabular-nums {
+html:lang(ar) .gt-ar-center {
+    text-align: center;
+}
+
+html:lang(ar) .tabular-nums {
     font-variant-numeric: normal;
     font-feature-settings: normal;
 }

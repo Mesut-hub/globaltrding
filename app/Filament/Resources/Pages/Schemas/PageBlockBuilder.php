@@ -809,14 +809,31 @@ class PageBlockBuilder
                 Repeater::make('items')
                     ->label('Metric items')
                     ->minItems(1)
+                    // Legacy data: `value` used to be a plain string. Convert it to a
+                    // per-locale array when the form loads, so editing and saving an
+                    // existing block does not blank the numbers.
+                    ->afterStateHydrated(function (Repeater $component, $state) {
+                        if (! is_array($state)) {
+                            return;
+                        }
+                        $locales = config('locales.supported', ['en']);
+                        foreach ($state as $key => $item) {
+                            if (isset($item['value']) && ! is_array($item['value'])) {
+                                $state[$key]['value'] = array_fill_keys($locales, (string) $item['value']);
+                            }
+                        }
+                        $component->state($state);
+                    })
                     ->schema([
-                        TextInput::make('value')
-                            ->label('Value (e.g. 250+ or 98.5)')
-                            ->required(),
                         static::blockLocaleTabs('metrics_item_lang', [
+                            ['name' => 'value', 'label' => 'Value (e.g. 250+ or 98.5)', 'type' => 'text'],
                             ['name' => 'label', 'label' => 'Label', 'type' => 'text'],
                         ]),
                     ])
+                    ->itemLabel(function (array $state): ?string {
+                        $v = $state['value'] ?? null;
+                        return is_array($v) ? ($v['en'] ?? null) : $v;
+                    })
                     ->columns(1)
                     ->collapsible(),
             ]);
