@@ -1,15 +1,15 @@
 {{-- resources/views/pages/contact.blade.php --}}
 @extends('layouts.app')
 
-@section('meta_title', 'Contact | Global Trading Ltd. Co. — Istanbul')
-@section('meta_description', 'Contact Global Trading Ltd. Co. Submit an RFQ, technical enquiry, or partnership proposal. 24-hour response. English, Turkish, Arabic, French.')
+@section('meta_title', __('contact.meta_title'))
+@section('meta_description', __('contact.meta_description'))
 
 @php
 $hasHero = false;
 $locale  = app()->getLocale();
 $seoMeta = [
-    'title'       => 'Contact | Global Trading Ltd. Co. — Istanbul',
-    'description' => 'Submit an RFQ, technical enquiry, or partnership proposal. Our sourcing team responds within 24 hours. Istanbul, Turkey.',
+    'title'       => __('contact.meta_title'),
+    'description' => __('contact.meta_description'),
     'canonical'   => config('app.url') . '/' . $locale . '/pages/contact',
     'ogType'      => 'website',
     'robots'      => 'index,follow',
@@ -17,8 +17,9 @@ $seoMeta = [
         '@context' => 'https://schema.org',
         '@type'    => 'ContactPage',
         '@id'      => config('app.url') . '/' . $locale . '/pages/contact',
-        'name'     => 'Contact Global Trading Ltd. Co.',
+        'name'     => __('contact.meta_title'),
         'url'      => config('app.url') . '/' . $locale . '/pages/contact',
+        'inLanguage' => $locale,
     ],
 ];
 @endphp
@@ -157,328 +158,300 @@ $seoMeta = [
   .gt-contact .ff{flex-direction:column;align-items:flex-start}
   .gt-contact .po-inner,.gt-contact .cat-section,.gt-contact .form-panel,.gt-contact .offices-inner,.gt-contact .bci{padding-left:20px;padding-right:20px}
 }
+html:lang(ar) .gt-contact .cat-arrow { right: auto; left: .85rem; transform: scaleX(-1); }
+html:lang(ar) .gt-contact .fsel { background-position: left .65rem center; padding-right: .8rem; padding-left: 2rem; }
 </style>
+
+@php
+$cats = ['rfq' => ['01', '📋'], 'technical' => ['02', '🔬'], 'partnership' => ['03', '🤝'], 'media' => ['04', '📰'], 'other' => ['05', '💬']];
+$privacyUrl = '/' . $locale . '/pages/privacy-policy';
+$sendIcon = '<svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 2L9 11M18 2L13 18l-4-7-7-4 16-5z"/></svg>';
+@endphp
 
 <div class="gt-contact">
 
-  {{-- Top accent --}}
   <div class="top-accent"></div>
 
-  {{-- Breadcrumb --}}
   <nav class="bc" aria-label="Breadcrumb">
     <div class="bci">
-      <span class="bcs"><a href="/{{ $locale }}">Home</a></span>
+      <span class="bcs"><a href="/{{ $locale }}">{{ __('contact.home') }}</a></span>
       <span class="bcsep">›</span>
-      <span class="bcs cur" aria-current="page">Contact</span>
+      <span class="bcs cur" aria-current="page">{{ __('contact.contact') }}</span>
     </div>
   </nav>
 
-  {{-- Page opening --}}
   <section class="page-open">
     <div class="po-inner">
       <div>
-        <div class="po-kicker">Get in touch</div>
-        <h1 class="po-h1">Contact<br>Global Trading.</h1>
-        <p class="po-sub">Select the nature of your enquiry below. Every request is reviewed by the person responsible for that product area — not a shared inbox or automated routing system.</p>
+        <div class="po-kicker">{{ __('contact.kicker') }}</div>
+        <h1 class="po-h1">{{ __('contact.h1_a') }}<br>{{ __('contact.h1_b') }}</h1>
+        <p class="po-sub">{{ __('contact.intro') }}</p>
       </div>
       <div class="phone-panel">
-        <div class="pp-label">Direct telephone</div>
-        <a href="tel:+902166292029" class="pp-number">☎ +90 216 629 20 29</a>
-        <div class="pp-hours">Istanbul, Türkiye · Monday – Friday · 09:00 – 18:00 TRT</div>
+        <div class="pp-label">{{ __('contact.phone_label') }}</div>
+        <a href="tel:+902166292029" class="pp-number" dir="ltr">☎ +90 216 629 20 29</a>
+        <div class="pp-hours">{{ __('contact.phone_hours') }}</div>
         <div class="pp-rows">
-          <div class="pp-row"><span class="pp-rowlabel">RFQ response</span><span class="pp-badge">⚡ Within 24 hours</span></div>
-          <div class="pp-row"><span class="pp-rowlabel">Languages</span><span class="pp-rowval">EN · TR · AR · FR</span></div>
-          <div class="pp-row"><span class="pp-rowlabel">Countries served</span><span class="pp-rowval">40+</span></div>
-          <div class="pp-row"><span class="pp-rowlabel">Product verticals</span><span class="pp-rowval">7</span></div>
+          <div class="pp-row"><span class="pp-rowlabel">{{ __('contact.rfq_response') }}</span><span class="pp-badge">⚡ {{ __('contact.within_24h') }}</span></div>
+          <div class="pp-row"><span class="pp-rowlabel">{{ __('contact.languages') }}</span><span class="pp-rowval">EN · TR · AR · FR</span></div>
+          <div class="pp-row"><span class="pp-rowlabel">{{ __('contact.countries_served') }}</span><span class="pp-rowval">40+</span></div>
+          <div class="pp-row"><span class="pp-rowlabel">{{ __('contact.verticals') }}</span><span class="pp-rowval">7</span></div>
         </div>
       </div>
     </div>
   </section>
 
-  {{-- Category selector --}}
   <section class="cat-section">
-    <div class="cat-label">My enquiry is related to</div>
-    <div class="cat-heading">Select a category to open the right form</div>
+    <div class="cat-label">{{ __('contact.cat_label') }}</div>
+    <div class="cat-heading">{{ __('contact.cat_heading') }}</div>
     <div class="cat-grid">
-      <div class="cat-card" id="cat-rfq" onclick="gtSelectCat('rfq')" tabindex="0" role="button" aria-label="Request for Quotation">
-        <span class="cat-num">01</span>
-        <span class="cat-icon">📋</span>
-        <div class="cat-name">Request for Quotation</div>
-        <div class="cat-desc">Products, materials, BOM, pricing, lead time, Incoterms</div>
-        <span class="cat-arrow">→</span>
-      </div>
-      <div class="cat-card" id="cat-technical" onclick="gtSelectCat('technical')" tabindex="0" role="button" aria-label="Technical Enquiry">
-        <span class="cat-num">02</span>
-        <span class="cat-icon">🔬</span>
-        <div class="cat-name">Technical Enquiry</div>
-        <div class="cat-desc">Specifications, standards, approvals, documentation</div>
-        <span class="cat-arrow">→</span>
-      </div>
-      <div class="cat-card" id="cat-partnership" onclick="gtSelectCat('partnership')" tabindex="0" role="button" aria-label="Partnership and Distribution">
-        <span class="cat-num">03</span>
-        <span class="cat-icon">🤝</span>
-        <div class="cat-name">Partnership &amp; Distribution</div>
-        <div class="cat-desc">Manufacturer representation, distribution, co-supply</div>
-        <span class="cat-arrow">→</span>
-      </div>
-      <div class="cat-card" id="cat-media" onclick="gtSelectCat('media')" tabindex="0" role="button" aria-label="Press and Media">
-        <span class="cat-num">04</span>
-        <span class="cat-icon">📰</span>
-        <div class="cat-name">Press &amp; Media</div>
-        <div class="cat-desc">Editorial requests, interviews, company background</div>
-        <span class="cat-arrow">→</span>
-      </div>
-      <div class="cat-card" id="cat-other" onclick="gtSelectCat('other')" tabindex="0" role="button" aria-label="Other enquiry">
-        <span class="cat-num">05</span>
-        <span class="cat-icon">💬</span>
-        <div class="cat-name">Other</div>
-        <div class="cat-desc">Anything that does not fit the above categories</div>
-        <span class="cat-arrow">→</span>
-      </div>
+      @foreach ($cats as $key => [$num, $icon])
+        <div class="cat-card" id="cat-{{ $key }}" onclick="gtSelectCat('{{ $key }}')" tabindex="0" role="button" aria-label="{{ __('contact.cat.'.$key.'.name') }}">
+          <span class="cat-num">{{ $num }}</span>
+          <span class="cat-icon">{{ $icon }}</span>
+          <div class="cat-name">{{ __('contact.cat.'.$key.'.name') }}</div>
+          <div class="cat-desc">{{ __('contact.cat.'.$key.'.desc') }}</div>
+          <span class="cat-arrow">→</span>
+        </div>
+      @endforeach
     </div>
   </section>
 
-  {{-- Form panels --}}
   <div class="form-panel">
 
-    {{-- RFQ --}}
+    {{-- ═════════ RFQ ═════════ --}}
     <div class="fc" id="fc-rfq">
       <div class="fh">
         <div class="fh-left">
-          <div class="fh-title">Request for Quotation (RFQ)</div>
-          <div class="fh-sub">Provide your specification and quantity. We respond with an itemised quotation — price, lead time, Incoterm, and documentation list — within 24 hours.</div>
+          <div class="fh-title">{{ __('contact.rfq.title') }}</div>
+          <div class="fh-sub">{{ __('contact.rfq.sub') }}</div>
         </div>
-        <button class="fh-close" onclick="gtCloseForm()" aria-label="Close">✕</button>
+        <button class="fh-close" type="button" onclick="gtCloseForm()" aria-label="{{ __('contact.close') }}">✕</button>
       </div>
       <form id="gtf-rfq" novalidate>
         @csrf
         <input type="hidden" name="form_type" value="rfq">
-        <div class="success-banner" id="sb-rfq"><div class="sb-icon">✅</div><div><div class="sb-title">RFQ received — we will respond within 24 hours.</div><div class="sb-text">Our technical sourcing team will review your specification. For urgent requirements, call +90 216 629 20 29 directly.</div></div></div>
-        <div class="error-banner" id="eb-rfq">Something went wrong. Please try again or call us on +90 216 629 20 29.</div>
+        <div class="success-banner" id="sb-rfq"><div class="sb-icon">✅</div><div><div class="sb-title">{{ __('contact.rfq.ok_title') }}</div><div class="sb-text">{{ __('contact.rfq.ok_text') }}</div></div></div>
+        <div class="error-banner" id="eb-rfq">{{ __('contact.error_generic') }}</div>
         <div class="fb">
-          <div class="fsec-label">Your details</div>
+          <div class="fsec-label">{{ __('contact.rfq.sec_details') }}</div>
           <div class="fg g3">
-            <div class="fgroup"><label class="flabel" for="rfq-name">Full name <em>*</em></label><input class="finput" type="text" id="rfq-name" name="name" required placeholder="First and last name"><span class="ferr" id="e-rfq-name">Please enter your name.</span></div>
-            <div class="fgroup"><label class="flabel" for="rfq-company">Company <em>*</em></label><input class="finput" type="text" id="rfq-company" name="company" required placeholder="Company or organisation"><span class="ferr" id="e-rfq-company">Please enter your company name.</span></div>
-            <div class="fgroup"><label class="flabel" for="rfq-email">Work email <em>*</em></label><input class="finput" type="email" id="rfq-email" name="email" required placeholder="you@company.com"><span class="ferr" id="e-rfq-email">Please enter a valid email address.</span></div>
+            <div class="fgroup"><label class="flabel" for="rfq-name">{{ __('contact.f.name') }} <em>*</em></label><input class="finput" type="text" id="rfq-name" name="name" required placeholder="{{ __('contact.f.name_ph') }}"><span class="ferr" id="e-rfq-name">{{ __('contact.err.name') }}</span></div>
+            <div class="fgroup"><label class="flabel" for="rfq-company">{{ __('contact.f.company') }} <em>*</em></label><input class="finput" type="text" id="rfq-company" name="company" required placeholder="{{ __('contact.f.company_ph') }}"><span class="ferr" id="e-rfq-company">{{ __('contact.err.company') }}</span></div>
+            <div class="fgroup"><label class="flabel" for="rfq-email">{{ __('contact.f.work_email') }} <em>*</em></label><input class="finput" type="email" id="rfq-email" name="email" required placeholder="you@company.com" dir="ltr"><span class="ferr" id="e-rfq-email">{{ __('contact.err.email') }}</span></div>
           </div>
           <div class="fg g3">
-            <div class="fgroup"><label class="flabel" for="rfq-phone">Phone / WhatsApp</label><input class="finput" type="tel" id="rfq-phone" name="phone" placeholder="+1 555 000 0000"></div>
-            <div class="fgroup"><label class="flabel" for="rfq-country">Destination country <em>*</em></label>
+            <div class="fgroup"><label class="flabel" for="rfq-phone">{{ __('contact.f.phone') }}</label><input class="finput" type="tel" id="rfq-phone" name="phone" placeholder="+1 555 000 0000" dir="ltr"></div>
+            <div class="fgroup"><label class="flabel" for="rfq-country">{{ __('contact.f.country') }} <em>*</em></label>
               <select class="fsel" id="rfq-country" name="country" required>
-                <option value="" disabled selected>Select country</option>
-                <optgroup label="Middle East &amp; N. Africa"><option>Iraq</option><option>UAE</option><option>Saudi Arabia</option><option>Kuwait</option><option>Qatar</option><option>Oman</option><option>Egypt</option><option>Algeria</option><option>Libya</option><option>Morocco</option></optgroup>
-                <optgroup label="Central Asia"><option>Kazakhstan</option><option>Azerbaijan</option><option>Uzbekistan</option><option>Turkmenistan</option><option>Georgia</option></optgroup>
-                <optgroup label="Africa"><option>Nigeria</option><option>Ghana</option><option>Kenya</option><option>Tanzania</option><option>Angola</option></optgroup>
-                <optgroup label="South &amp; SE Asia"><option>India</option><option>Pakistan</option><option>Bangladesh</option><option>Malaysia</option><option>Indonesia</option></optgroup>
-                <optgroup label="Europe"><option>Türkiye</option><option>Romania</option><option>Bulgaria</option><option>Germany</option><option>France</option><option>United Kingdom</option></optgroup>
-                <option value="other">Other</option>
+                <option value="" disabled selected>{{ __('contact.f.select_country') }}</option>
+                @foreach (__('contact.countries') as $group => $items)
+                  <optgroup label="{{ __('contact.country_groups.'.$group) }}">
+                    @foreach ($items as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
+                  </optgroup>
+                @endforeach
+                <option value="other">{{ __('contact.other_option') }}</option>
               </select>
-              <span class="ferr" id="e-rfq-country">Please select a country.</span>
+              <span class="ferr" id="e-rfq-country">{{ __('contact.err.country_select') }}</span>
             </div>
-            <div class="fgroup"><label class="flabel" for="rfq-urgency">Timeline</label>
+            <div class="fgroup"><label class="flabel" for="rfq-urgency">{{ __('contact.rfq.timeline') }}</label>
               <select class="fsel" id="rfq-urgency" name="urgency">
-                <option value="" disabled selected>Select timeline</option>
-                <option>Urgent — within 72 hours</option><option>Short — within 2 weeks</option><option>Standard — 2 to 8 weeks</option><option>Project — 2 to 6 months</option><option>Framework agreement — ongoing</option>
+                <option value="" disabled selected>{{ __('contact.rfq.select_timeline') }}</option>
+                @foreach (__('contact.timelines') as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
               </select>
             </div>
           </div>
           <div class="fdivider"></div>
-          <div class="fsec-label">Product requirement</div>
+          <div class="fsec-label">{{ __('contact.rfq.sec_product') }}</div>
           <div class="fg g3">
-            <div class="fgroup"><label class="flabel" for="rfq-category">Product category <em>*</em></label>
+            <div class="fgroup"><label class="flabel" for="rfq-category">{{ __('contact.rfq.category') }} <em>*</em></label>
               <select class="fsel" id="rfq-category" name="category" required>
-                <option value="" disabled selected>Select category</option>
-                <option>Valves &amp; Flow Control</option><option>Instrumentation &amp; Transmitters</option><option>Actuators &amp; Control Systems</option><option>Rotating Equipment &amp; Pumps</option><option>NDT &amp; Inspection Equipment</option><option>Boron Products (Eti Maden)</option><option>Industrial Chemicals</option><option>Critical Chemicals — TDI / MDI / ADN / LiPF₆ / Helium / HF</option><option>Polymers — PE &amp; PP</option><option>Lubricants &amp; Process Chemicals</option><option>Paraffin Wax &amp; Petroleum Jelly</option><option>Solar Energy Systems</option><option>Security &amp; Screening Systems</option><option>Multiple categories / project BOM</option>
+                <option value="" disabled selected>{{ __('contact.rfq.select_category') }}</option>
+                @foreach (__('contact.rfq_categories') as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
               </select>
-              <span class="ferr" id="e-rfq-category">Please select a product category.</span>
+              <span class="ferr" id="e-rfq-category">{{ __('contact.err.category') }}</span>
             </div>
-            <div class="fgroup"><label class="flabel" for="rfq-incoterm">Preferred Incoterm</label>
-              <select class="fsel" id="rfq-incoterm" name="incoterm"><option value="" disabled selected>Select Incoterm</option><option>EXW</option><option>FOB</option><option>CFR</option><option>CIF</option><option>DAP</option><option>DDP</option><option>Not yet decided</option></select>
+            <div class="fgroup"><label class="flabel" for="rfq-incoterm">{{ __('contact.rfq.incoterm') }}</label>
+              <select class="fsel" id="rfq-incoterm" name="incoterm">
+                <option value="" disabled selected>{{ __('contact.rfq.select_incoterm') }}</option>
+                @foreach (__('contact.incoterms') as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
+              </select>
             </div>
-            <div class="fgroup"><label class="flabel" for="rfq-qty">Quantity / volume</label><input class="finput" type="text" id="rfq-qty" name="quantity" placeholder="e.g. 50 units, 20 MT"></div>
+            <div class="fgroup"><label class="flabel" for="rfq-qty">{{ __('contact.rfq.quantity') }}</label><input class="finput" type="text" id="rfq-qty" name="quantity" placeholder="{{ __('contact.rfq.quantity_ph') }}"></div>
           </div>
           <div class="fg">
             <div class="fgroup">
-              <label class="flabel" for="rfq-spec">Full specification <em>*</em></label>
-              <textarea class="ftarea" id="rfq-spec" name="specification" required style="min-height:130px" placeholder="Include: product name · grade or standard (API 6D, ASME B16.34, PE100 ISO 9080) · size range · required documentation (COA, MTC, ATEX, SIL PFD) · brand preferences or approved equivalents · destination port."></textarea>
-              <span class="fhint">You may also email a datasheet to rfq@globaltrding.com after submitting this form.</span>
-              <span class="ferr" id="e-rfq-spec">Please describe your requirement.</span>
+              <label class="flabel" for="rfq-spec">{{ __('contact.rfq.spec') }} <em>*</em></label>
+              <textarea class="ftarea" id="rfq-spec" name="specification" required style="min-height:130px" placeholder="{{ __('contact.rfq.spec_ph') }}"></textarea>
+              <span class="fhint">{{ __('contact.rfq.spec_hint') }}</span>
+              <span class="ferr" id="e-rfq-spec">{{ __('contact.err.spec') }}</span>
             </div>
           </div>
         </div>
         <div class="ff">
-          <button class="fsubmit" type="submit">
-            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 2L9 11M18 2L13 18l-4-7-7-4 16-5z"/></svg>
-            Submit RFQ — 24-hour response
-          </button>
-          <div class="flegend">By submitting you accept our <a href="/{{ $locale }}/pages/privacy-policy">Privacy Policy</a>. Fields marked <em style="color:#DC2626;font-style:normal">*</em> are required.</div>
+          <button class="fsubmit" type="submit">{!! $sendIcon !!} {{ __('contact.rfq.submit') }}</button>
+          <div class="flegend">{{ __('contact.privacy_prefix') }} <a href="{{ $privacyUrl }}">{{ __('contact.privacy') }}</a>. {{ __('contact.required_note') }}</div>
         </div>
       </form>
     </div>
 
-    {{-- TECHNICAL --}}
+    {{-- ═════════ TECHNICAL ═════════ --}}
     <div class="fc" id="fc-technical">
       <div class="fh">
-        <div class="fh-left"><div class="fh-title">Technical Enquiry</div><div class="fh-sub">Questions about specifications, standards, certification requirements, or approved equivalencies. Our technical team responds within one business day.</div></div>
-        <button class="fh-close" onclick="gtCloseForm()" aria-label="Close">✕</button>
+        <div class="fh-left"><div class="fh-title">{{ __('contact.technical.title') }}</div><div class="fh-sub">{{ __('contact.technical.sub') }}</div></div>
+        <button class="fh-close" type="button" onclick="gtCloseForm()" aria-label="{{ __('contact.close') }}">✕</button>
       </div>
       <form id="gtf-technical" novalidate>
         @csrf
         <input type="hidden" name="form_type" value="technical">
-        <div class="success-banner" id="sb-technical"><div class="sb-icon">✅</div><div><div class="sb-title">Technical enquiry received.</div><div class="sb-text">Our technical team will respond with datasheets and references within one business day.</div></div></div>
-        <div class="error-banner" id="eb-technical">Something went wrong. Please try again or call +90 216 629 20 29.</div>
+        <div class="success-banner" id="sb-technical"><div class="sb-icon">✅</div><div><div class="sb-title">{{ __('contact.technical.ok_title') }}</div><div class="sb-text">{{ __('contact.technical.ok_text') }}</div></div></div>
+        <div class="error-banner" id="eb-technical">{{ __('contact.error_generic') }}</div>
         <div class="fb">
           <div class="fg g2">
-            <div class="fgroup"><label class="flabel" for="te-name">Full name <em>*</em></label><input class="finput" type="text" id="te-name" name="name" required placeholder="First and last name"><span class="ferr" id="e-te-name">Please enter your name.</span></div>
-            <div class="fgroup"><label class="flabel" for="te-company">Company</label><input class="finput" type="text" id="te-company" name="company" placeholder="Company name"></div>
+            <div class="fgroup"><label class="flabel" for="te-name">{{ __('contact.f.name') }} <em>*</em></label><input class="finput" type="text" id="te-name" name="name" required placeholder="{{ __('contact.f.name_ph') }}"><span class="ferr" id="e-te-name">{{ __('contact.err.name') }}</span></div>
+            <div class="fgroup"><label class="flabel" for="te-company">{{ __('contact.f.company') }}</label><input class="finput" type="text" id="te-company" name="company" placeholder="{{ __('contact.f.company_ph') }}"></div>
           </div>
           <div class="fg g2">
-            <div class="fgroup"><label class="flabel" for="te-email">Email address <em>*</em></label><input class="finput" type="email" id="te-email" name="email" required placeholder="you@company.com"><span class="ferr" id="e-te-email">Please enter a valid email address.</span></div>
-            <div class="fgroup"><label class="flabel" for="te-product">Product or category <em>*</em></label><input class="finput" type="text" id="te-product" name="product" required placeholder="e.g. Boric acid, API 6D valve, PAUT system"><span class="ferr" id="e-te-product">Please specify the product.</span></div>
+            <div class="fgroup"><label class="flabel" for="te-email">{{ __('contact.f.email') }} <em>*</em></label><input class="finput" type="email" id="te-email" name="email" required placeholder="you@company.com" dir="ltr"><span class="ferr" id="e-te-email">{{ __('contact.err.email') }}</span></div>
+            <div class="fgroup"><label class="flabel" for="te-product">{{ __('contact.technical.product') }} <em>*</em></label><input class="finput" type="text" id="te-product" name="product" required placeholder="{{ __('contact.technical.product_ph') }}"><span class="ferr" id="e-te-product">{{ __('contact.err.product') }}</span></div>
           </div>
           <div class="fg">
-            <div class="fgroup"><label class="flabel" for="te-question">Your technical question <em>*</em></label><textarea class="ftarea" id="te-question" name="question" required placeholder="Describe your technical question. Reference the applicable standard, approval, or documentation requirement where relevant."></textarea><span class="ferr" id="e-te-question">Please describe your question.</span></div>
+            <div class="fgroup"><label class="flabel" for="te-question">{{ __('contact.technical.question') }} <em>*</em></label><textarea class="ftarea" id="te-question" name="question" required placeholder="{{ __('contact.technical.question_ph') }}"></textarea><span class="ferr" id="e-te-question">{{ __('contact.err.question') }}</span></div>
           </div>
         </div>
         <div class="ff">
-          <button class="fsubmit" type="submit"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 2L9 11M18 2L13 18l-4-7-7-4 16-5z"/></svg> Send technical enquiry</button>
-          <div class="flegend">By submitting you accept our <a href="/{{ $locale }}/pages/privacy-policy">Privacy Policy</a>.</div>
+          <button class="fsubmit" type="submit">{!! $sendIcon !!} {{ __('contact.technical.submit') }}</button>
+          <div class="flegend">{{ __('contact.privacy_prefix') }} <a href="{{ $privacyUrl }}">{{ __('contact.privacy') }}</a>. {{ __('contact.required_note') }}</div>
         </div>
       </form>
     </div>
 
-    {{-- PARTNERSHIP --}}
+    {{-- ═════════ PARTNERSHIP ═════════ --}}
     <div class="fc" id="fc-partnership">
       <div class="fh">
-        <div class="fh-left"><div class="fh-title">Partnership &amp; Distribution Enquiry</div><div class="fh-sub">For manufacturers seeking regional distribution, distributors seeking Turkish-origin supply, and EPC contractors looking for a structured supply partnership. A senior team member responds within 2–3 business days.</div></div>
-        <button class="fh-close" onclick="gtCloseForm()" aria-label="Close">✕</button>
+        <div class="fh-left"><div class="fh-title">{{ __('contact.partnership.title') }}</div><div class="fh-sub">{{ __('contact.partnership.sub') }}</div></div>
+        <button class="fh-close" type="button" onclick="gtCloseForm()" aria-label="{{ __('contact.close') }}">✕</button>
       </div>
       <form id="gtf-partnership" novalidate>
         @csrf
         <input type="hidden" name="form_type" value="partnership">
-        <div class="success-banner" id="sb-partnership"><div class="sb-icon">✅</div><div><div class="sb-title">Partnership enquiry received.</div><div class="sb-text">A senior member of our commercial team will review your proposal and respond within 2–3 business days.</div></div></div>
-        <div class="error-banner" id="eb-partnership">Something went wrong. Please try again or call +90 216 629 20 29.</div>
+        <div class="success-banner" id="sb-partnership"><div class="sb-icon">✅</div><div><div class="sb-title">{{ __('contact.partnership.ok_title') }}</div><div class="sb-text">{{ __('contact.partnership.ok_text') }}</div></div></div>
+        <div class="error-banner" id="eb-partnership">{{ __('contact.error_generic') }}</div>
         <div class="fb">
           <div class="fg g3">
-            <div class="fgroup"><label class="flabel" for="pa-name">Full name <em>*</em></label><input class="finput" type="text" id="pa-name" name="name" required placeholder="First and last name"><span class="ferr" id="e-pa-name">Please enter your name.</span></div>
-            <div class="fgroup"><label class="flabel" for="pa-title">Job title</label><input class="finput" type="text" id="pa-title" name="title" placeholder="e.g. Export Manager"></div>
-            <div class="fgroup"><label class="flabel" for="pa-email">Work email <em>*</em></label><input class="finput" type="email" id="pa-email" name="email" required placeholder="you@company.com"><span class="ferr" id="e-pa-email">Please enter a valid email address.</span></div>
+            <div class="fgroup"><label class="flabel" for="pa-name">{{ __('contact.f.name') }} <em>*</em></label><input class="finput" type="text" id="pa-name" name="name" required placeholder="{{ __('contact.f.name_ph') }}"><span class="ferr" id="e-pa-name">{{ __('contact.err.name') }}</span></div>
+            <div class="fgroup"><label class="flabel" for="pa-title">{{ __('contact.partnership.job_title') }}</label><input class="finput" type="text" id="pa-title" name="title" placeholder="{{ __('contact.partnership.job_title_ph') }}"></div>
+            <div class="fgroup"><label class="flabel" for="pa-email">{{ __('contact.f.work_email') }} <em>*</em></label><input class="finput" type="email" id="pa-email" name="email" required placeholder="you@company.com" dir="ltr"><span class="ferr" id="e-pa-email">{{ __('contact.err.email') }}</span></div>
           </div>
           <div class="fg g3">
-            <div class="fgroup"><label class="flabel" for="pa-company">Company name <em>*</em></label><input class="finput" type="text" id="pa-company" name="company" required placeholder="Your company"><span class="ferr" id="e-pa-company">Please enter your company name.</span></div>
-            <div class="fgroup"><label class="flabel" for="pa-country">Country of operation <em>*</em></label><input class="finput" type="text" id="pa-country" name="country" required placeholder="Primary country"><span class="ferr" id="e-pa-country">Please enter your country.</span></div>
-            <div class="fgroup"><label class="flabel" for="pa-type">Partnership type <em>*</em></label>
+            <div class="fgroup"><label class="flabel" for="pa-company">{{ __('contact.f.company_name') }} <em>*</em></label><input class="finput" type="text" id="pa-company" name="company" required placeholder="{{ __('contact.f.company_name_ph') }}"><span class="ferr" id="e-pa-company">{{ __('contact.err.company') }}</span></div>
+            <div class="fgroup"><label class="flabel" for="pa-country">{{ __('contact.partnership.country_op') }} <em>*</em></label><input class="finput" type="text" id="pa-country" name="country" required placeholder="{{ __('contact.partnership.country_op_ph') }}"><span class="ferr" id="e-pa-country">{{ __('contact.err.country_text') }}</span></div>
+            <div class="fgroup"><label class="flabel" for="pa-type">{{ __('contact.partnership.type') }} <em>*</em></label>
               <select class="fsel" id="pa-type" name="type" required>
-                <option value="" disabled selected>Select type</option>
-                <option>Manufacturer — seeking distribution in MENA / CIS / Africa</option>
-                <option>Distributor — seeking Turkish-origin supply</option>
-                <option>EPC contractor — seeking supply partner</option>
-                <option>Agent or representative enquiry</option>
-                <option>Joint venture or co-supply proposal</option>
-                <option>Other collaboration</option>
+                <option value="" disabled selected>{{ __('contact.partnership.select_type') }}</option>
+                @foreach (__('contact.partner_types') as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
               </select>
-              <span class="ferr" id="e-pa-type">Please select a partnership type.</span>
+              <span class="ferr" id="e-pa-type">{{ __('contact.err.type') }}</span>
             </div>
           </div>
           <div class="fg">
-            <div class="fgroup"><label class="flabel" for="pa-message">Describe your proposal <em>*</em></label><textarea class="ftarea" id="pa-message" name="message" required placeholder="Tell us about your company, the products or categories involved, markets in scope, and what you are looking for from a supply partnership with Global Trading."></textarea><span class="ferr" id="e-pa-message">Please describe your proposal.</span></div>
+            <div class="fgroup"><label class="flabel" for="pa-message">{{ __('contact.partnership.proposal') }} <em>*</em></label><textarea class="ftarea" id="pa-message" name="message" required placeholder="{{ __('contact.partnership.proposal_ph') }}"></textarea><span class="ferr" id="e-pa-message">{{ __('contact.err.proposal') }}</span></div>
           </div>
         </div>
         <div class="ff">
-          <button class="fsubmit" type="submit"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 2L9 11M18 2L13 18l-4-7-7-4 16-5z"/></svg> Send partnership enquiry</button>
-          <div class="flegend">By submitting you accept our <a href="/{{ $locale }}/pages/privacy-policy">Privacy Policy</a>. Fields marked <em style="color:#DC2626;font-style:normal">*</em> are required.</div>
+          <button class="fsubmit" type="submit">{!! $sendIcon !!} {{ __('contact.partnership.submit') }}</button>
+          <div class="flegend">{{ __('contact.privacy_prefix') }} <a href="{{ $privacyUrl }}">{{ __('contact.privacy') }}</a>. {{ __('contact.required_note') }}</div>
         </div>
       </form>
     </div>
 
-    {{-- MEDIA --}}
+    {{-- ═════════ MEDIA ═════════ --}}
     <div class="fc" id="fc-media">
       <div class="fh">
-        <div class="fh-left"><div class="fh-title">Press &amp; Media Enquiry</div><div class="fh-sub">Editorial requests, background information, and interview requests. We respond within one business day.</div></div>
-        <button class="fh-close" onclick="gtCloseForm()" aria-label="Close">✕</button>
+        <div class="fh-left"><div class="fh-title">{{ __('contact.media.title') }}</div><div class="fh-sub">{{ __('contact.media.sub') }}</div></div>
+        <button class="fh-close" type="button" onclick="gtCloseForm()" aria-label="{{ __('contact.close') }}">✕</button>
       </div>
       <form id="gtf-media" novalidate>
         @csrf
         <input type="hidden" name="form_type" value="media">
-        <div class="success-banner" id="sb-media"><div class="sb-icon">✅</div><div><div class="sb-title">Media enquiry received.</div><div class="sb-text">We will respond within one business day.</div></div></div>
-        <div class="error-banner" id="eb-media">Something went wrong. Please try again.</div>
+        <div class="success-banner" id="sb-media"><div class="sb-icon">✅</div><div><div class="sb-title">{{ __('contact.media.ok_title') }}</div><div class="sb-text">{{ __('contact.media.ok_text') }}</div></div></div>
+        <div class="error-banner" id="eb-media">{{ __('contact.error_generic') }}</div>
         <div class="fb">
           <div class="fg g3">
-            <div class="fgroup"><label class="flabel" for="me-name">Full name <em>*</em></label><input class="finput" type="text" id="me-name" name="name" required placeholder="Your name"><span class="ferr" id="e-me-name">Please enter your name.</span></div>
-            <div class="fgroup"><label class="flabel" for="me-pub">Publication <em>*</em></label><input class="finput" type="text" id="me-pub" name="publication" required placeholder="Publication or media outlet"><span class="ferr" id="e-me-pub">Please enter your publication.</span></div>
-            <div class="fgroup"><label class="flabel" for="me-email">Email address <em>*</em></label><input class="finput" type="email" id="me-email" name="email" required placeholder="you@publication.com"><span class="ferr" id="e-me-email">Please enter a valid email address.</span></div>
+            <div class="fgroup"><label class="flabel" for="me-name">{{ __('contact.f.name') }} <em>*</em></label><input class="finput" type="text" id="me-name" name="name" required placeholder="{{ __('contact.f.name_ph') }}"><span class="ferr" id="e-me-name">{{ __('contact.err.name') }}</span></div>
+            <div class="fgroup"><label class="flabel" for="me-pub">{{ __('contact.media.publication') }} <em>*</em></label><input class="finput" type="text" id="me-pub" name="publication" required placeholder="{{ __('contact.media.publication_ph') }}"><span class="ferr" id="e-me-pub">{{ __('contact.err.publication') }}</span></div>
+            <div class="fgroup"><label class="flabel" for="me-email">{{ __('contact.f.email') }} <em>*</em></label><input class="finput" type="email" id="me-email" name="email" required placeholder="you@publication.com" dir="ltr"><span class="ferr" id="e-me-email">{{ __('contact.err.email') }}</span></div>
           </div>
           <div class="fg">
-            <div class="fgroup"><label class="flabel" for="me-request">Your request <em>*</em></label><textarea class="ftarea" id="me-request" name="request" required placeholder="Describe your editorial request and deadline if applicable."></textarea><span class="ferr" id="e-me-request">Please describe your request.</span></div>
+            <div class="fgroup"><label class="flabel" for="me-request">{{ __('contact.media.request') }} <em>*</em></label><textarea class="ftarea" id="me-request" name="request" required placeholder="{{ __('contact.media.request_ph') }}"></textarea><span class="ferr" id="e-me-request">{{ __('contact.err.request') }}</span></div>
           </div>
         </div>
         <div class="ff">
-          <button class="fsubmit" type="submit"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 2L9 11M18 2L13 18l-4-7-7-4 16-5z"/></svg> Send media enquiry</button>
-          <div class="flegend">By submitting you accept our <a href="/{{ $locale }}/pages/privacy-policy">Privacy Policy</a>.</div>
+          <button class="fsubmit" type="submit">{!! $sendIcon !!} {{ __('contact.media.submit') }}</button>
+          <div class="flegend">{{ __('contact.privacy_prefix') }} <a href="{{ $privacyUrl }}">{{ __('contact.privacy') }}</a>. {{ __('contact.required_note') }}</div>
         </div>
       </form>
     </div>
 
-    {{-- OTHER --}}
+    {{-- ═════════ OTHER ═════════ --}}
     <div class="fc" id="fc-other">
       <div class="fh">
-        <div class="fh-left"><div class="fh-title">Other Enquiry</div><div class="fh-sub">If your enquiry does not fit a specific category, send us a message here. We respond within one business day.</div></div>
-        <button class="fh-close" onclick="gtCloseForm()" aria-label="Close">✕</button>
+        <div class="fh-left"><div class="fh-title">{{ __('contact.other.title') }}</div><div class="fh-sub">{{ __('contact.other.sub') }}</div></div>
+        <button class="fh-close" type="button" onclick="gtCloseForm()" aria-label="{{ __('contact.close') }}">✕</button>
       </div>
       <form id="gtf-other" novalidate>
         @csrf
         <input type="hidden" name="form_type" value="other">
-        <div class="success-banner" id="sb-other"><div class="sb-icon">✅</div><div><div class="sb-title">Message received.</div><div class="sb-text">We will respond within one business day.</div></div></div>
-        <div class="error-banner" id="eb-other">Something went wrong. Please try again.</div>
+        <div class="success-banner" id="sb-other"><div class="sb-icon">✅</div><div><div class="sb-title">{{ __('contact.other.ok_title') }}</div><div class="sb-text">{{ __('contact.other.ok_text') }}</div></div></div>
+        <div class="error-banner" id="eb-other">{{ __('contact.error_generic') }}</div>
         <div class="fb">
           <div class="fg g2">
-            <div class="fgroup"><label class="flabel" for="ot-name">Full name <em>*</em></label><input class="finput" type="text" id="ot-name" name="name" required placeholder="Your name"><span class="ferr" id="e-ot-name">Please enter your name.</span></div>
-            <div class="fgroup"><label class="flabel" for="ot-email">Email address <em>*</em></label><input class="finput" type="email" id="ot-email" name="email" required placeholder="you@company.com"><span class="ferr" id="e-ot-email">Please enter a valid email address.</span></div>
+            <div class="fgroup"><label class="flabel" for="ot-name">{{ __('contact.f.name') }} <em>*</em></label><input class="finput" type="text" id="ot-name" name="name" required placeholder="{{ __('contact.f.name_ph') }}"><span class="ferr" id="e-ot-name">{{ __('contact.err.name') }}</span></div>
+            <div class="fgroup"><label class="flabel" for="ot-email">{{ __('contact.f.email') }} <em>*</em></label><input class="finput" type="email" id="ot-email" name="email" required placeholder="you@company.com" dir="ltr"><span class="ferr" id="e-ot-email">{{ __('contact.err.email') }}</span></div>
           </div>
           <div class="fg">
-            <div class="fgroup"><label class="flabel" for="ot-subject">Subject <em>*</em></label><input class="finput" type="text" id="ot-subject" name="subject" required placeholder="Brief subject of your message"><span class="ferr" id="e-ot-subject">Please enter a subject.</span></div>
+            <div class="fgroup"><label class="flabel" for="ot-subject">{{ __('contact.other.subject') }} <em>*</em></label><input class="finput" type="text" id="ot-subject" name="subject" required placeholder="{{ __('contact.other.subject_ph') }}"><span class="ferr" id="e-ot-subject">{{ __('contact.err.subject') }}</span></div>
           </div>
           <div class="fg">
-            <div class="fgroup"><label class="flabel" for="ot-message">Message <em>*</em></label><textarea class="ftarea" id="ot-message" name="message" required placeholder="How can we help?"></textarea><span class="ferr" id="e-ot-message">Please enter your message.</span></div>
+            <div class="fgroup"><label class="flabel" for="ot-message">{{ __('contact.other.message') }} <em>*</em></label><textarea class="ftarea" id="ot-message" name="message" required placeholder="{{ __('contact.other.message_ph') }}"></textarea><span class="ferr" id="e-ot-message">{{ __('contact.err.message') }}</span></div>
           </div>
         </div>
         <div class="ff">
-          <button class="fsubmit" type="submit"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 2L9 11M18 2L13 18l-4-7-7-4 16-5z"/></svg> Send message</button>
-          <div class="flegend">By submitting you accept our <a href="/{{ $locale }}/pages/privacy-policy">Privacy Policy</a>.</div>
+          <button class="fsubmit" type="submit">{!! $sendIcon !!} {{ __('contact.other.submit') }}</button>
+          <div class="flegend">{{ __('contact.privacy_prefix') }} <a href="{{ $privacyUrl }}">{{ __('contact.privacy') }}</a>. {{ __('contact.required_note') }}</div>
         </div>
       </form>
     </div>
 
   </div>{{-- /form-panel --}}
 
-  {{-- Offices --}}
+  {{-- ═════════ Offices ═════════ --}}
   <section class="offices-sec">
     <div class="offices-inner">
-      <div class="sec-label">Our locations</div>
-      <div class="sec-h2">Istanbul, Türkiye</div>
+      <div class="sec-label">{{ __('contact.loc_label') }}</div>
+      <div class="sec-h2">{{ __('contact.loc_heading') }}</div>
       <div class="offices-grid">
         <div class="ocard">
-          <div class="o-num">Headquarters</div>
+          <div class="o-num">{{ __('contact.hq') }}</div>
           <div class="o-name">Varyap Meridian — Ataşehir</div>
           <div class="o-row"><span class="o-row-icon">📍</span><span>Al Zambak Sokağı, Varyap Meridian A Blok<br>34746 Ataşehir / İstanbul, Türkiye</span></div>
-          <div class="o-row"><span class="o-row-icon">☎</span><a href="tel:+902166292029" style="color:#0A0E1A">+90 216 629 20 29</a></div>
-          <div class="o-row"><span class="o-row-icon">✉</span><a href="mailto:info@globaltrding.com" style="color:#0A0E1A">info@globaltrding.com</a></div>
-          <a class="o-map" href="https://maps.google.com/?q=Varyap+Meridian+A+Blok+Atasehir+Istanbul" target="_blank" rel="noopener">↗ Open in Google Maps</a>
+          <div class="o-row"><span class="o-row-icon">☎</span><a href="tel:+902166292029" style="color:#0A0E1A" dir="ltr">+90 216 629 20 29</a></div>
+          <div class="o-row"><span class="o-row-icon">✉</span><a href="mailto:info@globaltrding.com" style="color:#0A0E1A" dir="ltr">info@globaltrding.com</a></div>
+          <a class="o-map" href="https://maps.google.com/?q=Varyap+Meridian+A+Blok+Atasehir+Istanbul" target="_blank" rel="noopener">↗ {{ __('contact.open_maps') }}</a>
         </div>
         <div class="hours-card">
-          <div class="card-title">Business hours</div>
-          <div class="h-row"><span class="h-day">Monday – Friday</span><div style="display:flex;align-items:center;gap:.5rem"><span class="h-val">09:00 – 18:00</span><span class="h-tag">TRT</span></div></div>
-          <div class="h-row"><span class="h-day">Saturday</span><span class="h-val">By arrangement</span></div>
-          <div class="h-row"><span class="h-day">Sunday</span><span class="h-val">Closed</span></div>
-          <div class="h-row" style="background:rgba(200,169,110,.04)"><span class="h-day" style="font-weight:600;color:#0A0E1A">RFQ inbox</span><span class="h-tag">24h response</span></div>
+          <div class="card-title">{{ __('contact.hours_title') }}</div>
+          <div class="h-row"><span class="h-day">{{ __('contact.mon_fri') }}</span><div style="display:flex;align-items:center;gap:.5rem"><span class="h-val" dir="ltr">09:00 – 18:00</span><span class="h-tag">TRT</span></div></div>
+          <div class="h-row"><span class="h-day">{{ __('contact.saturday') }}</span><span class="h-val">{{ __('contact.by_arrangement') }}</span></div>
+          <div class="h-row"><span class="h-day">{{ __('contact.sunday') }}</span><span class="h-val">{{ __('contact.closed') }}</span></div>
+          <div class="h-row" style="background:rgba(200,169,110,.04)"><span class="h-day" style="font-weight:600;color:#0A0E1A">{{ __('contact.rfq_inbox') }}</span><span class="h-tag">{{ __('contact.h24') }}</span></div>
         </div>
         <div class="langs-card">
-          <div class="card-title">We communicate in</div>
-          <div class="l-row"><div class="l-flag">🇬🇧</div><div class="l-name">English</div><div class="l-native">Primary</div></div>
-          <div class="l-row"><div class="l-flag">🇹🇷</div><div class="l-name">Turkish</div><div class="l-native">Türkçe</div></div>
-          <div class="l-row"><div class="l-flag">🇸🇦</div><div class="l-name">Arabic</div><div class="l-native">العربية</div></div>
-          <div class="l-row"><div class="l-flag">🇫🇷</div><div class="l-name">French</div><div class="l-native">Français</div></div>
+          <div class="card-title">{{ __('contact.langs_title') }}</div>
+          <div class="l-row"><div class="l-flag">🇬🇧</div><div class="l-name">{{ __('contact.lang_names.en') }}</div><div class="l-native">{{ __('contact.primary') }}</div></div>
+          <div class="l-row"><div class="l-flag">🇹🇷</div><div class="l-name">{{ __('contact.lang_names.tr') }}</div><div class="l-native">Türkçe</div></div>
+          <div class="l-row"><div class="l-flag">🇸🇦</div><div class="l-name">{{ __('contact.lang_names.ar') }}</div><div class="l-native">العربية</div></div>
+          <div class="l-row"><div class="l-flag">🇫🇷</div><div class="l-name">{{ __('contact.lang_names.fr') }}</div><div class="l-native">Français</div></div>
         </div>
       </div>
     </div>
@@ -487,123 +460,124 @@ $seoMeta = [
 </div>{{-- /gt-contact --}}
 
 <script>
-// ── Category / form switching ────────────────────────────────────
-function gtSelectCat(id) {
-  document.querySelectorAll('.gt-contact .cat-card').forEach(c => c.classList.remove('active'));
-  document.querySelectorAll('.gt-contact .fc').forEach(f => f.classList.remove('active'));
-  const cat = document.getElementById('cat-' + id);
-  if (cat) cat.classList.add('active');
-  const fc = document.getElementById('fc-' + id);
-  if (fc) {
-    fc.classList.add('active');
-    setTimeout(() => fc.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+  const GT_I18N = { sending: @json(__('contact.sending')) };
+  // ── Category / form switching ────────────────────────────────────
+  function gtSelectCat(id) {
+    document.querySelectorAll('.gt-contact .cat-card').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.gt-contact .fc').forEach(f => f.classList.remove('active'));
+    const cat = document.getElementById('cat-' + id);
+    if (cat) cat.classList.add('active');
+    const fc = document.getElementById('fc-' + id);
+    if (fc) {
+      fc.classList.add('active');
+      setTimeout(() => fc.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+    }
   }
-}
 
-function gtCloseForm() {
-  document.querySelectorAll('.gt-contact .cat-card').forEach(c => c.classList.remove('active'));
-  document.querySelectorAll('.gt-contact .fc').forEach(f => f.classList.remove('active'));
-}
+  function gtCloseForm() {
+    document.querySelectorAll('.gt-contact .cat-card').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.gt-contact .fc').forEach(f => f.classList.remove('active'));
+  }
 
-// Keyboard support on category cards
-document.querySelectorAll('.gt-contact .cat-card').forEach(card => {
-  card.addEventListener('keydown', e => {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.click(); }
-  });
-});
-
-// ── Validation ──────────────────────────────────────────────────
-function gtValidEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()); }
-
-function gtValidateField(el, errId) {
-  const ok = el.type === 'email' ? gtValidEmail(el.value) : el.value.trim() !== '';
-  el.classList.toggle('invalid', !ok);
-  const errEl = document.getElementById(errId);
-  if (errEl) errEl.classList.toggle('show', !ok);
-  return ok;
-}
-
-// ── Form configs → endpoint mapping ────────────────────────────
-const GT_FORMS = {
-  rfq: {
-    required: [
-      ['rfq-name','e-rfq-name'],['rfq-company','e-rfq-company'],
-      ['rfq-email','e-rfq-email'],['rfq-country','e-rfq-country'],
-      ['rfq-category','e-rfq-category'],['rfq-spec','e-rfq-spec'],
-    ],
-    endpoint: '{{ route("contact.submit", ["locale" => $locale]) }}',
-  },
-  technical: {
-    required: [['te-name','e-te-name'],['te-email','e-te-email'],['te-product','e-te-product'],['te-question','e-te-question']],
-    endpoint: '{{ route("contact.submit", ["locale" => $locale]) }}',
-  },
-  partnership: {
-    required: [['pa-name','e-pa-name'],['pa-email','e-pa-email'],['pa-company','e-pa-company'],['pa-country','e-pa-country'],['pa-type','e-pa-type'],['pa-message','e-pa-message']],
-    endpoint: '{{ route("contact.submit", ["locale" => $locale]) }}',
-  },
-  media: {
-    required: [['me-name','e-me-name'],['me-pub','e-me-pub'],['me-email','e-me-email'],['me-request','e-me-request']],
-    endpoint: '{{ route("contact.submit", ["locale" => $locale]) }}',
-  },
-  other: {
-    required: [['ot-name','e-ot-name'],['ot-email','e-ot-email'],['ot-subject','e-ot-subject'],['ot-message','e-ot-message']],
-    endpoint: '{{ route("contact.submit", ["locale" => $locale]) }}',
-  },
-};
-
-Object.entries(GT_FORMS).forEach(([key, cfg]) => {
-  const form = document.getElementById('gtf-' + key);
-  if (!form) return;
-
-  // Blur validation
-  cfg.required.forEach(([id, errId]) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.addEventListener('blur', () => gtValidateField(el, errId));
-    el.addEventListener('input', () => { if (el.classList.contains('invalid')) gtValidateField(el, errId); });
+  // Keyboard support on category cards
+  document.querySelectorAll('.gt-contact .cat-card').forEach(card => {
+    card.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.click(); }
+    });
   });
 
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
+  // ── Validation ──────────────────────────────────────────────────
+  function gtValidEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()); }
 
-    // Hide previous banners
-    document.getElementById('sb-' + key)?.classList.remove('show');
-    document.getElementById('eb-' + key)?.classList.remove('show');
+  function gtValidateField(el, errId) {
+    const ok = el.type === 'email' ? gtValidEmail(el.value) : el.value.trim() !== '';
+    el.classList.toggle('invalid', !ok);
+    const errEl = document.getElementById(errId);
+    if (errEl) errEl.classList.toggle('show', !ok);
+    return ok;
+  }
 
-    // Validate
-    let ok = true;
+  // ── Form configs → endpoint mapping ────────────────────────────
+  const GT_FORMS = {
+    rfq: {
+      required: [
+        ['rfq-name','e-rfq-name'],['rfq-company','e-rfq-company'],
+        ['rfq-email','e-rfq-email'],['rfq-country','e-rfq-country'],
+        ['rfq-category','e-rfq-category'],['rfq-spec','e-rfq-spec'],
+      ],
+      endpoint: '{{ route("contact.submit", ["locale" => $locale]) }}',
+    },
+    technical: {
+      required: [['te-name','e-te-name'],['te-email','e-te-email'],['te-product','e-te-product'],['te-question','e-te-question']],
+      endpoint: '{{ route("contact.submit", ["locale" => $locale]) }}',
+    },
+    partnership: {
+      required: [['pa-name','e-pa-name'],['pa-email','e-pa-email'],['pa-company','e-pa-company'],['pa-country','e-pa-country'],['pa-type','e-pa-type'],['pa-message','e-pa-message']],
+      endpoint: '{{ route("contact.submit", ["locale" => $locale]) }}',
+    },
+    media: {
+      required: [['me-name','e-me-name'],['me-pub','e-me-pub'],['me-email','e-me-email'],['me-request','e-me-request']],
+      endpoint: '{{ route("contact.submit", ["locale" => $locale]) }}',
+    },
+    other: {
+      required: [['ot-name','e-ot-name'],['ot-email','e-ot-email'],['ot-subject','e-ot-subject'],['ot-message','e-ot-message']],
+      endpoint: '{{ route("contact.submit", ["locale" => $locale]) }}',
+    },
+  };
+
+  Object.entries(GT_FORMS).forEach(([key, cfg]) => {
+    const form = document.getElementById('gtf-' + key);
+    if (!form) return;
+
+    // Blur validation
     cfg.required.forEach(([id, errId]) => {
       const el = document.getElementById(id);
-      if (el && !gtValidateField(el, errId)) ok = false;
+      if (!el) return;
+      el.addEventListener('blur', () => gtValidateField(el, errId));
+      el.addEventListener('input', () => { if (el.classList.contains('invalid')) gtValidateField(el, errId); });
     });
-    if (!ok) return;
 
-    const btn = form.querySelector('.fsubmit');
-    const origText = btn?.innerHTML;
-    if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
 
-    try {
-      const res = await fetch(cfg.endpoint, {
-        method: 'POST',
-        body: new FormData(form),
-        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      // Hide previous banners
+      document.getElementById('sb-' + key)?.classList.remove('show');
+      document.getElementById('eb-' + key)?.classList.remove('show');
+
+      // Validate
+      let ok = true;
+      cfg.required.forEach(([id, errId]) => {
+        const el = document.getElementById(id);
+        if (el && !gtValidateField(el, errId)) ok = false;
       });
+      if (!ok) return;
 
-      if (res.ok) {
-        const sb = document.getElementById('sb-' + key);
-        if (sb) { sb.classList.add('show'); sb.scrollIntoView({ behavior:'smooth', block:'center' }); }
-        form.reset();
-        form.querySelectorAll('.invalid').forEach(el => el.classList.remove('invalid'));
-        form.querySelectorAll('.ferr.show').forEach(el => el.classList.remove('show'));
-      } else {
+      const btn = form.querySelector('.fsubmit');
+      const origText = btn?.innerHTML;
+      if (btn) { btn.disabled = true; btn.textContent = GT_I18N.sending; }
+
+      try {
+        const res = await fetch(cfg.endpoint, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        });
+
+        if (res.ok) {
+          const sb = document.getElementById('sb-' + key);
+          if (sb) { sb.classList.add('show'); sb.scrollIntoView({ behavior:'smooth', block:'center' }); }
+          form.reset();
+          form.querySelectorAll('.invalid').forEach(el => el.classList.remove('invalid'));
+          form.querySelectorAll('.ferr.show').forEach(el => el.classList.remove('show'));
+        } else {
+          document.getElementById('eb-' + key)?.classList.add('show');
+        }
+      } catch {
         document.getElementById('eb-' + key)?.classList.add('show');
+      } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = origText; }
       }
-    } catch {
-      document.getElementById('eb-' + key)?.classList.add('show');
-    } finally {
-      if (btn) { btn.disabled = false; btn.innerHTML = origText; }
-    }
+    });
   });
-});
 </script>
 @endsection
